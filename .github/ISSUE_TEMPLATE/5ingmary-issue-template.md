@@ -12,9 +12,9 @@ assignees: ''
 여기에 이슈에 대한 설명을 적어주세요.
 
 ## Todo
-- [] todo1
-- [] todo2
-- [] todo3
+- [ ] todo1
+- [ ] todo2
+- [ ] todo3
 
 ## Etc
 
