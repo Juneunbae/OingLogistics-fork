@@ -1,0 +1,38 @@
+# 시스템 및 IDE 설정 파일
+.gradle/
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# 빌드 및 아티팩트 디렉터리
+**/build/
+**/bin/
+**/out/
+**/.gradle/
+
+# STS (Spring Tool Suite)
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# 환경 설정 파일 (모든 yml 파일 제외)
+*.yml
+
+# 환경 변수 파일
+*.env*
+
+# SQL 파일 (필요하면 유지)
+*.sql
