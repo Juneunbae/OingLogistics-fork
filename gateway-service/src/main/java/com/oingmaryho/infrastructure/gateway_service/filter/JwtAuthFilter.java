@@ -57,7 +57,9 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
       ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
           .header("X-User-Id", claims.getSubject())
-          .header("X-User-Roles", claims.get("roles", String.class)).build();
+          .header("X-User-Roles", claims.get("roles", String.class))
+          .header("X-User-Slack-Id", claims.get("slackId", String.class))
+          .build();
 
       return chain.filter(exchange.mutate().request(modifiedRequest).build());
     } catch (ExpiredJwtException e) {
