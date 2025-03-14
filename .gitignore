@@ -28,8 +28,12 @@
 /nbdist/
 /.nb-gradle/
 
-# 환경 설정 파일 (모든 yml 파일 제외)
-*.yml
+# 환경 설정 파일 (config, eureka 제외 모든 yml 파일을 포함)
+config-service/src/main/resources/application.yml
+eureka-service/src/main/resources/application.yml
+eureka-service/src/main/resources/application-dev.yml
+eureka-service/src/main/resources/application-prod.yml
+eureka-service/src/main/resources/application-test.yml
 
 # 환경 변수 파일
 *.env*
