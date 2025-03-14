@@ -23,7 +23,6 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Slf4j
-@Component
 public class JwtAuthFilter implements GlobalFilter, Ordered {
 
   // 인증 예외 처리할 경로 목록
