@@ -22,7 +22,7 @@ public class HubController {
 		@RequestBody HubSearchRequestDto requestDto,
 		@RequestParam(value = "page", required = false, defaultValue = "1") int page,
 		@RequestParam(value = "size", required = false, defaultValue = "10") int size,
-		@RequestParam(value = "sortDirection", required = false, defaultValue = "ASC") String sortDirection
+		@RequestParam(value = "sortDirection", required = false, defaultValue = "DESC") String sortDirection
 	) {
 		return null;
 	}
