@@ -1,0 +1,14 @@
+package com.oingmaryho.business.delivery_service.presentation.dto.response;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+
+import java.util.UUID;
+
+@Getter
+@Builder
+@AllArgsConstructor
+public class DeliveryUpdateStatusResponseDto {
+    private UUID id;
+}
