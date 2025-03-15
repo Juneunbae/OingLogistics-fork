@@ -1,0 +1,17 @@
+package com.oingmaryho.business.delivery_service.presentation.dto.response;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+
+import java.util.List;
+
+@Getter
+@Builder
+@AllArgsConstructor
+public class DeliveryResponseDto {
+    private int page;
+    private int size;
+    private int sortDirection;
+    private List<DeliveryDetailResponseDto> deliveries;
+}
