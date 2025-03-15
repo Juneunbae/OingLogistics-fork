@@ -1,14 +1,5 @@
 package com.oringmaryho.business.userservice.application.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+public record UserSignInRequestServiceDto(String username, String password) {
 
-@Getter
-@Builder
-@AllArgsConstructor
-public class UserSignInRequestServiceDto {
-
-  private String username;
-  private String password;
 }

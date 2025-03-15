@@ -1,17 +1,8 @@
 package com.oringmaryho.business.userservice.presentation.dto.response;
 
 import com.oringmaryho.business.userservice.domain.UserRoleType;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
 
-@Getter
-@Builder
-@AllArgsConstructor
-public class UserSearchResponseDto {
+public record UserSearchResponseDto(Long id, String userName, String slackId,
+                                    UserRoleType role) {
 
-  private Long userId;
-  private String userName;
-  private String slackId;
-  private UserRoleType role;
 }

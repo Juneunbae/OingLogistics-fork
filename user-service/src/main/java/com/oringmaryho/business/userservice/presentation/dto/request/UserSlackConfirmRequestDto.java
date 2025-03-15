@@ -1,14 +1,5 @@
 package com.oringmaryho.business.userservice.presentation.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+public record UserSlackConfirmRequestDto(String slackId, String confirmCode) {
 
-@Getter
-@Builder
-@AllArgsConstructor
-public class UserSlackConfirmRequestDto {
-
-  private String slackId;
-  private String confirmCode;
 }

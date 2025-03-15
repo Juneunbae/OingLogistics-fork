@@ -1,13 +1,5 @@
 package com.oringmaryho.business.userservice.presentation.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+public record UserSearchRequestDto(Long id) {
 
-@Getter
-@Builder
-@AllArgsConstructor
-public class UserSearchRequestDto {
-
-  private Long userId;
 }

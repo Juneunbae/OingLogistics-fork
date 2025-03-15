@@ -28,10 +28,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
   private final UserService userService;
+  private final UserApplicationMapper userApplicationMapper;
+  private final UserPresentationMapper userPresentationMapper;
 
   @PostMapping("/sign-up")
   public ResponseEntity<Void> signUpUser(@RequestBody UserSignUpRequestDto userSignUpRequestDto) {
-    UserSignUpRequestServiceDto requestServiceDto = UserPresentationMapper.INSTANCE.toUserSignUpServiceDto(
+    UserSignUpRequestServiceDto requestServiceDto = userPresentationMapper.toUserSignUpServiceDto(
         userSignUpRequestDto);
     userService.signUpUser(requestServiceDto);
     return ResponseEntity.ok().build();
@@ -40,26 +42,24 @@ public class UserController {
   @PostMapping("/sign-in")
   public ResponseEntity<UserSignInResponseDto> signInUser(
       @RequestBody UserSignInRequestDto userSignInRequestDto) {
-    UserSignInRequestServiceDto requestServiceDto = UserPresentationMapper.INSTANCE.toUserSignInServiceDto(
+    UserSignInRequestServiceDto requestServiceDto = userPresentationMapper.toUserSignInServiceDto(
         userSignInRequestDto);
     UserSignInResponseServiceDto responseServiceDto = userService.signInUser(requestServiceDto);
-    return ResponseEntity.ok()
-        .body(UserApplicationMapper.INSTANCE.toSignInResponseDto(responseServiceDto));
+    return ResponseEntity.ok().body(userApplicationMapper.toSignInResponseDto(responseServiceDto));
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<UserSearchResponseDto> searchUser(@PathVariable Long id) {
-    UserSearchRequestServiceDto requestServiceDto = UserPresentationMapper.INSTANCE.toUserSearchRequestServiceDto(
+    UserSearchRequestServiceDto requestServiceDto = userPresentationMapper.toUserSearchRequestServiceDto(
         id);
     UserSearchResponseServiceDto responseServiceDto = userService.searchUser(requestServiceDto);
-    return ResponseEntity.ok()
-        .body(UserApplicationMapper.INSTANCE.toSearchResponseDto(responseServiceDto));
+    return ResponseEntity.ok().body(userApplicationMapper.toSearchResponseDto(responseServiceDto));
   }
 
   @PostMapping("/slack/confirm")
   public ResponseEntity<Void> slackConfirmUser(
       @RequestBody UserSlackConfirmRequestDto userSlackConfirmRequestDto) {
-    UserSlackConfirmRequestServiceDto requestServiceDto = UserPresentationMapper.INSTANCE.toUserSlackConfirmRequestServiceDto(
+    UserSlackConfirmRequestServiceDto requestServiceDto = userPresentationMapper.toUserSlackConfirmRequestServiceDto(
         userSlackConfirmRequestDto);
     userService.slackConfirmUser(requestServiceDto);
     return ResponseEntity.ok().build();
