@@ -30,11 +30,11 @@ public class UserController {
   private final UserService userService;
 
   @PostMapping("/sign-up")
-  public ResponseEntity<String> signUpUser(@RequestBody UserSignUpRequestDto userSignUpRequestDto) {
+  public ResponseEntity<Void> signUpUser(@RequestBody UserSignUpRequestDto userSignUpRequestDto) {
     UserSignUpRequestServiceDto requestServiceDto = UserPresentationMapper.INSTANCE.toUserSignUpServiceDto(
         userSignUpRequestDto);
     userService.signUpUser(requestServiceDto);
-    return ResponseEntity.ok().body("회원가입 성공");
+    return ResponseEntity.ok().build();
   }
 
   @PostMapping("/sign-in")
@@ -57,11 +57,11 @@ public class UserController {
   }
 
   @PostMapping("/slack/confirm")
-  public ResponseEntity<String> slackConfirmUser(
+  public ResponseEntity<Void> slackConfirmUser(
       @RequestBody UserSlackConfirmRequestDto userSlackConfirmRequestDto) {
     UserSlackConfirmRequestServiceDto requestServiceDto = UserPresentationMapper.INSTANCE.toUserSlackConfirmRequestServiceDto(
         userSlackConfirmRequestDto);
     userService.slackConfirmUser(requestServiceDto);
-    return ResponseEntity.ok().body("인증 성공"); //todo: 반환값 어떻게 할지 정하기
+    return ResponseEntity.ok().build();
   }
 }
