@@ -9,4 +9,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class UserSearchRequestServiceDto {
 
+  private Long userId;
 }

@@ -9,4 +9,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class UserSignInRequestServiceDto {
 
+  private String username;
+  private String password;
 }
