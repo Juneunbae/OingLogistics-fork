@@ -48,7 +48,7 @@ public class OrderController {
     @Description(
         "FeignClient - 주문 조회"
     )
-    @GetMapping("/api/v1/orders/{id}")
+    @GetMapping("/order-service/orders/{id}")
     public ResponseEntity<Order> getById(@PathVariable UUID id) {
         OrderServiceDto orderServiceDto = orderApplicationMapper.toOrderServiceDto(id);
         return ResponseEntity.ok(orderService.getById(orderServiceDto));
