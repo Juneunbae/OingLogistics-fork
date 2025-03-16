@@ -40,3 +40,6 @@ eureka-service/src/main/resources/application-test.yml
 
 # SQL 파일 (필요하면 유지)
 *.sql
+
+# LOG 파일
+/logs
