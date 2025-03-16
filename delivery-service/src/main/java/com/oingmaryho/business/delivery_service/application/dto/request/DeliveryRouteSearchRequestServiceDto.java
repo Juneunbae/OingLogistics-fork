@@ -1,8 +1,12 @@
 package com.oingmaryho.business.delivery_service.application.dto.request;
 
+import org.springframework.data.domain.Pageable;
+
 import java.util.UUID;
 
-public record DeliveryRouteSearchRequestServiceDto(UUID hubId,
+public record DeliveryRouteSearchRequestServiceDto(UUID id,
+                                                   UUID hubId,
                                                    UUID companyId,
-                                                   Long managerId){
+                                                   Long managerId,
+                                                   Pageable customPageable){
 }

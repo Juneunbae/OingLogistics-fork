@@ -4,6 +4,7 @@ import com.oingmaryho.business.delivery_service.application.DeliveryApplicationM
 import com.oingmaryho.business.delivery_service.application.DeliveryService;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
+import com.oingmaryho.business.delivery_service.config.pageable.PageableConfig;
 import com.oingmaryho.business.delivery_service.presentation.dto.request.DeliveryRouteSearchRequestDto;
 import com.oingmaryho.business.delivery_service.presentation.dto.request.DeliverySearchRequestDto;
 import com.oingmaryho.business.delivery_service.presentation.dto.request.DeliveryUpdateRequestDto;
@@ -12,6 +13,7 @@ import com.oingmaryho.business.delivery_service.presentation.dto.response.*;
 import com.oingmaryho.business.delivery_service.presentation.dto.response.DeliveryRouteResponseDto;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +24,7 @@ import java.util.UUID;
 @RequestMapping("/api/v1/deliveries")
 public class DeliveryController {
 
+    private final PageableConfig pageableConfig;
     private final DeliveryService deliveryService;
 
     @PutMapping("/{id}")
@@ -66,8 +69,11 @@ public class DeliveryController {
             @RequestParam(value = "size", required = false) Integer size,
             @RequestParam(value = "sortDirection", required = false) String sortDirection,
             @RequestBody DeliverySearchRequestDto requestDto) {
-        DeliverySearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toSearchServiceDto(requestDto);
+
+        Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
+        DeliverySearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toSearchServiceDto(requestDto, customPageable);
         DeliveryResponseServiceDto responseServiceDto = deliveryService.GetDeliveriesBySearch(requestServiceDto);
+
         return ResponseEntity.ok(DeliveryApplicationMapper.INSTANCE.toSearchResponseDto(responseServiceDto));
     }
 
@@ -77,6 +83,7 @@ public class DeliveryController {
             @PathVariable UUID id) {
         DeliveryRouteDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteDetailServiceDto(id);
         DeliveryRouteDetailResponseServiceDto responseServiceDto = deliveryService.GetDeliveryRouteDetail(requestServiceDto);
+
         return ResponseEntity.ok(DeliveryApplicationMapper.INSTANCE.toRouteDetailResponseDto(responseServiceDto));
     }
 
@@ -89,8 +96,10 @@ public class DeliveryController {
             @RequestParam(value = "sortDirection", required = false) String sortDirection,
             @RequestBody DeliveryRouteSearchRequestDto requestDto) {
 
-        DeliveryRouteSearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteSearchServiceDto(id, requestDto);
+        Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
+        DeliveryRouteSearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteSearchServiceDto(id, requestDto, customPageable);
         DeliveryRouteResponseServiceDto responseServiceDto = deliveryService.GetDeliveryRoutesBySearch(requestServiceDto);
+
         return ResponseEntity.ok(DeliveryApplicationMapper.INSTANCE.toRouteSearchResponseDto(responseServiceDto));
     }
 
