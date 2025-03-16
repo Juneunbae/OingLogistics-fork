@@ -34,9 +34,8 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping()
+@RequestMapping
 public class CompanyController {
-
 	private final PageableConfig pageableConfig;
 
 	@Description("일반 - 업체 생성")
@@ -61,7 +60,7 @@ public class CompanyController {
 		return null;
 	}
 
-	@Description("일반 - 업체 상세 조회")
+	@Description("FeignClient - 업체 상세 조회")
 	@GetMapping("/api/v1/companies/{id}")
 	public ResponseEntity<CompanyDetailsSearchResponseDto> getCompanyById(@PathVariable UUID id) {
 		CompanyDetailsSearchRequestServiceDto requestServiceDto = CompanyPresentationMapper.INSTANCE.toDetailsSearchServiceDto(id);
