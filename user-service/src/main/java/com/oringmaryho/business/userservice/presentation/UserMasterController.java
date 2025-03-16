@@ -2,6 +2,7 @@ package com.oringmaryho.business.userservice.presentation;
 
 import com.oringmaryho.business.userservice.application.UserApplicationMapper;
 import com.oringmaryho.business.userservice.application.UserService;
+import com.oringmaryho.business.userservice.application.dto.request.UserMasterCreateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
@@ -9,6 +10,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRe
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserSearchResponseServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserSignInResponseServiceDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterCreateRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterSignUpRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignInRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignUpRequestDto;
@@ -41,5 +43,12 @@ public class UserMasterController {
     return ResponseEntity.ok().build();
   }
 
+  @PostMapping("")
+  public ResponseEntity<?> createUser(@RequestBody UserMasterCreateRequestDto userMasterCreateRequestDto) {
+    UserMasterCreateRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterCreateRequestServiceDto(
+        userMasterCreateRequestDto);
+    userService.createUser(requestServiceDto);
+    return ResponseEntity.ok().build();
+  }
 
 }
