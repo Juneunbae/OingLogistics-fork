@@ -31,5 +31,4 @@ public class UserService {
   public void slackConfirmUser(UserSlackConfirmRequestServiceDto requestServiceDto) {
 
   }
-
 }
