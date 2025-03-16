@@ -4,9 +4,9 @@ import java.util.List;
 
 
 public record CompanySearchResponseDto(
-	int page,
-	int size,
-	int sortDirection,
+	Integer page,
+	Integer size,
+	Integer sortDirection,
 	List<CompanyDetailsSearchResponseDto> companies
 ) {
 }
