@@ -1,9 +1,11 @@
 package com.oringmaryho.business.userservice.presentation;
 
+import com.oringmaryho.business.userservice.application.dto.request.UserMasterSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterSignUpRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignInRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignUpRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSlackConfirmRequestDto;
@@ -22,4 +24,7 @@ public interface UserPresentationMapper {
 
   UserSlackConfirmRequestServiceDto toUserSlackConfirmRequestServiceDto(
       UserSlackConfirmRequestDto requestDto);
+
+  UserMasterSignUpRequestServiceDto toUserMasterSignUpServiceDto(
+      UserMasterSignUpRequestDto requestDto);
 }

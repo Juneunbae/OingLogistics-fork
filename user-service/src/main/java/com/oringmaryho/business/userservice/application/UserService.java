@@ -1,5 +1,6 @@
 package com.oringmaryho.business.userservice.application;
 
+import com.oringmaryho.business.userservice.application.dto.request.UserMasterSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;
@@ -32,4 +33,7 @@ public class UserService {
 
   }
 
+  public void signUpUserMaster(UserMasterSignUpRequestServiceDto requestServiceDto) {
+
+  }
 }
