@@ -1,10 +1,9 @@
 package com.oingmaryho.business.companyservice.presentation;
 
-import java.awt.print.Pageable;
+import org.springframework.data.domain.Pageable;
 import java.util.UUID;
 
 import org.springframework.context.annotation.Description;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +20,7 @@ import com.oingmaryho.business.companyservice.application.dto.request.CompanyDel
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDetailsSearchRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanySearchRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyUpdateRequestServiceDto;
+import com.oingmaryho.business.companyservice.config.pageable.PageableConfig;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanyCreateRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanySearchRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanyUpdateRequestDto;
@@ -36,6 +36,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping()
 public class CompanyController {
+
+	private final PageableConfig pageableConfig;
 
 	@Description("일반 - 업체 생성")
 	@PostMapping("/api/v1/companies")

@@ -1,5 +1,5 @@
 package com.oingmaryho.business.companyservice.presentation;
-import java.awt.print.Pageable;
+import org.springframework.data.domain.Pageable;
 import java.util.UUID;
 
 import org.mapstruct.Mapper;
