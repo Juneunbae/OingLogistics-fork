@@ -1,6 +1,7 @@
 package com.oringmaryho.business.userservice.presentation;
 
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterCreateRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserMasterFindRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
@@ -36,5 +37,13 @@ public interface UserPresentationMapper {
       UserMasterCreateRequestDto requestDto);
 
   @Mapping(target = "id", source = "id")
-  UserMasterSearchRequestServiceDto toUserMasterSearchRequestServiceDto(Long id);
+  UserMasterFindRequestServiceDto toUserMasterFindRequestServiceDto(Long id);
+
+
+  @Mapping(target = "", source = "")
+  @Mapping(target = "", source = "")
+  @Mapping(target = "", source = "")
+  @Mapping(target = "", source = "")
+  UserMasterSearchRequestServiceDto toUserMasterSearchRequestServiceDto(
+      UserMasterSearchRequestDto requestDto);
 }
