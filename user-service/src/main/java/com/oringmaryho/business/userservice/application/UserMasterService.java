@@ -2,8 +2,10 @@ package com.oringmaryho.business.userservice.application;
 
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterCreateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterFindRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserMasterGrantRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterSignUpRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserMasterUpdateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;
@@ -40,6 +42,15 @@ public class UserMasterService {
 
   public List<UserMasterSearchResponseServiceDto> searchUsers(
       UserMasterSearchRequestServiceDto requestServiceDto) {
+    return null;
+  }
+
+  public Long updateUser(UserMasterUpdateRequestServiceDto requestServiceDto) {
+    //todo: userid 반환
+    return null;
+  }
+
+  public Long grantRoleUser(UserMasterGrantRoleRequestServiceDto requestServiceDto) {
     return null;
   }
 }
