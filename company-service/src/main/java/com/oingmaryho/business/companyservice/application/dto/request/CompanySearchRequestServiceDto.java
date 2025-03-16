@@ -1,6 +1,6 @@
 package com.oingmaryho.business.companyservice.application.dto.request;
 
-import java.awt.print.Pageable;
+import org.springframework.data.domain.Pageable;
 
 public record CompanySearchRequestServiceDto(
 	String type,
