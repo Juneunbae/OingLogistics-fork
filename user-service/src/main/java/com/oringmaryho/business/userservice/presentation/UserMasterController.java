@@ -3,6 +3,7 @@ package com.oringmaryho.business.userservice.presentation;
 import com.oringmaryho.business.userservice.application.UserApplicationMapper;
 import com.oringmaryho.business.userservice.application.UserService;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterCreateRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserMasterSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
@@ -51,4 +52,11 @@ public class UserMasterController {
     return ResponseEntity.ok().build();
   }
 
+  @GetMapping("/{id}")
+  public ResponseEntity<?> searchUserMaster(
+      @PathVariable Long id) {
+    UserMasterSearchRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterSearchRequestServiceDto(id);
+    userService.searchUserMaster(requestServiceDto);
+    return ResponseEntity.ok().build();
+  }
 }

@@ -1,12 +1,14 @@
 package com.oringmaryho.business.userservice.presentation;
 
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterCreateRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserMasterSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterCreateRequestDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterSearchRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterSignUpRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignInRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignUpRequestDto;
@@ -32,4 +34,7 @@ public interface UserPresentationMapper {
 
   UserMasterCreateRequestServiceDto toUserMasterCreateRequestServiceDto(
       UserMasterCreateRequestDto requestDto);
+
+  @Mapping(target = "id", source = "id")
+  UserMasterSearchRequestServiceDto toUserMasterSearchRequestServiceDto(Long id);
 }
