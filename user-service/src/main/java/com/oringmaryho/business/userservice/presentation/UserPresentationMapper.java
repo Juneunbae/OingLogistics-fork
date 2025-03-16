@@ -14,6 +14,7 @@ import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterS
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignInRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignUpRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSlackConfirmRequestDto;
+import org.springframework.data.domain.Pageable;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -40,10 +41,6 @@ public interface UserPresentationMapper {
   UserMasterFindRequestServiceDto toUserMasterFindRequestServiceDto(Long id);
 
 
-  @Mapping(target = "", source = "")
-  @Mapping(target = "", source = "")
-  @Mapping(target = "", source = "")
-  @Mapping(target = "", source = "")
   UserMasterSearchRequestServiceDto toUserMasterSearchRequestServiceDto(
-      UserMasterSearchRequestDto requestDto);
+      UserMasterSearchRequestDto requestDto, Pageable pageable);
 }

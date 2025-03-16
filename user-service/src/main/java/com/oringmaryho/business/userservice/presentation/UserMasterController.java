@@ -7,6 +7,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserMasterCr
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterFindRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserMasterSearchResponseServiceDto;
+import com.oringmaryho.business.userservice.config.pageable.PageableConfig;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterCreateRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterSearchRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterSignUpRequestDto;
@@ -21,7 +22,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,6 +34,7 @@ public class UserMasterController {
   private final UserMasterService userMasterService;
   private final UserApplicationMapper userApplicationMapper;
   private final UserPresentationMapper userPresentationMapper;
+  private final PageableConfig pageableConfig;
 
   @PostMapping("/sign-up")
   public ResponseEntity<?> signUpMasterUser(@RequestBody UserMasterSignUpRequestDto userMasterSignUpRequestDto) {
@@ -59,12 +63,14 @@ public class UserMasterController {
 
   @GetMapping("/users")
   public ResponseEntity<List<UserMasterSearchResponseDto>> searchUsers(
-      @ModelAttribute UserMasterSearchRequestDto userMasterSearchRequestDto //todo: null값 처리 어케하지
+      @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
+      @RequestParam(value = "size", required = false) Integer size,
+      @RequestParam(value = "sortDirection", required = false) String sortDirection,
+      @RequestBody UserMasterSearchRequestDto userMasterSearchRequestDto
   ) {
-    UserMasterSearchRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterSearchRequestServiceDto(userMasterSearchRequestDto);
-    //todo: List<responsedto>로 변환
+    Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
+    UserMasterSearchRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterSearchRequestServiceDto(userMasterSearchRequestDto, customPageable);
     List<UserMasterSearchResponseServiceDto> responseDtos = userMasterService.searchUsers(requestServiceDto);
-    //todo: pageable 적용
     return null;
   }
 
