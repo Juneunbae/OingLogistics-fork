@@ -17,7 +17,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 @Getter
+@SuperBuilder
 @MappedSuperclass
+@NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
     @CreatedDate
@@ -29,22 +31,35 @@ public abstract class BaseEntity {
     private Long createdBy;
 
     @LastModifiedDate
-    @Column
     private LocalDateTime updatedAt;
 
     @LastModifiedBy
     private Long updatedBy;
 
-    @Column
     private LocalDateTime deletedAt;
 
     private Long deletedBy;
 
-    private Boolean isDeleted = Boolean.FALSE;
+    @Column(nullable = false)
+    private Boolean isDeleted = false;
 
+    /**
+     * 엔티티 soft delete
+     * @param deleteUserId 삭제자 id
+     */
     public void softDelete(Long deleteUserId) {
         this.deletedAt = LocalDateTime.now();
         this.deletedBy = deleteUserId;
-        this.isDeleted = Boolean.TRUE;
+        this.isDeleted = true;
     }
+
+    /**
+     * 엔티티 soft delete 취소
+     */
+    public void restore() {
+        this.deletedAt = null;
+        this.deletedBy = null;
+        this.isDeleted = false;
+    }
+
 }

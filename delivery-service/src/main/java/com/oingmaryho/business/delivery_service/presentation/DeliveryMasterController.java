@@ -1,17 +1,12 @@
 package com.oingmaryho.business.delivery_service.presentation;
 
 import com.oingmaryho.business.delivery_service.application.DeliveryApplicationMapper;
-import com.oingmaryho.business.delivery_service.application.DeliveryService;
+import com.oingmaryho.business.delivery_service.application.DeliveryMasterService;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
 import com.oingmaryho.business.delivery_service.config.pageable.PageableConfig;
-import com.oingmaryho.business.delivery_service.presentation.dto.request.DeliveryRouteSearchRequestDto;
-import com.oingmaryho.business.delivery_service.presentation.dto.request.DeliverySearchRequestDto;
-import com.oingmaryho.business.delivery_service.presentation.dto.request.DeliveryUpdateRequestDto;
-import com.oingmaryho.business.delivery_service.presentation.dto.request.DeliveryUpdateStatusRequestDto;
+import com.oingmaryho.business.delivery_service.presentation.dto.request.*;
 import com.oingmaryho.business.delivery_service.presentation.dto.response.*;
-import com.oingmaryho.business.delivery_service.presentation.dto.response.DeliveryRouteResponseDto;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -21,18 +16,35 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/deliveries")
-public class DeliveryController {
+@RequestMapping("/admin/v1/deliveries")
+public class DeliveryMasterController {
 
     private final PageableConfig pageableConfig;
-    private final DeliveryService deliveryService;
+    private final DeliveryMasterService deliveryMasterService;
+
+    @PostMapping
+    public ResponseEntity<DeliveryCreationResponseDto> createDelivery(
+            @RequestBody DeliveryCreationRequestDto requestDto) {
+        DeliveryCreationRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toCreationServiceDto(requestDto);
+        DeliveryCreationResponseServiceDto responseServiceDto = deliveryMasterService.createDelivery(requestServiceDto);
+        return ResponseEntity.ok(DeliveryApplicationMapper.INSTANCE.toCreationResponseDto(responseServiceDto));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<DeliveryUpdateResponseDto> createDelivery(
+            @PathVariable UUID id,
+            @RequestBody DeliveryUpdateRequestDto requestDto) {
+        DeliveryUpdateRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateServiceDto(id, requestDto);
+        DeliveryUpdateResponseServiceDto responseServiceDto = deliveryMasterService.updateDelivery(requestServiceDto);
+        return ResponseEntity.ok(DeliveryApplicationMapper.INSTANCE.toUpdateResponseDto(responseServiceDto));
+    }
 
     @PutMapping("/{id}")
     public ResponseEntity<DeliveryUpdateResponseDto> updateDelivery(
             @PathVariable UUID id,
             @RequestBody DeliveryUpdateRequestDto requestDto) {
         DeliveryUpdateRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateServiceDto(id, requestDto);
-        DeliveryUpdateResponseServiceDto responseServiceDto = deliveryService.updateDelivery(requestServiceDto);
+        DeliveryUpdateResponseServiceDto responseServiceDto = deliveryMasterService.updateDelivery(requestServiceDto);
         return ResponseEntity.ok(DeliveryApplicationMapper.INSTANCE.toUpdateResponseDto(responseServiceDto));
     }
 
@@ -41,7 +53,7 @@ public class DeliveryController {
             @PathVariable UUID id,
             @RequestBody DeliveryUpdateStatusRequestDto requestDto) {
         DeliveryUpdateStatusRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateStatusServiceDto(id, requestDto);
-        DeliveryUpdateStatusResponseServiceDto responseServiceDto = deliveryService.updateStatusDelivery(requestServiceDto);
+        DeliveryUpdateStatusResponseServiceDto responseServiceDto = deliveryMasterService.updateStatusDelivery(requestServiceDto);
         return ResponseEntity.ok(DeliveryApplicationMapper.INSTANCE.toUpdateStatusResponseDto(responseServiceDto));
     }
 
@@ -49,7 +61,7 @@ public class DeliveryController {
     public ResponseEntity<Void> deleteDelivery(
             @PathVariable UUID id) {
         DeliveryDeletionRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toDeletionServiceDto(id);
-        deliveryService.deleteDelivery(requestServiceDto);
+        deliveryMasterService.deleteDelivery(requestServiceDto);
         return ResponseEntity.noContent().build();
     }
 
@@ -58,7 +70,7 @@ public class DeliveryController {
     public ResponseEntity<DeliveryDetailResponseDto> getDeliveryDetail(
             @PathVariable UUID id) {
         DeliveryDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toDetailServiceDto(id);
-        DeliveryDetailResponseServiceDto responseServiceDto = deliveryService.GetDeliveryDetail(requestServiceDto);
+        DeliveryDetailResponseServiceDto responseServiceDto = deliveryMasterService.GetDeliveryDetail(requestServiceDto);
         return ResponseEntity.ok(DeliveryApplicationMapper.INSTANCE.toDetailResponseDto(responseServiceDto));
     }
 
@@ -72,7 +84,7 @@ public class DeliveryController {
 
         Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
         DeliverySearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toSearchServiceDto(requestDto, customPageable);
-        DeliveryResponseServiceDto responseServiceDto = deliveryService.GetDeliveriesBySearch(requestServiceDto);
+        DeliveryResponseServiceDto responseServiceDto = deliveryMasterService.GetDeliveriesBySearch(requestServiceDto);
 
         return ResponseEntity.ok(DeliveryApplicationMapper.INSTANCE.toSearchResponseDto(responseServiceDto));
     }
@@ -82,8 +94,7 @@ public class DeliveryController {
     public ResponseEntity<DeliveryRouteDetailResponseDto> getDeliveryRouteDetail(
             @PathVariable UUID id) {
         DeliveryRouteDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteDetailServiceDto(id);
-        DeliveryRouteDetailResponseServiceDto responseServiceDto = deliveryService.GetDeliveryRouteDetail(requestServiceDto);
-
+        DeliveryRouteDetailResponseServiceDto responseServiceDto = deliveryMasterService.GetDeliveryRouteDetail(requestServiceDto);
         return ResponseEntity.ok(DeliveryApplicationMapper.INSTANCE.toRouteDetailResponseDto(responseServiceDto));
     }
 
@@ -98,9 +109,8 @@ public class DeliveryController {
 
         Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
         DeliveryRouteSearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteSearchServiceDto(id, requestDto, customPageable);
-        DeliveryRouteResponseServiceDto responseServiceDto = deliveryService.GetDeliveryRoutesBySearch(requestServiceDto);
+        DeliveryRouteResponseServiceDto responseServiceDto = deliveryMasterService.GetDeliveryRoutesBySearch(requestServiceDto);
 
         return ResponseEntity.ok(DeliveryApplicationMapper.INSTANCE.toRouteSearchResponseDto(responseServiceDto));
     }
-
 }
