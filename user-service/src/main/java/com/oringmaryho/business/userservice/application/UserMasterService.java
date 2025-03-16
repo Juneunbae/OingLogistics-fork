@@ -7,14 +7,9 @@ import com.oringmaryho.business.userservice.application.dto.request.UserMasterSe
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterUpdateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterUpdateRoleRequestServiceDto;
-import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
-import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
-import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserMasterSearchResponseServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserMasterUpdateRoleResponseServiceDto;
-import com.oringmaryho.business.userservice.application.dto.response.UserSearchResponseServiceDto;
-import com.oringmaryho.business.userservice.application.dto.response.UserSignInResponseServiceDto;
 import com.oringmaryho.business.userservice.infrastructure.UserRepository;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterDeleteRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterDeleteRoleRequestServiceDto;
@@ -58,7 +53,8 @@ public class UserMasterService {
     return null;
   }
 
-  public UserMasterUpdateRoleResponseServiceDto updateRoleUser(UserMasterUpdateRoleRequestServiceDto requestServiceDto) {
+  public UserMasterUpdateRoleResponseServiceDto updateRoleUser(
+      UserMasterUpdateRoleRequestServiceDto requestServiceDto) {
     //todo: 유저 변경 전 role 받아와서 묶어서 반환하기
 
     return null;

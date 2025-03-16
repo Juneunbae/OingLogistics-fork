@@ -1,8 +1,5 @@
 package com.oringmaryho.business.userservice.application;
 
-import com.oringmaryho.business.userservice.application.dto.request.UserMasterCreateRequestServiceDto;
-import com.oringmaryho.business.userservice.application.dto.request.UserMasterFindRequestServiceDto;
-import com.oringmaryho.business.userservice.application.dto.request.UserMasterSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;

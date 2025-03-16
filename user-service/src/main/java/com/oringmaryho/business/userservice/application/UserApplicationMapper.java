@@ -3,7 +3,6 @@ package com.oringmaryho.business.userservice.application;
 import com.oringmaryho.business.userservice.application.dto.response.UserMasterUpdateRoleResponseServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserSearchResponseServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserSignInResponseServiceDto;
-import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterUpdateRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserMasterGrantRoleResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserMasterUpdateResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserMasterUpdateRoleResponseDto;

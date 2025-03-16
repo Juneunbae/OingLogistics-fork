@@ -91,9 +91,11 @@ public class UserMasterController {
   @PutMapping("/{id}")
   public ResponseEntity<?> updateUserMaster(@PathVariable Long id,
       @RequestBody UserMasterUpdateRequestDto userMasterUpdateRequestDto) {
-    UserMasterUpdateRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterUpdateRequestServiceDto(id, userMasterUpdateRequestDto);
+    UserMasterUpdateRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterUpdateRequestServiceDto(
+        id, userMasterUpdateRequestDto);
     Long userId = userMasterService.updateUser(requestServiceDto);
-    UserMasterUpdateResponseDto responseDto = userApplicationMapper.toUserMasterUpdateResponseDto(userId);
+    UserMasterUpdateResponseDto responseDto = userApplicationMapper.toUserMasterUpdateResponseDto(
+        userId);
     //todo: responsedto 반환하기
     return ResponseEntity.ok().build();
   }
@@ -101,9 +103,11 @@ public class UserMasterController {
   @PutMapping("/{id}/grant")
   public ResponseEntity<?> grantRoleUserMaster(@PathVariable Long id,
       @RequestBody UserMasterGrantRoleRequestDto userMasterGrantRoleRequestDto) {
-    UserMasterGrantRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterGrantRoleRequestServiceDto(id, userMasterGrantRoleRequestDto);
+    UserMasterGrantRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterGrantRoleRequestServiceDto(
+        id, userMasterGrantRoleRequestDto);
     Long userId = userMasterService.grantRoleUser(requestServiceDto);
-    UserMasterGrantRoleResponseDto responseDto = userApplicationMapper.toUserMasterGrantRoleResponseDto(userId);
+    UserMasterGrantRoleResponseDto responseDto = userApplicationMapper.toUserMasterGrantRoleResponseDto(
+        userId);
     //todo: responsedto 반환하기
     return ResponseEntity.ok().build();
   }
@@ -111,22 +115,26 @@ public class UserMasterController {
   @PutMapping("/roles/{id}")
   public ResponseEntity<?> updateRoleUserMaster(@PathVariable Long id,
       @RequestBody UserMasterUpdateRoleRequestDto userMasterUpdateRoleRequestDto) {
-    UserMasterUpdateRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterUpdateRoleRequestServiceDto(id, userMasterUpdateRoleRequestDto);
-    UserMasterUpdateRoleResponseDto responseDto = userApplicationMapper.toUserMasterUpdateRoleResponseDto(userMasterService.updateRoleUser(requestServiceDto));
+    UserMasterUpdateRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterUpdateRoleRequestServiceDto(
+        id, userMasterUpdateRoleRequestDto);
+    UserMasterUpdateRoleResponseDto responseDto = userApplicationMapper.toUserMasterUpdateRoleResponseDto(
+        userMasterService.updateRoleUser(requestServiceDto));
     //todo: responsedto 반환하기
     return ResponseEntity.ok().build();
   }
 
   @DeleteMapping("/roles/{id}")
   public ResponseEntity<?> deleteRoleUserMaster(@PathVariable Long id) {
-    UserMasterDeleteRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterDeleteRoleRequestServiceDto(id);
+    UserMasterDeleteRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterDeleteRoleRequestServiceDto(
+        id);
     userMasterService.deleteRoleUser(requestServiceDto);
     return ResponseEntity.ok().build();
   }
 
   @DeleteMapping("/{id}")
   public ResponseEntity<?> deleteUserMaster(@PathVariable Long id) {
-    UserMasterDeleteRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterDeleteRequestServiceDto(id);
+    UserMasterDeleteRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterDeleteRequestServiceDto(
+        id);
     userMasterService.deleteUser(requestServiceDto);
     return ResponseEntity.ok().build();
   }
