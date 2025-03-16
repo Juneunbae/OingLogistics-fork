@@ -1,4 +1,6 @@
 package com.oingmaryho.business.delivery_service.application.dto.request;
 
-public class DeliveryRouteDetailRequestServiceDto {
+import java.util.UUID;
+
+public record DeliveryRouteDetailRequestServiceDto(UUID id) {
 }
