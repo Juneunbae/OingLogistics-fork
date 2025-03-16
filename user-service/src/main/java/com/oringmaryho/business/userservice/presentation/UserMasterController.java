@@ -8,6 +8,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserMasterGr
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterUpdateRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserMasterUpdateRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserMasterSearchResponseServiceDto;
 import com.oringmaryho.business.userservice.config.pageable.PageableConfig;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterCreateRequestDto;
@@ -15,9 +16,11 @@ import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterG
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterSearchRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterSignUpRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterUpdateRequestDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterUpdateRoleRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserMasterGrantRoleResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserMasterSearchResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserMasterUpdateResponseDto;
+import com.oringmaryho.business.userservice.presentation.dto.response.UserMasterUpdateRoleResponseDto;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -98,6 +101,15 @@ public class UserMasterController {
     UserMasterGrantRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterGrantRoleRequestServiceDto(id, userMasterGrantRoleRequestDto);
     Long userId = userMasterService.grantRoleUser(requestServiceDto);
     UserMasterGrantRoleResponseDto responseDto = userApplicationMapper.toUserMasterGrantRoleResponseDto(userId);
+    //todo: responsedto 반환하기
+    return ResponseEntity.ok().build();
+  }
+
+  @PutMapping("/roles/{id}")
+  public ResponseEntity<?> updateRoleUserMaster(@PathVariable Long id,
+      @RequestBody UserMasterUpdateRoleRequestDto userMasterUpdateRoleRequestDto) {
+    UserMasterUpdateRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterUpdateRoleRequestServiceDto(id, userMasterUpdateRoleRequestDto);
+    UserMasterUpdateRoleResponseDto responseDto = userApplicationMapper.toUserMasterUpdateRoleResponseDto(userMasterService.updateRoleUser(requestServiceDto));
     //todo: responsedto 반환하기
     return ResponseEntity.ok().build();
   }

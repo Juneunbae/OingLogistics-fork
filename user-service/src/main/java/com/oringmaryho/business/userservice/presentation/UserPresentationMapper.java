@@ -6,6 +6,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserMasterGr
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterUpdateRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserMasterUpdateRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;
@@ -15,6 +16,7 @@ import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterG
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterSearchRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterSignUpRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterUpdateRequestDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterUpdateRoleRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignInRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignUpRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSlackConfirmRequestDto;
@@ -57,4 +59,8 @@ public interface UserPresentationMapper {
   @Mapping(target = "id", source = "id")
   @Mapping(target = "role", source = "role")
   UserMasterGrantRoleRequestServiceDto toUserMasterGrantRoleRequestServiceDto(Long id, UserMasterGrantRoleRequestDto requstDto);
+
+  @Mapping(target = "id", source = "id")
+  @Mapping(target = "newRole", source = "role")
+  UserMasterUpdateRoleRequestServiceDto toUserMasterUpdateRoleRequestServiceDto(Long id, UserMasterUpdateRoleRequestDto requstDto);
 }
