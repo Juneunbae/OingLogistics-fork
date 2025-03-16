@@ -16,6 +16,7 @@ import com.oringmaryho.business.userservice.application.dto.response.UserMasterU
 import com.oringmaryho.business.userservice.application.dto.response.UserSearchResponseServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserSignInResponseServiceDto;
 import com.oringmaryho.business.userservice.infrastructure.UserRepository;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterDeleteRoleRequestServiceDto;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -60,5 +61,9 @@ public class UserMasterService {
     //todo: 유저 변경 전 role 받아와서 묶어서 반환하기
 
     return null;
+  }
+
+  public void deleteRoleUser(UserMasterDeleteRoleRequestServiceDto requestServiceDto) {
+
   }
 }

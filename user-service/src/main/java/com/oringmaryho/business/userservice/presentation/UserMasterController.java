@@ -12,6 +12,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserMasterUp
 import com.oringmaryho.business.userservice.application.dto.response.UserMasterSearchResponseServiceDto;
 import com.oringmaryho.business.userservice.config.pageable.PageableConfig;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterCreateRequestDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterDeleteRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterGrantRoleRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterSearchRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterSignUpRequestDto;
@@ -25,6 +26,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -114,4 +116,10 @@ public class UserMasterController {
     return ResponseEntity.ok().build();
   }
 
+  @DeleteMapping("/roles/{id}")
+  public ResponseEntity<?> deleteRoleUserMaster(@PathVariable Long id) {
+    UserMasterDeleteRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterDeleteRoleRequestServiceDto(id);
+    userMasterService.deleteRoleUser(requestServiceDto);
+    return ResponseEntity.ok().build();
+  }
 }
