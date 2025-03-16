@@ -2,7 +2,7 @@ package com.oingmaryho.business.companyservice.application.dto.response;
 
 import java.util.UUID;
 
-public record CompanyDetailsSearchResponseDto(
+public record CompanyDetailsSearchResponseServiceDto(
 	UUID id,
 	String name,
 	String type,

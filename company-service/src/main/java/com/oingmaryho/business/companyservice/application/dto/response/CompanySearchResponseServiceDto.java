@@ -3,10 +3,10 @@ package com.oingmaryho.business.companyservice.application.dto.response;
 import java.util.List;
 
 
-public record CompanySearchResponseDto(
+public record CompanySearchResponseServiceDto(
 	Integer page,
 	Integer size,
 	Integer sortDirection,
-	List<CompanyDetailsSearchResponseDto> companies
+	List<CompanyDetailsSearchResponseServiceDto> companies
 ) {
 }
