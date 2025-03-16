@@ -12,6 +12,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserMasterUp
 import com.oringmaryho.business.userservice.application.dto.response.UserMasterSearchResponseServiceDto;
 import com.oringmaryho.business.userservice.config.pageable.PageableConfig;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterCreateRequestDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterDeleteRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterDeleteRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterGrantRoleRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterSearchRequestDto;
@@ -120,6 +121,13 @@ public class UserMasterController {
   public ResponseEntity<?> deleteRoleUserMaster(@PathVariable Long id) {
     UserMasterDeleteRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterDeleteRoleRequestServiceDto(id);
     userMasterService.deleteRoleUser(requestServiceDto);
+    return ResponseEntity.ok().build();
+  }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> deleteUserMaster(@PathVariable Long id) {
+    UserMasterDeleteRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterDeleteRequestServiceDto(id);
+    userMasterService.deleteUser(requestServiceDto);
     return ResponseEntity.ok().build();
   }
 }

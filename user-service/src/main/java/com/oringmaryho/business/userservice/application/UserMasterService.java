@@ -16,6 +16,7 @@ import com.oringmaryho.business.userservice.application.dto.response.UserMasterU
 import com.oringmaryho.business.userservice.application.dto.response.UserSearchResponseServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserSignInResponseServiceDto;
 import com.oringmaryho.business.userservice.infrastructure.UserRepository;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterDeleteRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterDeleteRoleRequestServiceDto;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -64,6 +65,10 @@ public class UserMasterService {
   }
 
   public void deleteRoleUser(UserMasterDeleteRoleRequestServiceDto requestServiceDto) {
+
+  }
+
+  public void deleteUser(UserMasterDeleteRequestServiceDto requestServiceDto) {
 
   }
 }

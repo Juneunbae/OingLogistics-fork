@@ -12,6 +12,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserSignInRe
 import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterCreateRequestDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterDeleteRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterDeleteRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterGrantRoleRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterSearchRequestDto;
@@ -67,4 +68,7 @@ public interface UserPresentationMapper {
 
   @Mapping(target = "id", source = "id")
   UserMasterDeleteRoleRequestServiceDto toUserMasterDeleteRoleRequestServiceDto(Long id);
+
+  @Mapping(target = "id", source = "id")
+  UserMasterDeleteRequestServiceDto toUserMasterDeleteRequestServiceDto(Long id);
 }
