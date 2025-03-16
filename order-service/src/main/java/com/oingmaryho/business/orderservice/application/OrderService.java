@@ -3,16 +3,21 @@ package com.oingmaryho.business.orderservice.application;
 import com.oingmaryho.business.orderservice.application.dto.OrderServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.OrdersServiceDto;
 import com.oingmaryho.business.orderservice.domain.Order;
+import com.oingmaryho.business.orderservice.exception.ErrorCode;
+import com.oingmaryho.business.orderservice.exception.OrderException;
 import com.oingmaryho.business.orderservice.infrastructure.OrderRepository;
+import com.oingmaryho.business.orderservice.presentation.OrderPresentationMapper;
 import com.oingmaryho.business.orderservice.presentation.dto.response.OrderDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,7 +28,9 @@ public class OrderService {
     private final CacheManager cacheManager;
     private final OrderRepository orderRepository;
     private final OrderApplicationMapper orderApplicationMapper;
+    private final OrderPresentationMapper orderPresentationMapper;
 
+    @Transactional
     public Page<OrderDto> getOrders(OrdersServiceDto ordersServiceDto) {
         // TODO: 마스터 확인
 
@@ -37,12 +44,13 @@ public class OrderService {
 
         Pageable customPageable = ordersServiceDto.customPageable();
         Page<Order> orders = orderRepository.findAll(customPageable);
+        // TODO: QueryDSL 반영하여 LIKE 문 수정하기
 
         List<OrderDto> ordersDto = orders.stream().map(
-            order -> orderApplicationMapper.toOrderDto(
+            order -> orderPresentationMapper.toOrderDto(
                 order,
                 order.getOrderDetails().stream().map(
-                    orderApplicationMapper::toOrderDetailDto
+                    orderPresentationMapper::toOrderDetailDto
                 ).toList()
             )
         ).toList();
@@ -54,10 +62,25 @@ public class OrderService {
         return results;
     }
 
+    @Transactional
+    @Cacheable(cacheNames = "order", key = "#orderServiceDto.orderId()")
+    public OrderDto getOrder(OrderServiceDto orderServiceDto) {
+        // TODO: 마스터 확인
+
+        Order order = getById(orderServiceDto);
+
+        return orderPresentationMapper.toOrderDto(
+            order,
+            order.getOrderDetails().stream().map(
+                orderPresentationMapper::toOrderDetailDto
+            ).toList()
+        );
+    }
+
+    @Transactional
     public Order getById(OrderServiceDto orderServiceDto) {
         return orderRepository.findById(orderServiceDto.orderId())
-            // TODO: 주문 에러 메시지 추가
-            .orElseThrow();
+            .orElseThrow(() -> new OrderException(ErrorCode.NOT_FOUND));
     }
 
     private String makeOrdersCacheKey(OrdersServiceDto ordersServiceDto) {

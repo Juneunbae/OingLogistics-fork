@@ -1,10 +1,13 @@
 package com.oingmaryho.business.orderservice.application;
 
+import com.oingmaryho.business.orderservice.application.dto.OrderServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.OrdersServiceDto;
 import com.oingmaryho.business.orderservice.config.pageable.PageableConfig;
 import com.oingmaryho.business.orderservice.domain.Order;
+import com.oingmaryho.business.orderservice.domain.OrderDetail;
 import com.oingmaryho.business.orderservice.domain.Status;
 import com.oingmaryho.business.orderservice.infrastructure.OrderRepository;
+import com.oingmaryho.business.orderservice.presentation.OrderPresentationMapper;
 import com.oingmaryho.business.orderservice.presentation.dto.response.OrderDetailDto;
 import com.oingmaryho.business.orderservice.presentation.dto.response.OrderDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,8 +25,10 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
@@ -44,10 +49,16 @@ class OrderServiceTest {
     private OrderRepository orderRepository;
 
     @Mock
+    private OrderServiceDto orderServiceDto;
+
+    @Mock
     private OrdersServiceDto ordersServiceDto;
 
     @Mock
     private OrderApplicationMapper orderApplicationMapper;
+
+    @Mock
+    private OrderPresentationMapper orderPresentationMapper;
 
     @InjectMocks
     private OrderService orderService;
@@ -55,7 +66,6 @@ class OrderServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        when(cacheManager.getCache("orders")).thenReturn(cache); // CacheManager 설정 추가
     }
 
     @Test
@@ -63,6 +73,8 @@ class OrderServiceTest {
         //캐시 미스 상황을 테스트 하는것이 맞음.
     void testGetOrdersCacheMiss() {
         // given
+        when(cacheManager.getCache("orders")).thenReturn(cache); // CacheManager 설정 추가
+
         when(ordersServiceDto.productName()).thenReturn("");
         when(ordersServiceDto.recipientName()).thenReturn("");
         when(ordersServiceDto.requesterName()).thenReturn("");
@@ -73,7 +85,6 @@ class OrderServiceTest {
         when(cache.get(cacheKey, Page.class)).thenReturn(null); // 캐시 미스 설정
         when(ordersServiceDto.customPageable()).thenReturn(pageable);
 
-        // orderRepository.findAll()의 반환 값 설정
         List<Order> orderList = Collections.emptyList(); // 빈 리스트 또는 가상의 데이터 리스트
         Page<Order> orderPage = new PageImpl<>(orderList);
         when(orderRepository.findAll(any(Pageable.class))).thenReturn(orderPage);
@@ -114,6 +125,54 @@ class OrderServiceTest {
         verify(orderRepository, times(0)).findAll(any(Pageable.class)); // DB 조회는 0번 확인되어야 함
     }
 
+    @Test
+    @DisplayName("마스터 - 상세 조회 (캐시 미스)")
+    void testGetOrderCacheMiss() {
+        // given
+        UUID orderId = UUID.fromString("0ab88134-13ce-4f24-963e-4f8ad716a69e");
+        OrderServiceDto orderServiceDto = createOrderServiceDto(orderId);
+        Order order = createOrder();
+        OrderDto expectedOrderDto = createOrderDto();
+
+        when(cacheManager.getCache("order")).thenReturn(cache); // CacheManager 설정 추가
+
+        when(cache.get(orderId, OrderDto.class)).thenReturn(null);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderPresentationMapper.toOrderDto(any(Order.class), anyList())).thenReturn(expectedOrderDto);
+
+        // when
+        OrderDto result = orderService.getOrder(orderServiceDto);
+
+        // then
+        assertNotNull(result);
+        assertEquals(expectedOrderDto, result);
+        verify(orderRepository, times(1)).findById(orderId); // DB 조회는 1번 확인되어야 함
+        verify(cache, times(0)).put(orderId, expectedOrderDto); // 캐시 저장 확인
+    }
+
+    @Test
+    @DisplayName("마스터 - 상세 조회 (캐시 히트)")
+    void testGetOrderCacheHit() {
+        // given
+        when(cacheManager.getCache("order")).thenReturn(cache);
+
+        UUID orderId = UUID.fromString("0ab88134-13ce-4f24-963e-4f8ad716a69e");
+        OrderServiceDto orderServiceDto = createOrderServiceDto(orderId);
+        OrderDto cachedOrderDto = createOrderDto();
+
+        when(cache.get(orderId, OrderDto.class)).thenReturn(cachedOrderDto);
+        when(orderPresentationMapper.toOrderDto(any(Order.class), anyList())).thenReturn(cachedOrderDto);
+
+        // when
+        OrderDto result = orderService.getOrder(orderServiceDto);
+
+        // then
+        assertNotNull(result);
+        assertEquals(cachedOrderDto, result);
+        verify(cache, times(1)).get(orderId, OrderDto.class);
+        verify(orderRepository, times(0)).findById(orderId);
+    }
+
     OrderDto createOrderDto() {
         OrderDetailDto orderDetailDto = new OrderDetailDto(
             UUID.randomUUID(),
@@ -132,10 +191,10 @@ class OrderServiceTest {
         return new OrderDto(
             UUID.randomUUID(),
             UUID.randomUUID(),
-            "테스트 수령인",
+            "테스트1",
             Status.COMPLETE,
             1000,
-            "문 앞에 놔주세요.",
+            "요청 테스트 1",
             false,
             null,
             null,
@@ -144,6 +203,12 @@ class OrderServiceTest {
             null,
             null,
             orderDetails
+        );
+    }
+
+    private OrderServiceDto createOrderServiceDto(UUID orderId) {
+        return new OrderServiceDto(
+            orderId
         );
     }
 
@@ -166,5 +231,29 @@ class OrderServiceTest {
             requesterName.hashCode() +
             ordersServiceDto.isDeleted().hashCode() +
             customPageableHashCode;
+    }
+
+    private Order createOrder() {
+        OrderDetail orderDetail = OrderDetail.builder()
+            .id(UUID.randomUUID())
+            .requesterId(UUID.randomUUID())
+            .requesterName("테스트 요청자 이름")
+            .shippingId(UUID.randomUUID())
+            .productId(UUID.randomUUID())
+            .productName("테스트 상품1 이름")
+            .quantity(2)
+            .price(1000)
+            .build();
+
+        return Order.builder()
+            .id(UUID.randomUUID())
+            .recipientId(UUID.randomUUID())
+            .recipientName("테스트 수령인")
+            .status(Status.COMPLETE)
+            .totalPrice(1000)
+            .requests("문 앞에 놔주세요.")
+            .isDeleted(false)
+            .orderDetails(List.of(orderDetail))
+            .build();
     }
 }
