@@ -5,6 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.TemporalType;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -41,6 +42,7 @@ public abstract class BaseEntity {
     private Long deletedBy;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean isDeleted = false;
 
     /**
