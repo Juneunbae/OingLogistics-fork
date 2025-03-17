@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record OrderDto(
+public record OrderResponseDto(
     UUID id,
     UUID recipientId,
     String recipientName,
@@ -20,6 +20,6 @@ public record OrderDto(
     LocalDateTime createdAt,
     Long updatedBy,
     LocalDateTime updatedAt,
-    List<OrderDetailDto> orderDetails
+    List<OrderDetailResponseDto> orderDetails
 ) {
 }

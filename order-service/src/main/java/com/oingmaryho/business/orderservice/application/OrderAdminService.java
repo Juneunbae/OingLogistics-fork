@@ -7,7 +7,7 @@ import com.oingmaryho.business.orderservice.exception.ErrorCode;
 import com.oingmaryho.business.orderservice.exception.OrderException;
 import com.oingmaryho.business.orderservice.infrastructure.OrderRepository;
 import com.oingmaryho.business.orderservice.presentation.OrderPresentationMapper;
-import com.oingmaryho.business.orderservice.presentation.dto.response.OrderDto;
+import com.oingmaryho.business.orderservice.presentation.dto.response.OrderResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
@@ -31,12 +31,12 @@ public class OrderAdminService {
     private final OrderApplicationMapper orderApplicationMapper;
 
     @Transactional
-    public Page<OrderDto> getOrders(OrdersServiceDto ordersServiceDto) {
+    public Page<OrderResponseDto> getOrders(OrdersServiceDto ordersServiceDto) {
         // TODO: 마스터 확인
 
         String cacheKey = makeOrdersCacheKey(ordersServiceDto);
 
-        Page<OrderDto> cachedOrders = getOrdersCache(cacheKey);
+        Page<OrderResponseDto> cachedOrders = getOrdersCache(cacheKey);
         if (cachedOrders != null) {
             log.info("캐시된 주문 전체 조회 반환 성공");
             return cachedOrders;
@@ -46,7 +46,7 @@ public class OrderAdminService {
         Page<Order> orders = orderRepository.findAll(customPageable);
         // TODO: QueryDSL 반영하여 LIKE 문 수정하기
 
-        List<OrderDto> ordersDto = orders.stream().map(
+        List<OrderResponseDto> ordersDto = orders.stream().map(
             order -> orderApplicationMapper.toOrderDto(
                 order,
                 order.getOrderDetails().stream().map(
@@ -55,7 +55,7 @@ public class OrderAdminService {
             )
         ).toList();
 
-        Page<OrderDto> results = new PageImpl<>(ordersDto, customPageable, orders.getTotalElements());
+        Page<OrderResponseDto> results = new PageImpl<>(ordersDto, customPageable, orders.getTotalElements());
 
         putOrdersCache(cacheKey, results);
 
@@ -63,7 +63,7 @@ public class OrderAdminService {
     }
 
     @Transactional
-    public OrderDto getOrder(OrderServiceDto orderServiceDto) {
+    public OrderResponseDto getOrder(OrderServiceDto orderServiceDto) {
         // TODO: 마스터 확인
 
         UUID orderId = orderServiceDto.orderId();
@@ -158,12 +158,12 @@ public class OrderAdminService {
             customPageableHashCode;
     }
 
-    private Page<OrderDto> getOrdersCache(String cacheKey) {
+    private Page<OrderResponseDto> getOrdersCache(String cacheKey) {
         Cache cache = cacheManager.getCache("orders");
         return cache.get(cacheKey, Page.class);
     }
 
-    private void putOrdersCache(String cacheKey, Page<OrderDto> results) {
+    private void putOrdersCache(String cacheKey, Page<OrderResponseDto> results) {
         Cache cache = cacheManager.getCache("orders");
         cache.put(cacheKey, results);
         log.info("캐시 저장 성공: {}", cacheKey);

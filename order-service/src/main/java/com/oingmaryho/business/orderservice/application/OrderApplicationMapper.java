@@ -6,8 +6,8 @@ import com.oingmaryho.business.orderservice.domain.OrderDetail;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderDetailUpdateRequestDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderSearchRequestDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderUpdateRequestDto;
-import com.oingmaryho.business.orderservice.presentation.dto.response.OrderDetailDto;
-import com.oingmaryho.business.orderservice.presentation.dto.response.OrderDto;
+import com.oingmaryho.business.orderservice.presentation.dto.response.OrderDetailResponseDto;
+import com.oingmaryho.business.orderservice.presentation.dto.response.OrderResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.data.domain.Pageable;
@@ -42,9 +42,9 @@ public interface OrderApplicationMapper {
     );
 
     @Mapping(target = "orderDetails", source = "orderDetails")
-    OrderDto toOrderDto(Order order, List<OrderDetailDto> orderDetails);
+    OrderResponseDto toOrderDto(Order order, List<OrderDetailResponseDto> orderDetails);
 
-    OrderDetailDto toOrderDetailDto(UUID orderId, OrderDetail orderDetail);
+    OrderDetailResponseDto toOrderDetailDto(UUID orderId, OrderDetail orderDetail);
 
     OrderDetailUpdateDto toOrderDetailUpdateDto(Integer price, Integer quantity);
 

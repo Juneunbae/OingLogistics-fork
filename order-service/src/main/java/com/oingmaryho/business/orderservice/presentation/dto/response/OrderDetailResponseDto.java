@@ -2,12 +2,12 @@ package com.oingmaryho.business.orderservice.presentation.dto.response;
 
 import java.util.UUID;
 
-public record OrderDetailDto(
+public record OrderDetailResponseDto(
     UUID id,
     UUID orderId,
     UUID requesterId,
     String requesterName,
-    UUID shippingId,
+    UUID deliveryId,
     UUID productId,
     String productName,
     Integer quantity,

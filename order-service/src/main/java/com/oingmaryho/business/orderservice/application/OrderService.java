@@ -6,7 +6,7 @@ import com.oingmaryho.business.orderservice.exception.ErrorCode;
 import com.oingmaryho.business.orderservice.exception.OrderException;
 import com.oingmaryho.business.orderservice.infrastructure.OrderRepository;
 import com.oingmaryho.business.orderservice.presentation.OrderPresentationMapper;
-import com.oingmaryho.business.orderservice.presentation.dto.response.OrderDto;
+import com.oingmaryho.business.orderservice.presentation.dto.response.OrderResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
@@ -35,12 +35,12 @@ public class OrderService {
         ).findFirst().orElseThrow(() -> new OrderException(ErrorCode.ORDER_DETAIL_NOT_FOUND));
     }
 
-    private Page<OrderDto> getOrdersCache(String cacheKey) {
+    private Page<OrderResponseDto> getOrdersCache(String cacheKey) {
         Cache cache = cacheManager.getCache("orders");
         return cache.get(cacheKey, Page.class);
     }
 
-    private void putOrdersCache(String cacheKey, Page<OrderDto> results) {
+    private void putOrdersCache(String cacheKey, Page<OrderResponseDto> results) {
         Cache cache = cacheManager.getCache("orders");
         cache.put(cacheKey, results);
         log.info("캐시 저장 성공: {}", cacheKey);

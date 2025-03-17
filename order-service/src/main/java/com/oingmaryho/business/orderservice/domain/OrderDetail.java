@@ -1,5 +1,6 @@
 package com.oingmaryho.business.orderservice.domain;
 
+import com.oingmaryho.business.orderservice.application.dto.OrderDetailUpdateDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -35,10 +36,7 @@ public class OrderDetail extends BaseEntity {
     )
     private String requesterName;
 
-    @Column(
-        nullable = false
-    )
-    private UUID shippingId;
+    private UUID deliveryId;
 
     @Column(
         nullable = false
@@ -56,4 +54,14 @@ public class OrderDetail extends BaseEntity {
         nullable = false
     )
     private Integer price;
+
+    public void update(OrderDetailUpdateDto update) {
+        if (update.price() != null) {
+            this.price = update.price();
+        }
+
+        if (update.quantity() != null) {
+            this.quantity = update.quantity();
+        }
+    }
 }

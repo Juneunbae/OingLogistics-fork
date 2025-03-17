@@ -8,7 +8,7 @@ import com.oingmaryho.business.orderservice.application.dto.OrdersServiceDto;
 import com.oingmaryho.business.orderservice.config.pageable.PageableConfig;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderSearchRequestDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderUpdateRequestDto;
-import com.oingmaryho.business.orderservice.presentation.dto.response.OrderDto;
+import com.oingmaryho.business.orderservice.presentation.dto.response.OrderResponseDto;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Description;
@@ -31,7 +31,7 @@ public class OrderAdminController {
         "마스터 - 주문 전체 조회"
     )
     @GetMapping
-    public ResponseEntity<Page<OrderDto>> getOrders(
+    public ResponseEntity<Page<OrderResponseDto>> getOrders(
         @Min(value = 1, message = "페이지 번호는 1 이상이어야 합니다.")
         @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
         @RequestParam(value = "size", required = false) Integer size,
@@ -50,7 +50,7 @@ public class OrderAdminController {
         "마스터 - 주문 상세 조회"
     )
     @GetMapping("/{id}")
-    public ResponseEntity<OrderDto> getOrder(@PathVariable UUID id) {
+    public ResponseEntity<OrderResponseDto> getOrder(@PathVariable UUID id) {
         OrderServiceDto orderServiceDto = orderApplicationMapper.toOrderServiceDto(id);
 
         return ResponseEntity.ok(orderAdminService.getOrder(orderServiceDto));
