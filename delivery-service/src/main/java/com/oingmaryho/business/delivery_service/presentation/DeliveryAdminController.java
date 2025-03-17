@@ -1,13 +1,12 @@
 package com.oingmaryho.business.delivery_service.presentation;
 
-import com.oingmaryho.business.delivery_service.application.DeliveryMasterService;
+import com.oingmaryho.business.delivery_service.application.DeliveryAdminService;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
 import com.oingmaryho.business.delivery_service.config.pageable.PageableConfig;
 import com.oingmaryho.business.delivery_service.presentation.dto.request.*;
 import com.oingmaryho.business.delivery_service.presentation.dto.response.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Description;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,16 +15,16 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-public class DeliveryMasterController {
+public class DeliveryAdminController {
 
     private final PageableConfig pageableConfig;
-    private final DeliveryMasterService deliveryMasterService;
+    private final DeliveryAdminService deliveryAdminService;
 
     @PostMapping("/admin/v1/deliveries")
     public ResponseEntity<DeliveryCreationResponseDto> createDelivery(
             @RequestBody DeliveryCreationRequestDto requestDto) {
         DeliveryCreationRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toCreationServiceDto(requestDto);
-        DeliveryCreationResponseServiceDto responseServiceDto = deliveryMasterService.createDelivery(requestServiceDto);
+        DeliveryCreationResponseServiceDto responseServiceDto = deliveryAdminService.createDelivery(requestServiceDto);
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toCreationResponseDto(responseServiceDto));
     }
 
@@ -34,7 +33,7 @@ public class DeliveryMasterController {
             @PathVariable UUID id,
             @RequestBody DeliveryUpdateRequestDto requestDto) {
         DeliveryUpdateRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateServiceDto(id, requestDto);
-        DeliveryUpdateResponseServiceDto responseServiceDto = deliveryMasterService.updateDelivery(requestServiceDto);
+        DeliveryUpdateResponseServiceDto responseServiceDto = deliveryAdminService.updateDelivery(requestServiceDto);
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateResponseDto(responseServiceDto));
     }
 
@@ -43,7 +42,7 @@ public class DeliveryMasterController {
             @PathVariable UUID id,
             @RequestBody DeliveryUpdateRequestDto requestDto) {
         DeliveryUpdateRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateServiceDto(id, requestDto);
-        DeliveryUpdateResponseServiceDto responseServiceDto = deliveryMasterService.updateDelivery(requestServiceDto);
+        DeliveryUpdateResponseServiceDto responseServiceDto = deliveryAdminService.updateDelivery(requestServiceDto);
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateResponseDto(responseServiceDto));
     }
 
@@ -52,7 +51,7 @@ public class DeliveryMasterController {
             @PathVariable UUID id,
             @RequestBody DeliveryUpdateStatusRequestDto requestDto) {
         DeliveryUpdateStatusRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateStatusServiceDto(id, requestDto);
-        DeliveryUpdateStatusResponseServiceDto responseServiceDto = deliveryMasterService.updateStatusDelivery(requestServiceDto);
+        DeliveryUpdateStatusResponseServiceDto responseServiceDto = deliveryAdminService.updateStatusDelivery(requestServiceDto);
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateStatusResponseDto(responseServiceDto));
     }
 
@@ -60,7 +59,7 @@ public class DeliveryMasterController {
     public ResponseEntity<Void> deleteDelivery(
             @PathVariable UUID id) {
         DeliveryDeletionRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toDeletionServiceDto(id);
-        deliveryMasterService.deleteDelivery(requestServiceDto);
+        deliveryAdminService.deleteDelivery(requestServiceDto);
         return ResponseEntity.noContent().build();
     }
 
@@ -69,7 +68,7 @@ public class DeliveryMasterController {
     public ResponseEntity<DeliveryDetailResponseDto> getDeliveryDetail(
             @PathVariable UUID id) {
         DeliveryDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toDetailServiceDto(id);
-        DeliveryDetailResponseServiceDto responseServiceDto = deliveryMasterService.GetDeliveryDetail(requestServiceDto);
+        DeliveryDetailResponseServiceDto responseServiceDto = deliveryAdminService.GetDeliveryDetail(requestServiceDto);
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toDetailResponseDto(responseServiceDto));
     }
 
@@ -83,7 +82,7 @@ public class DeliveryMasterController {
 
         Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
         DeliverySearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toSearchServiceDto(requestDto, customPageable);
-        DeliveryResponseServiceDto responseServiceDto = deliveryMasterService.GetDeliveriesBySearch(requestServiceDto);
+        DeliveryResponseServiceDto responseServiceDto = deliveryAdminService.GetDeliveriesBySearch(requestServiceDto);
 
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toSearchResponseDto(responseServiceDto));
     }
@@ -93,7 +92,7 @@ public class DeliveryMasterController {
     public ResponseEntity<DeliveryRouteDetailResponseDto> getDeliveryRouteDetail(
             @PathVariable UUID id) {
         DeliveryRouteDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteDetailServiceDto(id);
-        DeliveryRouteDetailResponseServiceDto responseServiceDto = deliveryMasterService.GetDeliveryRouteDetail(requestServiceDto);
+        DeliveryRouteDetailResponseServiceDto responseServiceDto = deliveryAdminService.GetDeliveryRouteDetail(requestServiceDto);
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toRouteDetailResponseDto(responseServiceDto));
     }
 
@@ -108,19 +107,11 @@ public class DeliveryMasterController {
 
         Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
         DeliveryRouteSearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteSearchServiceDto(id, requestDto, customPageable);
-        DeliveryRouteResponseServiceDto responseServiceDto = deliveryMasterService.GetDeliveryRoutesBySearch(requestServiceDto);
+        DeliveryRouteResponseServiceDto responseServiceDto = deliveryAdminService.GetDeliveryRoutesBySearch(requestServiceDto);
 
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toRouteSearchResponseDto(responseServiceDto));
     }
 
-    @Description(
-            "FeignClient - 배송 조회"
-    )
-    @GetMapping("/delivery-service/deliveries/{id}")
-    public ResponseEntity<DeliveryDetailResponseDto> getById(@PathVariable UUID id) {
-        DeliveryDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toDetailServiceDto(id);
-        DeliveryDetailResponseServiceDto responseServiceDto = deliveryMasterService.GetDeliveryDetail(requestServiceDto);
-        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toDetailResponseDto(responseServiceDto));
-    }
+
 
 }

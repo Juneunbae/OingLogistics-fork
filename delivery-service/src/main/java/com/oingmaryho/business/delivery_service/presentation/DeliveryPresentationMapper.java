@@ -6,6 +6,7 @@ import com.oingmaryho.business.delivery_service.presentation.dto.request.*;
 import com.oingmaryho.business.delivery_service.presentation.dto.response.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Pageable;
 
@@ -47,15 +48,25 @@ public interface DeliveryPresentationMapper {
 
     DeliveryDetailResponseDto toDetailResponseDto(DeliveryDetailResponseServiceDto responseServiceDto);
 
-    @Mapping(target = "page", source = "customPageable.page")
-    @Mapping(target = "size", source = "customPageable.size")
-    @Mapping(target = "sortDirection", source = "customPageable.sortDirection")
+    @Mapping(target = "page", source = "responseServiceDto.customPageable.pageNumber")
+    @Mapping(target = "size", source = "responseServiceDto.customPageable.pageSize")
+    @Mapping(target = "sortDirection", source = "responseServiceDto.customPageable", qualifiedByName = "getSortDirection")
     DeliveryResponseDto toSearchResponseDto(DeliveryResponseServiceDto responseServiceDto);
 
     DeliveryRouteDetailResponseDto toRouteDetailResponseDto(DeliveryRouteDetailResponseServiceDto responseServiceDto);
 
-    @Mapping(target = "page", source = "customPageable.page")
-    @Mapping(target = "size", source = "customPageable.size")
-    @Mapping(target = "sortDirection", source = "customPageable.sortDirection")
+    @Mapping(target = "page", source = "responseServiceDto.customPageable.pageNumber")
+    @Mapping(target = "size", source = "responseServiceDto.customPageable.pageSize")
+    @Mapping(target = "sortDirection", source = "responseServiceDto.customPageable", qualifiedByName = "getSortDirection")
     DeliveryRouteResponseDto toRouteSearchResponseDto(DeliveryRouteResponseServiceDto responseServiceDto);
+
+    @Named("getSortDirection")
+    default String getSortDirection(Pageable customPageable) {
+        if (customPageable == null || customPageable.getSort().isUnsorted()) {
+            return "DESC";  // 정렬이 없을 경우 기본값
+        }
+        return customPageable.getSort().getOrderFor("id") != null &&
+                customPageable.getSort().getOrderFor("id").isAscending() ? "ASC" : "DESC";
+    }
+
 }

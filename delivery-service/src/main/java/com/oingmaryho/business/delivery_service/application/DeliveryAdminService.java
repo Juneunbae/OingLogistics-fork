@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class DeliveryMasterService {
+public class DeliveryAdminService {
     private final DeliveryRepository deliveryRepository;
 
     public DeliveryCreationResponseServiceDto createDelivery(DeliveryCreationRequestServiceDto requestServiceDto) {

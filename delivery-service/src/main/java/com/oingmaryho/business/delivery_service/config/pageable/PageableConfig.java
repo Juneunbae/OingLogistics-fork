@@ -14,6 +14,10 @@ import java.util.List;
 @Configuration
 @EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
 public class PageableConfig implements WebMvcConfigurer {
+
+    private static final int DEFAULT_SIZE = 10;
+    private static final String DEFAULT_SORT_DIRECTION = "desc";
+
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         PageableHandlerMethodArgumentResolver resolver = new PageableHandlerMethodArgumentResolver();
@@ -21,29 +25,26 @@ public class PageableConfig implements WebMvcConfigurer {
         resolvers.add(resolver);
     }
 
-    public Sort ascSort() {
+    public Pageable customPageable(Integer page, Integer size, String sortDirection) {
+        int currentPage = (page != null && page > 0) ? page - 1 : 0;
+        int currentSize = (size != null) ? size : DEFAULT_SIZE;
+        String currentSortDirection = (sortDirection != null) ? sortDirection.toLowerCase() : DEFAULT_SORT_DIRECTION;
+
+        Sort sort = DEFAULT_SORT_DIRECTION.equalsIgnoreCase(currentSortDirection) ? DescSort() : ascSort();
+        return PageRequest.of(currentPage, currentSize, sort);
+    }
+
+    private Sort ascSort() {
         return Sort.by(
                 Sort.Order.asc(SortConstants.CREATED_AT),
                 Sort.Order.asc(SortConstants.UPDATED_AT)
         );
     }
 
-    public Sort DescSort() {
+    private Sort DescSort() {
         return Sort.by(
                 Sort.Order.desc(SortConstants.CREATED_AT),
                 Sort.Order.desc(SortConstants.UPDATED_AT)
         );
-    }
-
-    public Pageable customPageable(Integer page, Integer size, String sortDirection) {
-        int defaultSize = 10; // 기본 페이지 크기
-        String defaultSortDirection = "asc"; // 기본 정렬 방향
-
-        int currentPage = (page != null && page > 0) ? page - 1 : 0;
-        int currentSize = (size != null) ? size : defaultSize;
-        String currentSortDirection = (sortDirection != null) ? sortDirection.toLowerCase() : defaultSortDirection;
-
-        Sort sort = "desc".equalsIgnoreCase(currentSortDirection) ? DescSort() : ascSort();
-        return PageRequest.of(currentPage, currentSize, sort);
     }
 }
