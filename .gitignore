@@ -7,6 +7,9 @@
 *.iws
 
 # 빌드 및 아티팩트 디렉터리
+**/gradlew
+**/gradlew.bat
+/gradle
 **/build/
 **/bin/
 **/out/
