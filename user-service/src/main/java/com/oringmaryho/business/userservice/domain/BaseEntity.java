@@ -5,6 +5,8 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
+
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -47,6 +49,7 @@ public abstract class BaseEntity {
   private Long updatedBy;
 
   @Column(name = "is_deleted", nullable = false)
+  @Builder.Default
   private Boolean isDeleted = false;
 
   // soft delete 처리할 때 사용할 메소드
