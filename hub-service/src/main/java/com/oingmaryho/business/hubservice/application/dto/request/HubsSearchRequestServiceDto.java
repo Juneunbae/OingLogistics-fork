@@ -1,8 +1,8 @@
-package com.oingmaryho.business.hubservice.presentation.dto.request;
+package com.oingmaryho.business.hubservice.application.dto.request;
 
 import java.util.UUID;
 
-public record HubSearchRequestDto(
+public record HubsSearchRequestServiceDto(
 	UUID id,
 	String name,
 	String address,

@@ -1,14 +1,23 @@
 package com.oingmaryho.business.hubservice.presentation;
 
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.oingmaryho.business.hubservice.application.HubService;
+import com.oingmaryho.business.hubservice.application.dto.response.HubSearchResponseServiceDto;
+import com.oingmaryho.business.hubservice.presentation.dto.mapper.HubPresentationMapper;
 import com.oingmaryho.business.hubservice.presentation.dto.request.HubSearchRequestDto;
+import com.oingmaryho.business.hubservice.utils.PageableUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,18 +26,25 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class HubController {
 
-	@GetMapping
+	private final HubService hubService;
+	private final HubPresentationMapper mapper;
+
+	@PostMapping
 	public ResponseEntity<?> searchHubs(
-		@RequestBody HubSearchRequestDto requestDto,
+		@RequestBody(required = false) HubSearchRequestDto requestDto,
 		@RequestParam(value = "page", required = false, defaultValue = "1") int page,
 		@RequestParam(value = "size", required = false, defaultValue = "10") int size,
-		@RequestParam(value = "sortDirection", required = false, defaultValue = "DESC") String sortDirection
+		@RequestParam(value = "sortDirection", required = false, defaultValue = "DESC") String sortDirection,
+		@RequestParam(value = "by", required = false) String by
 	) {
-		return null;
+		Pageable pageable = PageableUtils.customPageable(page, size, sortDirection, by);
+		Page<HubSearchResponseServiceDto> responseDto = hubService.searchHubs(mapper.toHubsSearchRequestServiceDto(requestDto), pageable);
+		return ResponseEntity.ok(responseDto.map(mapper::toHubSearchResponseDto));
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<?> getHubById(@PathVariable Long id) {
-		return null;
+	public ResponseEntity<?> getHubById(@PathVariable UUID id) {
+		HubSearchResponseServiceDto responseDto = hubService.getHubById(mapper.toHubSearchRequestServiceDto(id));
+		return ResponseEntity.ok(mapper.toHubSearchResponseDto(responseDto));
 	}
 }
