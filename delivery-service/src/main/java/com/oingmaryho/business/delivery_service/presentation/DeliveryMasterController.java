@@ -1,6 +1,5 @@
 package com.oingmaryho.business.delivery_service.presentation;
 
-import com.oingmaryho.business.delivery_service.application.DeliveryApplicationMapper;
 import com.oingmaryho.business.delivery_service.application.DeliveryMasterService;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
@@ -27,7 +26,7 @@ public class DeliveryMasterController {
             @RequestBody DeliveryCreationRequestDto requestDto) {
         DeliveryCreationRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toCreationServiceDto(requestDto);
         DeliveryCreationResponseServiceDto responseServiceDto = deliveryMasterService.createDelivery(requestServiceDto);
-        return ResponseEntity.ok(DeliveryApplicationMapper.INSTANCE.toCreationResponseDto(responseServiceDto));
+        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toCreationResponseDto(responseServiceDto));
     }
 
     @PutMapping("/{id}")
@@ -36,7 +35,7 @@ public class DeliveryMasterController {
             @RequestBody DeliveryUpdateRequestDto requestDto) {
         DeliveryUpdateRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateServiceDto(id, requestDto);
         DeliveryUpdateResponseServiceDto responseServiceDto = deliveryMasterService.updateDelivery(requestServiceDto);
-        return ResponseEntity.ok(DeliveryApplicationMapper.INSTANCE.toUpdateResponseDto(responseServiceDto));
+        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateResponseDto(responseServiceDto));
     }
 
     @PutMapping("/{id}")
@@ -45,7 +44,7 @@ public class DeliveryMasterController {
             @RequestBody DeliveryUpdateRequestDto requestDto) {
         DeliveryUpdateRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateServiceDto(id, requestDto);
         DeliveryUpdateResponseServiceDto responseServiceDto = deliveryMasterService.updateDelivery(requestServiceDto);
-        return ResponseEntity.ok(DeliveryApplicationMapper.INSTANCE.toUpdateResponseDto(responseServiceDto));
+        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateResponseDto(responseServiceDto));
     }
 
     @PutMapping("/{id}/status")
@@ -54,7 +53,7 @@ public class DeliveryMasterController {
             @RequestBody DeliveryUpdateStatusRequestDto requestDto) {
         DeliveryUpdateStatusRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateStatusServiceDto(id, requestDto);
         DeliveryUpdateStatusResponseServiceDto responseServiceDto = deliveryMasterService.updateStatusDelivery(requestServiceDto);
-        return ResponseEntity.ok(DeliveryApplicationMapper.INSTANCE.toUpdateStatusResponseDto(responseServiceDto));
+        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateStatusResponseDto(responseServiceDto));
     }
 
     @DeleteMapping("/{id}")
@@ -71,7 +70,7 @@ public class DeliveryMasterController {
             @PathVariable UUID id) {
         DeliveryDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toDetailServiceDto(id);
         DeliveryDetailResponseServiceDto responseServiceDto = deliveryMasterService.GetDeliveryDetail(requestServiceDto);
-        return ResponseEntity.ok(DeliveryApplicationMapper.INSTANCE.toDetailResponseDto(responseServiceDto));
+        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toDetailResponseDto(responseServiceDto));
     }
 
     // 배송 전체 조회 (검색)
@@ -86,7 +85,7 @@ public class DeliveryMasterController {
         DeliverySearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toSearchServiceDto(requestDto, customPageable);
         DeliveryResponseServiceDto responseServiceDto = deliveryMasterService.GetDeliveriesBySearch(requestServiceDto);
 
-        return ResponseEntity.ok(DeliveryApplicationMapper.INSTANCE.toSearchResponseDto(responseServiceDto));
+        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toSearchResponseDto(responseServiceDto));
     }
 
     // 배송 경로 조회
@@ -95,7 +94,7 @@ public class DeliveryMasterController {
             @PathVariable UUID id) {
         DeliveryRouteDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteDetailServiceDto(id);
         DeliveryRouteDetailResponseServiceDto responseServiceDto = deliveryMasterService.GetDeliveryRouteDetail(requestServiceDto);
-        return ResponseEntity.ok(DeliveryApplicationMapper.INSTANCE.toRouteDetailResponseDto(responseServiceDto));
+        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toRouteDetailResponseDto(responseServiceDto));
     }
 
     // 배송 경로 전체 조회 (검색)
@@ -111,6 +110,6 @@ public class DeliveryMasterController {
         DeliveryRouteSearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteSearchServiceDto(id, requestDto, customPageable);
         DeliveryRouteResponseServiceDto responseServiceDto = deliveryMasterService.GetDeliveryRoutesBySearch(requestServiceDto);
 
-        return ResponseEntity.ok(DeliveryApplicationMapper.INSTANCE.toRouteSearchResponseDto(responseServiceDto));
+        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toRouteSearchResponseDto(responseServiceDto));
     }
 }
