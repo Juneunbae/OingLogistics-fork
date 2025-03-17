@@ -1,5 +1,9 @@
 package com.oringmaryho.business.userservice.presentation;
 
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.springframework.data.domain.Pageable;
+
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterCreateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterFindRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterGrantRoleRequestServiceDto;
@@ -22,56 +26,52 @@ import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterU
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignInRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignUpRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSlackConfirmRequestDto;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.springframework.data.domain.Pageable;
 
 @Mapper(componentModel = "spring")
 public interface UserPresentationMapper {
 
-  UserSignUpRequestServiceDto toUserSignUpServiceDto(UserSignUpRequestDto requestDto);
+	UserSignUpRequestServiceDto toUserSignUpServiceDto(UserSignUpRequestDto requestDto);
 
-  UserSignInRequestServiceDto toUserSignInServiceDto(UserSignInRequestDto requestDto);
+	UserSignInRequestServiceDto toUserSignInServiceDto(UserSignInRequestDto requestDto);
 
-  @Mapping(target = "id", source = "id")
-  UserSearchRequestServiceDto toUserSearchRequestServiceDto(Long id);
+	@Mapping(target = "id", source = "id")
+	UserSearchRequestServiceDto toUserSearchRequestServiceDto(Long id);
 
-  UserSlackConfirmRequestServiceDto toUserSlackConfirmRequestServiceDto(
-      UserSlackConfirmRequestDto requestDto);
+	UserSlackConfirmRequestServiceDto toUserSlackConfirmRequestServiceDto(
+		UserSlackConfirmRequestDto requestDto);
 
-  UserMasterSignUpRequestServiceDto toUserMasterSignUpServiceDto(
-      UserMasterSignUpRequestDto requestDto);
+	UserMasterSignUpRequestServiceDto toUserMasterSignUpServiceDto(
+		UserMasterSignUpRequestDto requestDto);
 
-  UserMasterCreateRequestServiceDto toUserMasterCreateRequestServiceDto(
-      UserMasterCreateRequestDto requestDto);
+	UserMasterCreateRequestServiceDto toUserMasterCreateRequestServiceDto(
+		UserMasterCreateRequestDto requestDto);
 
-  @Mapping(target = "id", source = "id")
-  UserMasterFindRequestServiceDto toUserMasterFindRequestServiceDto(Long id);
+	@Mapping(target = "id", source = "id")
+	UserMasterFindRequestServiceDto toUserMasterFindRequestServiceDto(Long id);
 
+	UserMasterSearchRequestServiceDto toUserMasterSearchRequestServiceDto(
+		UserMasterSearchRequestDto requestDto, Pageable pageable);
 
-  UserMasterSearchRequestServiceDto toUserMasterSearchRequestServiceDto(
-      UserMasterSearchRequestDto requestDto, Pageable pageable);
+	@Mapping(target = "id", source = "id")
+	@Mapping(target = "username", source = "username")
+	@Mapping(target = "password", source = "password")
+	@Mapping(target = "slackId", source = "slackId")
+	UserMasterUpdateRequestServiceDto toUserMasterUpdateRequestServiceDto(Long id,
+		UserMasterUpdateRequestDto requstDto);
 
-  @Mapping(target = "id", source = "id")
-  @Mapping(target = "username", source = "username")
-  @Mapping(target = "password", source = "password")
-  @Mapping(target = "slackId", source = "slackId")
-  UserMasterUpdateRequestServiceDto toUserMasterUpdateRequestServiceDto(Long id,
-      UserMasterUpdateRequestDto requstDto);
+	@Mapping(target = "id", source = "id")
+	@Mapping(target = "role", source = "role")
+	UserMasterGrantRoleRequestServiceDto toUserMasterGrantRoleRequestServiceDto(Long id,
+		UserMasterGrantRoleRequestDto requstDto);
 
-  @Mapping(target = "id", source = "id")
-  @Mapping(target = "role", source = "role")
-  UserMasterGrantRoleRequestServiceDto toUserMasterGrantRoleRequestServiceDto(Long id,
-      UserMasterGrantRoleRequestDto requstDto);
+	@Mapping(target = "id", source = "id")
+	@Mapping(target = "newRole", source = "role")
+	UserMasterUpdateRoleRequestServiceDto toUserMasterUpdateRoleRequestServiceDto(Long id,
+		UserMasterUpdateRoleRequestDto requstDto);
 
-  @Mapping(target = "id", source = "id")
-  @Mapping(target = "newRole", source = "role")
-  UserMasterUpdateRoleRequestServiceDto toUserMasterUpdateRoleRequestServiceDto(Long id,
-      UserMasterUpdateRoleRequestDto requstDto);
+	@Mapping(target = "id", source = "id")
+	UserMasterDeleteRoleRequestServiceDto toUserMasterDeleteRoleRequestServiceDto(Long id);
 
-  @Mapping(target = "id", source = "id")
-  UserMasterDeleteRoleRequestServiceDto toUserMasterDeleteRoleRequestServiceDto(Long id);
-
-  @Mapping(target = "id", source = "id")
-  UserMasterDeleteRequestServiceDto toUserMasterDeleteRequestServiceDto(Long id);
+	@Mapping(target = "id", source = "id")
+	UserMasterDeleteRequestServiceDto toUserMasterDeleteRequestServiceDto(Long id);
 }
