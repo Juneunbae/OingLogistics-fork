@@ -8,8 +8,8 @@ import com.oingmaryho.business.orderservice.domain.OrderDetail;
 import com.oingmaryho.business.orderservice.domain.Status;
 import com.oingmaryho.business.orderservice.infrastructure.OrderRepository;
 import com.oingmaryho.business.orderservice.presentation.OrderPresentationMapper;
-import com.oingmaryho.business.orderservice.presentation.dto.response.OrderDetailDto;
-import com.oingmaryho.business.orderservice.presentation.dto.response.OrderDto;
+import com.oingmaryho.business.orderservice.presentation.dto.response.OrderDetailResponseDto;
+import com.oingmaryho.business.orderservice.presentation.dto.response.OrderResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -61,7 +61,7 @@ class OrderServiceTest {
     private OrderPresentationMapper orderPresentationMapper;
 
     @InjectMocks
-    private OrderService orderService;
+    private OrderAdminService orderAdminService;
 
     @BeforeEach
     void setUp() {
@@ -90,7 +90,7 @@ class OrderServiceTest {
         when(orderRepository.findAll(any(Pageable.class))).thenReturn(orderPage);
 
         // when: getOrders 호출
-        Page<OrderDto> result = orderService.getOrders(ordersServiceDto);
+        Page<OrderResponseDto> result = orderAdminService.getOrders(ordersServiceDto);
 
         // then: 캐시된 데이터가 반환되었는지 확인
         assertNotNull(result);
@@ -108,8 +108,8 @@ class OrderServiceTest {
         when(ordersServiceDto.isDeleted()).thenReturn(false);
         when(pageableConfig.customPageable(1, null, null)).thenReturn(pageable);
         String cacheKey = makeOrdersCacheKey(ordersServiceDto);
-        List<OrderDto> orderDtoList = List.of(createOrderDto());
-        Page<OrderDto> cachedOrderDto = new PageImpl<>(orderDtoList); // 가상의 캐시 데이터
+        List<OrderResponseDto> orderResponseDtoList = List.of(createOrderDto());
+        Page<OrderResponseDto> cachedOrderDto = new PageImpl<>(orderResponseDtoList); // 가상의 캐시 데이터
         cache.put(cacheKey, cachedOrderDto);
 
         when(cacheManager.getCache("orders")).thenReturn(cache);
@@ -117,7 +117,7 @@ class OrderServiceTest {
         when(cache.get(cacheKey, Page.class)).thenReturn(cachedOrderDto);
 
         // when: getOrders 호출
-        Page<OrderDto> result = orderService.getOrders(ordersServiceDto);
+        Page<OrderResponseDto> result = orderAdminService.getOrders(ordersServiceDto);
 
         // then: 캐시된 데이터가 반환되었는지 확인
         assertNotNull(result);
@@ -132,22 +132,22 @@ class OrderServiceTest {
         UUID orderId = UUID.fromString("0ab88134-13ce-4f24-963e-4f8ad716a69e");
         OrderServiceDto orderServiceDto = createOrderServiceDto(orderId);
         Order order = createOrder();
-        OrderDto expectedOrderDto = createOrderDto();
+        OrderResponseDto expectedOrderResponseDto = createOrderDto();
 
         when(cacheManager.getCache("order")).thenReturn(cache); // CacheManager 설정 추가
 
-        when(cache.get(orderId, OrderDto.class)).thenReturn(null);
+        when(cache.get(orderId, OrderResponseDto.class)).thenReturn(null);
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
-        when(orderPresentationMapper.toOrderDto(any(Order.class), anyList())).thenReturn(expectedOrderDto);
+        when(orderApplicationMapper.toOrderDto(any(Order.class), anyList())).thenReturn(expectedOrderResponseDto);
 
         // when
-        OrderDto result = orderService.getOrder(orderServiceDto);
+        OrderResponseDto result = orderAdminService.getOrder(orderServiceDto);
 
         // then
         assertNotNull(result);
-        assertEquals(expectedOrderDto, result);
+        assertEquals(expectedOrderResponseDto, result);
         verify(orderRepository, times(1)).findById(orderId); // DB 조회는 1번 확인되어야 함
-        verify(cache, times(0)).put(orderId, expectedOrderDto); // 캐시 저장 확인
+        verify(cache, times(0)).put(orderId, expectedOrderResponseDto); // 캐시 저장 확인
     }
 
     @Test
@@ -158,23 +158,23 @@ class OrderServiceTest {
 
         UUID orderId = UUID.fromString("0ab88134-13ce-4f24-963e-4f8ad716a69e");
         OrderServiceDto orderServiceDto = createOrderServiceDto(orderId);
-        OrderDto cachedOrderDto = createOrderDto();
+        OrderResponseDto cachedOrderResponseDto = createOrderDto();
 
-        when(cache.get(orderId, OrderDto.class)).thenReturn(cachedOrderDto);
-        when(orderPresentationMapper.toOrderDto(any(Order.class), anyList())).thenReturn(cachedOrderDto);
+        when(cache.get(orderId, OrderResponseDto.class)).thenReturn(cachedOrderResponseDto);
+        when(orderApplicationMapper.toOrderDto(any(Order.class), anyList())).thenReturn(cachedOrderResponseDto);
 
         // when
-        OrderDto result = orderService.getOrder(orderServiceDto);
+        OrderResponseDto result = orderAdminService.getOrder(orderServiceDto);
 
         // then
         assertNotNull(result);
-        assertEquals(cachedOrderDto, result);
-        verify(cache, times(1)).get(orderId, OrderDto.class);
+        assertEquals(cachedOrderResponseDto, result);
+        verify(cache, times(1)).get(orderId, OrderResponseDto.class);
         verify(orderRepository, times(0)).findById(orderId);
     }
 
-    OrderDto createOrderDto() {
-        OrderDetailDto orderDetailDto = new OrderDetailDto(
+    OrderResponseDto createOrderDto() {
+        OrderDetailResponseDto orderDetailResponseDto = new OrderDetailResponseDto(
             UUID.randomUUID(),
             UUID.randomUUID(),
             UUID.randomUUID(),
@@ -186,9 +186,9 @@ class OrderServiceTest {
             1000
         );
 
-        List<OrderDetailDto> orderDetails = List.of(orderDetailDto);
+        List<OrderDetailResponseDto> orderDetails = List.of(orderDetailResponseDto);
 
-        return new OrderDto(
+        return new OrderResponseDto(
             UUID.randomUUID(),
             UUID.randomUUID(),
             "테스트1",
@@ -238,7 +238,7 @@ class OrderServiceTest {
             .id(UUID.randomUUID())
             .requesterId(UUID.randomUUID())
             .requesterName("테스트 요청자 이름")
-            .shippingId(UUID.randomUUID())
+            .deliveryId(UUID.randomUUID())
             .productId(UUID.randomUUID())
             .productName("테스트 상품1 이름")
             .quantity(2)

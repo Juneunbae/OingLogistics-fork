@@ -1,0 +1,30 @@
+package com.oingmaryho.business.orderservice.application;
+
+import com.oingmaryho.business.orderservice.application.dto.OrderServiceDto;
+import com.oingmaryho.business.orderservice.domain.Order;
+import com.oingmaryho.business.orderservice.exception.ErrorCode;
+import com.oingmaryho.business.orderservice.exception.OrderException;
+import com.oingmaryho.business.orderservice.infrastructure.OrderRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class OrderFeignService {
+    private final OrderRepository orderRepository;
+
+    @Transactional
+    public Order orderServiceGetById(OrderServiceDto orderServiceDto) {
+        return getByOrderId(orderServiceDto.orderId());
+    }
+
+    public Order getByOrderId(UUID orderId) {
+        return orderRepository.findById(orderId)
+            .orElseThrow(() -> new OrderException(ErrorCode.NOT_FOUND));
+    }
+}
