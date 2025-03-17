@@ -50,7 +50,7 @@ public class UserAdminController {
 	@PostMapping("/sign-up")
 	public ResponseEntity<?> signUpMasterUser(
 		@RequestBody UserAdminSignUpRequestDto userAdminSignUpRequestDto) {
-		UserAdminSignUpRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterSignUpServiceDto(
+		UserAdminSignUpRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminSignUpServiceDto(
 			userAdminSignUpRequestDto);
 		userAdminService.signUpUserMaster(requestServiceDto);
 		return ResponseEntity.ok().build();
@@ -59,7 +59,7 @@ public class UserAdminController {
 	@PostMapping("")
 	public ResponseEntity<?> createUser(
 		@RequestBody UserAdminCreateRequestDto userAdminCreateRequestDto) {
-		UserAdminCreateRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterCreateRequestServiceDto(
+		UserAdminCreateRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminCreateRequestServiceDto(
 			userAdminCreateRequestDto);
 		userAdminService.createUser(requestServiceDto);
 		return ResponseEntity.ok().build();
@@ -67,7 +67,7 @@ public class UserAdminController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> findUserMaster(@PathVariable Long id) {
-		UserAdminFindRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterFindRequestServiceDto(
+		UserAdminFindRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminFindRequestServiceDto(
 			id);
 		//todo: responsedto로 변환
 		userAdminService.findUserMaster(requestServiceDto);
@@ -81,7 +81,7 @@ public class UserAdminController {
 		@RequestParam(value = "sortDirection", required = false) String sortDirection,
 		@RequestBody UserAdminSearchRequestDto userAdminSearchRequestDto) {
 		Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
-		UserAdminSearchRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterSearchRequestServiceDto(
+		UserAdminSearchRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminSearchRequestServiceDto(
 			userAdminSearchRequestDto, customPageable);
 		List<UserAdminSearchResponseDto> responseDtos = userAdminService.searchUsers(
 			requestServiceDto);
@@ -91,7 +91,7 @@ public class UserAdminController {
 	@PutMapping("/{id}")
 	public ResponseEntity<?> updateUserMaster(@PathVariable Long id,
 		@RequestBody UserAdminUpdateRequestDto userAdminUpdateRequestDto) {
-		UserAdminUpdateRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterUpdateRequestServiceDto(
+		UserAdminUpdateRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminUpdateRequestServiceDto(
 			userAdminUpdateRequestDto, id);
 		UserAdminUpdateResponseDto responseDto = userAdminService.updateUser(requestServiceDto);
 		//todo: responsedto 반환하기
@@ -101,7 +101,7 @@ public class UserAdminController {
 	@PutMapping("/{id}/grant")
 	public ResponseEntity<?> grantRoleUserMaster(@PathVariable Long id,
 		@RequestBody UserAdminGrantRoleRequestDto userAdminGrantRoleRequestDto) {
-		UserAdminGrantRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterGrantRoleRequestServiceDto(
+		UserAdminGrantRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminGrantRoleRequestServiceDto(
 			userAdminGrantRoleRequestDto, id);
 		UserAdminGrantRoleResponseDto responseDto = userAdminService.grantRoleUser(requestServiceDto);
 		//todo: responsedto 반환하기
@@ -111,7 +111,7 @@ public class UserAdminController {
 	@PutMapping("/roles/{id}")
 	public ResponseEntity<?> updateRoleUserMaster(@PathVariable Long id,
 		@RequestBody UserAdminUpdateRoleRequestDto userAdminUpdateRoleRequestDto) {
-		UserAdminUpdateRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterUpdateRoleRequestServiceDto(
+		UserAdminUpdateRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminUpdateRoleRequestServiceDto(
 			userAdminUpdateRoleRequestDto, id);
 		UserAdminUpdateRoleResponseDto responseDto = userAdminService.updateRoleUser(
 			requestServiceDto);
@@ -121,7 +121,7 @@ public class UserAdminController {
 
 	@DeleteMapping("/roles/{id}")
 	public ResponseEntity<?> deleteRoleUserMaster(@PathVariable Long id) {
-		UserAdminDeleteRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterDeleteRoleRequestServiceDto(
+		UserAdminDeleteRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminDeleteRoleRequestServiceDto(
 			id);
 		userAdminService.deleteRoleUser(requestServiceDto);
 		return ResponseEntity.ok().build();
@@ -129,7 +129,7 @@ public class UserAdminController {
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deleteUserMaster(@PathVariable Long id) {
-		UserAdminDeleteRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterDeleteRequestServiceDto(
+		UserAdminDeleteRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminDeleteRequestServiceDto(
 			id);
 		userAdminService.deleteUser(requestServiceDto);
 		return ResponseEntity.ok().build();

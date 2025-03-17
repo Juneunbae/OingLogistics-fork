@@ -55,7 +55,7 @@ public class UserAdminService {
 		UserAdminUpdateRequestServiceDto requestServiceDto) {
 		//todo: responseDto 반환
 		Long userId = null;
-		UserAdminUpdateResponseDto responseDto = userApplicationMapper.toUserMasterUpdateResponseDto(
+		UserAdminUpdateResponseDto responseDto = userApplicationMapper.toUserAdminUpdateResponseDto(
 			userId);
 		return responseDto;
 	}
@@ -63,7 +63,7 @@ public class UserAdminService {
 	public UserAdminGrantRoleResponseDto grantRoleUser(
 		UserAdminGrantRoleRequestServiceDto requestServiceDto) {
 		Long userId = null;
-		UserAdminGrantRoleResponseDto responseDto = userApplicationMapper.toUserMasterGrantRoleResponseDto(
+		UserAdminGrantRoleResponseDto responseDto = userApplicationMapper.toUserAdminGrantRoleResponseDto(
 			userId);
 		return responseDto;
 	}
@@ -72,7 +72,7 @@ public class UserAdminService {
 		UserAdminUpdateRoleRequestServiceDto requestServiceDto) {
 		//todo: 유저 변경 전 role 받아와서 묶어서 반환하기
 		UserAdminUpdateRoleResponseServiceDto responseServiceDto = null;
-		UserAdminUpdateRoleResponseDto responseDto = userApplicationMapper.toUserMasterUpdateRoleResponseDto(
+		UserAdminUpdateRoleResponseDto responseDto = userApplicationMapper.toUserAdminUpdateRoleResponseDto(
 			responseServiceDto);
 		return null;
 	}

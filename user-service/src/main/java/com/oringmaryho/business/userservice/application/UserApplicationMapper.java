@@ -20,14 +20,14 @@ public interface UserApplicationMapper {
 	UserSearchResponseDto toSearchResponseDto(UserSearchResponseServiceDto responseServiceDto);
 
 	@Mapping(target = "id", source = "id")
-	UserAdminUpdateResponseDto toUserMasterUpdateResponseDto(Long id);
+	UserAdminUpdateResponseDto toUserAdminUpdateResponseDto(Long id);
 
 	@Mapping(target = "id", source = "id")
-	UserAdminGrantRoleResponseDto toUserMasterGrantRoleResponseDto(Long id);
+	UserAdminGrantRoleResponseDto toUserAdminGrantRoleResponseDto(Long id);
 
 	@Mapping(target = "id", source = "id")
 	@Mapping(target = "role", source = "role")
 	@Mapping(target = "newRole", source = "newRole")
-	UserAdminUpdateRoleResponseDto toUserMasterUpdateRoleResponseDto(
+	UserAdminUpdateRoleResponseDto toUserAdminUpdateRoleResponseDto(
 		UserAdminUpdateRoleResponseServiceDto responseServiceDto);
 }
