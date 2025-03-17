@@ -110,6 +110,25 @@ public class OrderAdminService {
         refreshCache(order);
     }
 
+    @Transactional
+    public void deleteOrder(OrderDeleteDto delete) {
+        // TODO: 마스터
+
+        UUID orderId = delete.orderId();
+
+        Order order = getByOrderId(orderId);
+
+        for (OrderDetail orderDetail : order.getOrderDetails()) {
+            orderDetail.delete();
+            log.info("상세 주문 삭제 완료");
+        }
+
+        order.delete();
+        log.info("주문 삭제 완료");
+
+        evictCache(order);
+    }
+
     public Order getByOrderId(UUID orderId) {
         Cache cache = cacheManager.getCache("order");
         Order cachedOrder = cache.get(orderId, Order.class);
@@ -169,7 +188,7 @@ public class OrderAdminService {
         log.info("캐시 저장 성공: {}", cacheKey);
     }
 
-    public void refreshCache(Order order) {
+    private void refreshCache(Order order) {
         Cache cache = cacheManager.getCache("order");
 
         if (cache != null) {
@@ -181,5 +200,17 @@ public class OrderAdminService {
         }
 
         log.info("캐시 재할당 완료: {}", order.getId());
+    }
+
+    private void evictCache(Order order) {
+        Cache OrdersCache = cacheManager.getCache("orders");
+        Cache OrderCache = cacheManager.getCache("order");
+
+        if (OrderCache != null) {
+            OrderCache.evict(order.getId());
+            log.info("Order - 캐시 삭제");
+        }
+
+        OrdersCache.clear();
     }
 }

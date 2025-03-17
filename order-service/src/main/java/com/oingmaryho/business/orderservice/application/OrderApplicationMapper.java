@@ -49,4 +49,6 @@ public interface OrderApplicationMapper {
     OrderDetailUpdateDto toOrderDetailUpdateDto(Integer price, Integer quantity);
 
     OrderUpdateDto toOrderUpdateDto(String requests, Integer totalPrice);
+
+    OrderDeleteDto toOrderDeleteDto(UUID orderId);
 }
