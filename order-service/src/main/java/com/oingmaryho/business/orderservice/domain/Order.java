@@ -68,4 +68,8 @@ public class Order extends BaseEntity {
             this.totalPrice = orderUpdateDto.totalPrice();
         }
     }
+
+    public void delete() {
+        this.isDeleted = true;
+    }
 }

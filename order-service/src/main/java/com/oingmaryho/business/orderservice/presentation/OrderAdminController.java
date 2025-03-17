@@ -2,6 +2,7 @@ package com.oingmaryho.business.orderservice.presentation;
 
 import com.oingmaryho.business.orderservice.application.OrderAdminService;
 import com.oingmaryho.business.orderservice.application.OrderApplicationMapper;
+import com.oingmaryho.business.orderservice.application.dto.OrderDeleteDto;
 import com.oingmaryho.business.orderservice.application.dto.OrderServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.OrderUpdateServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.OrdersServiceDto;
@@ -66,8 +67,19 @@ public class OrderAdminController {
                 orderApplicationMapper::toOrderDetailUpdateServiceDto
             ).toList()
         );
-
         orderAdminService.updateOrder(orderUpdateServiceDto);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @Description(
+        "마스터 - 주문 삭제"
+    )
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteOrder(@PathVariable UUID id) {
+        OrderDeleteDto orderServiceDto = orderApplicationMapper.toOrderDeleteDto(id);
+        orderAdminService.deleteOrder(orderServiceDto);
+
         return ResponseEntity.ok().build();
     }
 }

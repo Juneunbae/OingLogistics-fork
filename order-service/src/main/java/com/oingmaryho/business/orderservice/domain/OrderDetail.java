@@ -55,6 +55,11 @@ public class OrderDetail extends BaseEntity {
     )
     private Integer price;
 
+    @Column(
+        nullable = false
+    )
+    private Boolean isDeleted;
+
     public void update(OrderDetailUpdateDto update) {
         if (update.price() != null) {
             this.price = update.price();
@@ -63,5 +68,9 @@ public class OrderDetail extends BaseEntity {
         if (update.quantity() != null) {
             this.quantity = update.quantity();
         }
+    }
+
+    public void delete() {
+        this.isDeleted = true;
     }
 }
