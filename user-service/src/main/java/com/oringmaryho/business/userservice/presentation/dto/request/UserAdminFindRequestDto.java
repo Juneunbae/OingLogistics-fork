@@ -1,5 +1,5 @@
 package com.oringmaryho.business.userservice.presentation.dto.request;
 
-public record UserMasterFindRequestDto(Long id) {
+public record UserAdminFindRequestDto(Long id) {
 
 }

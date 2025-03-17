@@ -1,5 +1,5 @@
 package com.oringmaryho.business.userservice.presentation.dto.response;
 
-public record UserMasterUpdateResponseDto(Long id) {
+public record UserAdminGrantRoleResponseDto(Long id) {
 
 }
