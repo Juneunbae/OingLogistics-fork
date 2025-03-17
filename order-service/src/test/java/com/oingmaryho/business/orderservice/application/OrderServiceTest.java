@@ -61,7 +61,7 @@ class OrderServiceTest {
     private OrderPresentationMapper orderPresentationMapper;
 
     @InjectMocks
-    private OrderService orderService;
+    private OrderMasterService orderMasterService;
 
     @BeforeEach
     void setUp() {
@@ -90,7 +90,7 @@ class OrderServiceTest {
         when(orderRepository.findAll(any(Pageable.class))).thenReturn(orderPage);
 
         // when: getOrders 호출
-        Page<OrderDto> result = orderService.getOrders(ordersServiceDto);
+        Page<OrderDto> result = orderMasterService.getOrders(ordersServiceDto);
 
         // then: 캐시된 데이터가 반환되었는지 확인
         assertNotNull(result);
@@ -117,7 +117,7 @@ class OrderServiceTest {
         when(cache.get(cacheKey, Page.class)).thenReturn(cachedOrderDto);
 
         // when: getOrders 호출
-        Page<OrderDto> result = orderService.getOrders(ordersServiceDto);
+        Page<OrderDto> result = orderMasterService.getOrders(ordersServiceDto);
 
         // then: 캐시된 데이터가 반환되었는지 확인
         assertNotNull(result);
@@ -138,10 +138,10 @@ class OrderServiceTest {
 
         when(cache.get(orderId, OrderDto.class)).thenReturn(null);
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
-        when(orderPresentationMapper.toOrderDto(any(Order.class), anyList())).thenReturn(expectedOrderDto);
+        when(orderApplicationMapper.toOrderDto(any(Order.class), anyList())).thenReturn(expectedOrderDto);
 
         // when
-        OrderDto result = orderService.getOrder(orderServiceDto);
+        OrderDto result = orderMasterService.getOrder(orderServiceDto);
 
         // then
         assertNotNull(result);
@@ -161,10 +161,10 @@ class OrderServiceTest {
         OrderDto cachedOrderDto = createOrderDto();
 
         when(cache.get(orderId, OrderDto.class)).thenReturn(cachedOrderDto);
-        when(orderPresentationMapper.toOrderDto(any(Order.class), anyList())).thenReturn(cachedOrderDto);
+        when(orderApplicationMapper.toOrderDto(any(Order.class), anyList())).thenReturn(cachedOrderDto);
 
         // when
-        OrderDto result = orderService.getOrder(orderServiceDto);
+        OrderDto result = orderMasterService.getOrder(orderServiceDto);
 
         // then
         assertNotNull(result);
@@ -238,7 +238,7 @@ class OrderServiceTest {
             .id(UUID.randomUUID())
             .requesterId(UUID.randomUUID())
             .requesterName("테스트 요청자 이름")
-            .shippingId(UUID.randomUUID())
+            .deliveryId(UUID.randomUUID())
             .productId(UUID.randomUUID())
             .productName("테스트 상품1 이름")
             .quantity(2)
