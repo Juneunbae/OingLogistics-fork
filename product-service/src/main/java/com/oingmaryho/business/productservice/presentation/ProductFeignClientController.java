@@ -1,0 +1,34 @@
+package com.oingmaryho.business.productservice.presentation;
+
+import java.util.UUID;
+
+import org.springframework.context.annotation.Description;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.oingmaryho.business.productservice.application.ProductService;
+import com.oingmaryho.business.productservice.application.dto.request.ProductDetailsSearchRequestServiceDto;
+import com.oingmaryho.business.productservice.application.dto.response.ProductDetailsSearchResponseServiceDto;
+import com.oingmaryho.business.productservice.presentation.dto.response.ProductDetailsSearchResponseDto;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping
+public class ProductFeignClientController {
+	private final ProductService productService;
+	private final ProductPresentationMapper productPresentationMapper;
+
+	@Description("FeignClient - 상품 상세 조회")
+	@GetMapping("/product-service/products/{id}")
+	public ResponseEntity<ProductDetailsSearchResponseDto> getProductById(@PathVariable UUID id) {
+		ProductDetailsSearchRequestServiceDto requestServiceDto = productPresentationMapper.toProductServiceDto(id);
+		ProductDetailsSearchResponseServiceDto responseServiceDto = productService.getProductDetails(requestServiceDto);
+		ProductDetailsSearchResponseDto response = productPresentationMapper.toProductDto(responseServiceDto);
+		return ResponseEntity.ok(response);
+	}
+}
