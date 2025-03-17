@@ -7,6 +7,7 @@ import com.oingmaryho.business.delivery_service.config.pageable.PageableConfig;
 import com.oingmaryho.business.delivery_service.presentation.dto.request.*;
 import com.oingmaryho.business.delivery_service.presentation.dto.response.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Description;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,13 +16,12 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/admin/v1/deliveries")
 public class DeliveryMasterController {
 
     private final PageableConfig pageableConfig;
     private final DeliveryMasterService deliveryMasterService;
 
-    @PostMapping
+    @PostMapping("/admin/v1/deliveries")
     public ResponseEntity<DeliveryCreationResponseDto> createDelivery(
             @RequestBody DeliveryCreationRequestDto requestDto) {
         DeliveryCreationRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toCreationServiceDto(requestDto);
@@ -29,7 +29,7 @@ public class DeliveryMasterController {
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toCreationResponseDto(responseServiceDto));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/admin/v1/deliveries/{id}")
     public ResponseEntity<DeliveryUpdateResponseDto> createDelivery(
             @PathVariable UUID id,
             @RequestBody DeliveryUpdateRequestDto requestDto) {
@@ -38,7 +38,7 @@ public class DeliveryMasterController {
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateResponseDto(responseServiceDto));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/admin/v1/deliveries/{id}")
     public ResponseEntity<DeliveryUpdateResponseDto> updateDelivery(
             @PathVariable UUID id,
             @RequestBody DeliveryUpdateRequestDto requestDto) {
@@ -47,7 +47,7 @@ public class DeliveryMasterController {
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateResponseDto(responseServiceDto));
     }
 
-    @PutMapping("/{id}/status")
+    @PutMapping("/admin/v1/deliveries/{id}/status")
     public ResponseEntity<DeliveryUpdateStatusResponseDto> updateDeliveryStatus(
             @PathVariable UUID id,
             @RequestBody DeliveryUpdateStatusRequestDto requestDto) {
@@ -56,7 +56,7 @@ public class DeliveryMasterController {
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateStatusResponseDto(responseServiceDto));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/admin/v1/deliveries/{id}")
     public ResponseEntity<Void> deleteDelivery(
             @PathVariable UUID id) {
         DeliveryDeletionRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toDeletionServiceDto(id);
@@ -65,7 +65,7 @@ public class DeliveryMasterController {
     }
 
     // 배송 조회
-    @GetMapping("/{id}")
+    @GetMapping("/admin/v1/deliveries/{id}")
     public ResponseEntity<DeliveryDetailResponseDto> getDeliveryDetail(
             @PathVariable UUID id) {
         DeliveryDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toDetailServiceDto(id);
@@ -74,7 +74,7 @@ public class DeliveryMasterController {
     }
 
     // 배송 전체 조회 (검색)
-    @GetMapping
+    @GetMapping("/admin/v1/deliveries")
     public ResponseEntity<DeliveryResponseDto> searchDelivery(
             @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
             @RequestParam(value = "size", required = false) Integer size,
@@ -89,7 +89,7 @@ public class DeliveryMasterController {
     }
 
     // 배송 경로 조회
-    @GetMapping("/routes/{id}")
+    @GetMapping("/admin/v1/deliveries/routes/{id}")
     public ResponseEntity<DeliveryRouteDetailResponseDto> getDeliveryRouteDetail(
             @PathVariable UUID id) {
         DeliveryRouteDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteDetailServiceDto(id);
@@ -98,7 +98,7 @@ public class DeliveryMasterController {
     }
 
     // 배송 경로 전체 조회 (검색)
-    @GetMapping("/{id}/routes")
+    @GetMapping("/admin/v1/deliveries/{id}/routes")
     public ResponseEntity<DeliveryRouteResponseDto> searchDeliveryRoute(
             @PathVariable UUID id,
             @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
@@ -112,4 +112,15 @@ public class DeliveryMasterController {
 
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toRouteSearchResponseDto(responseServiceDto));
     }
+
+    @Description(
+            "FeignClient - 배송 조회"
+    )
+    @GetMapping("/delivery-service/deliveries/{id}")
+    public ResponseEntity<DeliveryDetailResponseDto> getById(@PathVariable UUID id) {
+        DeliveryDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toDetailServiceDto(id);
+        DeliveryDetailResponseServiceDto responseServiceDto = deliveryMasterService.GetDeliveryDetail(requestServiceDto);
+        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toDetailResponseDto(responseServiceDto));
+    }
+
 }
