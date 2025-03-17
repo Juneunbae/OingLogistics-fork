@@ -19,7 +19,7 @@ import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminCr
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminDeleteRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSignUpRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminUpdateRoleRequestDto;
-import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterDeleteRoleRequestServiceDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminDeleteRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminGrantRoleRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSearchRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminUpdateRequestDto;
@@ -66,7 +66,7 @@ public interface UserPresentationMapper {
 		UserAdminUpdateRoleRequestDto requestDto, Long id);
 
 	@Mapping(target = "id", source = "id")
-	UserMasterDeleteRoleRequestServiceDto toUserMasterDeleteRoleRequestServiceDto(Long id);
+	UserAdminDeleteRoleRequestServiceDto toUserMasterDeleteRoleRequestServiceDto(Long id);
 
 	@Mapping(target = "id", source = "id")
 	UserAdminDeleteRequestServiceDto toUserMasterDeleteRequestServiceDto(Long id);

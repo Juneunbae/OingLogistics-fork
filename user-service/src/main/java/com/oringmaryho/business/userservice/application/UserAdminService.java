@@ -15,7 +15,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserSlackCon
 import com.oringmaryho.business.userservice.application.dto.response.UserAdminUpdateRoleResponseServiceDto;
 import com.oringmaryho.business.userservice.infrastructure.UserRepository;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminDeleteRequestServiceDto;
-import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterDeleteRoleRequestServiceDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminDeleteRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminGrantRoleResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminSearchResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminUpdateResponseDto;
@@ -77,7 +77,7 @@ public class UserAdminService {
 		return null;
 	}
 
-	public void deleteRoleUser(UserMasterDeleteRoleRequestServiceDto requestServiceDto) {
+	public void deleteRoleUser(UserAdminDeleteRoleRequestServiceDto requestServiceDto) {
 
 	}
 

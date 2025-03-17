@@ -28,7 +28,7 @@ import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminDe
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminGrantRoleRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSearchRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSignUpRequestDto;
-import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterDeleteRoleRequestServiceDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminDeleteRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminUpdateRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminUpdateRoleRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminGrantRoleResponseDto;
@@ -121,7 +121,7 @@ public class UserAdminController {
 
 	@DeleteMapping("/roles/{id}")
 	public ResponseEntity<?> deleteRoleUserMaster(@PathVariable Long id) {
-		UserMasterDeleteRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterDeleteRoleRequestServiceDto(
+		UserAdminDeleteRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterDeleteRoleRequestServiceDto(
 			id);
 		userAdminService.deleteRoleUser(requestServiceDto);
 		return ResponseEntity.ok().build();
