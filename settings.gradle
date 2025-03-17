@@ -1,0 +1,9 @@
+rootProject.name = 'logistics-platform'
+
+// 서브모듈 추가
+include 'common'
+include 'product-service'
+
+include 'config-service'
+include 'eureka-service'
+include 'gateway-service'
