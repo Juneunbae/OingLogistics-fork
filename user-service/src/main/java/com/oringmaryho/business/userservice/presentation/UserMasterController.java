@@ -1,6 +1,5 @@
 package com.oringmaryho.business.userservice.presentation;
 
-import com.oringmaryho.business.userservice.application.UserApplicationMapper;
 import com.oringmaryho.business.userservice.application.UserMasterService;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterCreateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterFindRequestServiceDto;
@@ -9,7 +8,6 @@ import com.oringmaryho.business.userservice.application.dto.request.UserMasterSe
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterUpdateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterUpdateRoleRequestServiceDto;
-import com.oringmaryho.business.userservice.application.dto.response.UserMasterSearchResponseServiceDto;
 import com.oringmaryho.business.userservice.config.pageable.PageableConfig;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterCreateRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterDeleteRequestServiceDto;
@@ -43,7 +41,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserMasterController {
 
   private final UserMasterService userMasterService;
-  private final UserApplicationMapper userApplicationMapper;
   private final UserPresentationMapper userPresentationMapper;
   private final PageableConfig pageableConfig;
 
@@ -83,7 +80,7 @@ public class UserMasterController {
     Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
     UserMasterSearchRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterSearchRequestServiceDto(
         userMasterSearchRequestDto, customPageable);
-    List<UserMasterSearchResponseServiceDto> responseDtos = userMasterService.searchUsers(
+    List<UserMasterSearchResponseDto> responseDtos = userMasterService.searchUsers(
         requestServiceDto);
     return null;
   }
@@ -93,9 +90,7 @@ public class UserMasterController {
       @RequestBody UserMasterUpdateRequestDto userMasterUpdateRequestDto) {
     UserMasterUpdateRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterUpdateRequestServiceDto(
         id, userMasterUpdateRequestDto);
-    Long userId = userMasterService.updateUser(requestServiceDto);
-    UserMasterUpdateResponseDto responseDto = userApplicationMapper.toUserMasterUpdateResponseDto(
-        userId);
+    UserMasterUpdateResponseDto responseDto = userMasterService.updateUser(requestServiceDto);
     //todo: responsedto 반환하기
     return ResponseEntity.ok().build();
   }
@@ -105,9 +100,7 @@ public class UserMasterController {
       @RequestBody UserMasterGrantRoleRequestDto userMasterGrantRoleRequestDto) {
     UserMasterGrantRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterGrantRoleRequestServiceDto(
         id, userMasterGrantRoleRequestDto);
-    Long userId = userMasterService.grantRoleUser(requestServiceDto);
-    UserMasterGrantRoleResponseDto responseDto = userApplicationMapper.toUserMasterGrantRoleResponseDto(
-        userId);
+    UserMasterGrantRoleResponseDto responseDto = userMasterService.grantRoleUser(requestServiceDto);
     //todo: responsedto 반환하기
     return ResponseEntity.ok().build();
   }
@@ -117,8 +110,8 @@ public class UserMasterController {
       @RequestBody UserMasterUpdateRoleRequestDto userMasterUpdateRoleRequestDto) {
     UserMasterUpdateRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserMasterUpdateRoleRequestServiceDto(
         id, userMasterUpdateRoleRequestDto);
-    UserMasterUpdateRoleResponseDto responseDto = userApplicationMapper.toUserMasterUpdateRoleResponseDto(
-        userMasterService.updateRoleUser(requestServiceDto));
+    UserMasterUpdateRoleResponseDto responseDto = userMasterService.updateRoleUser(
+        requestServiceDto);
     //todo: responsedto 반환하기
     return ResponseEntity.ok().build();
   }

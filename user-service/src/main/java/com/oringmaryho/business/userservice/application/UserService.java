@@ -7,6 +7,8 @@ import com.oringmaryho.business.userservice.application.dto.request.UserSlackCon
 import com.oringmaryho.business.userservice.application.dto.response.UserSearchResponseServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserSignInResponseServiceDto;
 import com.oringmaryho.business.userservice.infrastructure.UserRepository;
+import com.oringmaryho.business.userservice.presentation.dto.response.UserSearchResponseDto;
+import com.oringmaryho.business.userservice.presentation.dto.response.UserSignInResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,17 +17,21 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
   private UserRepository userRepository;
+  private UserApplicationMapper userApplicationMapper;
 
   public void signUpUser(UserSignUpRequestServiceDto requestServiceDto) {
 
   }
 
-  public UserSignInResponseServiceDto signInUser(UserSignInRequestServiceDto requestServiceDto) {
-    return null;
+  public UserSignInResponseDto signInUser(UserSignInRequestServiceDto requestServiceDto) {
+
+    UserSignInResponseServiceDto userSignInResponseServiceDto = null;
+    return userApplicationMapper.toSignInResponseDto(userSignInResponseServiceDto);
   }
 
-  public UserSearchResponseServiceDto searchUser(UserSearchRequestServiceDto requestServiceDto) {
-    return null;
+  public UserSearchResponseDto searchUser(UserSearchRequestServiceDto requestServiceDto) {
+    UserSearchResponseServiceDto userSearchResponseServiceDto = null;
+    return userApplicationMapper.toSearchResponseDto(userSearchResponseServiceDto);
   }
 
   public void slackConfirmUser(UserSlackConfirmRequestServiceDto requestServiceDto) {

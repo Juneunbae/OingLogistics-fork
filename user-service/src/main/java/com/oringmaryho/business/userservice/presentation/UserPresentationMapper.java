@@ -22,9 +22,9 @@ import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterU
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignInRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignUpRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSlackConfirmRequestDto;
-import org.springframework.data.domain.Pageable;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.springframework.data.domain.Pageable;
 
 @Mapper(componentModel = "spring")
 public interface UserPresentationMapper {
@@ -56,15 +56,18 @@ public interface UserPresentationMapper {
   @Mapping(target = "username", source = "username")
   @Mapping(target = "password", source = "password")
   @Mapping(target = "slackId", source = "slackId")
-  UserMasterUpdateRequestServiceDto toUserMasterUpdateRequestServiceDto(Long id, UserMasterUpdateRequestDto requstDto);
+  UserMasterUpdateRequestServiceDto toUserMasterUpdateRequestServiceDto(Long id,
+      UserMasterUpdateRequestDto requstDto);
 
   @Mapping(target = "id", source = "id")
   @Mapping(target = "role", source = "role")
-  UserMasterGrantRoleRequestServiceDto toUserMasterGrantRoleRequestServiceDto(Long id, UserMasterGrantRoleRequestDto requstDto);
+  UserMasterGrantRoleRequestServiceDto toUserMasterGrantRoleRequestServiceDto(Long id,
+      UserMasterGrantRoleRequestDto requstDto);
 
   @Mapping(target = "id", source = "id")
   @Mapping(target = "newRole", source = "role")
-  UserMasterUpdateRoleRequestServiceDto toUserMasterUpdateRoleRequestServiceDto(Long id, UserMasterUpdateRoleRequestDto requstDto);
+  UserMasterUpdateRoleRequestServiceDto toUserMasterUpdateRoleRequestServiceDto(Long id,
+      UserMasterUpdateRoleRequestDto requstDto);
 
   @Mapping(target = "id", source = "id")
   UserMasterDeleteRoleRequestServiceDto toUserMasterDeleteRoleRequestServiceDto(Long id);

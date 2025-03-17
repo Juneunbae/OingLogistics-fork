@@ -8,11 +8,14 @@ import com.oringmaryho.business.userservice.application.dto.request.UserMasterSi
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterUpdateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserMasterUpdateRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
-import com.oringmaryho.business.userservice.application.dto.response.UserMasterSearchResponseServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserMasterUpdateRoleResponseServiceDto;
 import com.oringmaryho.business.userservice.infrastructure.UserRepository;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterDeleteRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserMasterDeleteRoleRequestServiceDto;
+import com.oringmaryho.business.userservice.presentation.dto.response.UserMasterGrantRoleResponseDto;
+import com.oringmaryho.business.userservice.presentation.dto.response.UserMasterSearchResponseDto;
+import com.oringmaryho.business.userservice.presentation.dto.response.UserMasterUpdateResponseDto;
+import com.oringmaryho.business.userservice.presentation.dto.response.UserMasterUpdateRoleResponseDto;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +25,7 @@ import org.springframework.stereotype.Service;
 public class UserMasterService {
 
   private UserRepository userRepository;
+  private UserApplicationMapper userApplicationMapper;
 
   public void signUpUserMaster(UserMasterSignUpRequestServiceDto requestServiceDto) {
 
@@ -39,24 +43,34 @@ public class UserMasterService {
 
   }
 
-  public List<UserMasterSearchResponseServiceDto> searchUsers(
+  public List<UserMasterSearchResponseDto> searchUsers(
       UserMasterSearchRequestServiceDto requestServiceDto) {
     return null;
   }
 
-  public Long updateUser(UserMasterUpdateRequestServiceDto requestServiceDto) {
-    //todo: userid 반환
-    return null;
+  public UserMasterUpdateResponseDto updateUser(
+      UserMasterUpdateRequestServiceDto requestServiceDto) {
+    //todo: responseDto 반환
+    Long userId = null;
+    UserMasterUpdateResponseDto responseDto = userApplicationMapper.toUserMasterUpdateResponseDto(
+        userId);
+    return responseDto;
   }
 
-  public Long grantRoleUser(UserMasterGrantRoleRequestServiceDto requestServiceDto) {
-    return null;
+  public UserMasterGrantRoleResponseDto grantRoleUser(
+      UserMasterGrantRoleRequestServiceDto requestServiceDto) {
+    Long userId = null;
+    UserMasterGrantRoleResponseDto responseDto = userApplicationMapper.toUserMasterGrantRoleResponseDto(
+        userId);
+    return responseDto;
   }
 
-  public UserMasterUpdateRoleResponseServiceDto updateRoleUser(
+  public UserMasterUpdateRoleResponseDto updateRoleUser(
       UserMasterUpdateRoleRequestServiceDto requestServiceDto) {
     //todo: 유저 변경 전 role 받아와서 묶어서 반환하기
-
+    UserMasterUpdateRoleResponseServiceDto responseServiceDto = null;
+    UserMasterUpdateRoleResponseDto responseDto = userApplicationMapper.toUserMasterUpdateRoleResponseDto(
+        responseServiceDto);
     return null;
   }
 
