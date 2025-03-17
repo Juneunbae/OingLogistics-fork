@@ -31,6 +31,7 @@
 # 환경 설정 파일 (config, eureka 제외 모든 yml 파일을 포함)
 config-service/src/main/resources/application.yml
 eureka-service/src/main/resources/application.yml
+gateway-service/src/main/resources/application.yml
 eureka-service/src/main/resources/application-dev.yml
 eureka-service/src/main/resources/application-prod.yml
 eureka-service/src/main/resources/application-test.yml
