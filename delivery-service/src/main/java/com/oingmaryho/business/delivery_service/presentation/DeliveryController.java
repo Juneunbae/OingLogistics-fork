@@ -1,6 +1,6 @@
 package com.oingmaryho.business.delivery_service.presentation;
 
-import com.oingmaryho.business.delivery_service.application.DeliveryService;
+import com.oingmaryho.business.delivery_service.application.service.DeliveryService;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
 import com.oingmaryho.business.delivery_service.domain.UserRoleType;
