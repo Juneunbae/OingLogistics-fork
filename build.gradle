@@ -60,3 +60,9 @@ project(':hub-service') {
         implementation project(':common')
     }
 }
+
+project(':order-service') {
+    dependencies {
+        implementation project(':common')
+    }
+}
