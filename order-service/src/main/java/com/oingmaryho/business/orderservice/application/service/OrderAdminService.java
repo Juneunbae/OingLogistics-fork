@@ -1,13 +1,16 @@
-package com.oingmaryho.business.orderservice.application;
+package com.oingmaryho.business.orderservice.application.service;
 
-import com.oingmaryho.business.orderservice.application.dto.*;
+import com.oingmaryho.business.orderservice.application.dto.mapper.OrderApplicationMapper;
+import com.oingmaryho.business.orderservice.application.dto.request.*;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
 import com.oingmaryho.business.orderservice.exception.ErrorCode;
 import com.oingmaryho.business.orderservice.exception.OrderException;
 import com.oingmaryho.business.orderservice.infrastructure.OrderRepository;
-import com.oingmaryho.business.orderservice.presentation.OrderPresentationMapper;
-import com.oingmaryho.business.orderservice.presentation.dto.response.OrderResponseDto;
+import com.oingmaryho.business.orderservice.presentation.dto.mapper.OrderPresentationMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
@@ -31,22 +34,22 @@ public class OrderAdminService {
     private final OrderApplicationMapper orderApplicationMapper;
 
     @Transactional
-    public Page<OrderResponseDto> getOrders(OrdersServiceDto ordersServiceDto) {
+    public Page<OrderResponseServiceDto> getOrders(OrdersRequestServiceDto ordersRequestServiceDto) {
         // TODO: 마스터 확인
 
-        String cacheKey = makeOrdersCacheKey(ordersServiceDto);
+        String cacheKey = makeOrdersCacheKey(ordersRequestServiceDto);
 
-        Page<OrderResponseDto> cachedOrders = getOrdersCache(cacheKey);
+        Page<OrderResponseServiceDto> cachedOrders = getOrdersCache(cacheKey);
         if (cachedOrders != null) {
             log.info("캐시된 주문 전체 조회 반환 성공");
             return cachedOrders;
         }
 
-        Pageable customPageable = ordersServiceDto.customPageable();
+        Pageable customPageable = ordersRequestServiceDto.customPageable();
         Page<Order> orders = orderRepository.findAll(customPageable);
         // TODO: QueryDSL 반영하여 LIKE 문 수정하기
 
-        List<OrderResponseDto> ordersDto = orders.stream().map(
+        List<OrderResponseServiceDto> ordersDto = orders.stream().map(
             order -> orderApplicationMapper.toOrderDto(
                 order,
                 order.getOrderDetails().stream().map(
@@ -55,7 +58,7 @@ public class OrderAdminService {
             )
         ).toList();
 
-        Page<OrderResponseDto> results = new PageImpl<>(ordersDto, customPageable, orders.getTotalElements());
+        Page<OrderResponseServiceDto> results = new PageImpl<>(ordersDto, customPageable, orders.getTotalElements());
 
         putOrdersCache(cacheKey, results);
 
@@ -63,10 +66,10 @@ public class OrderAdminService {
     }
 
     @Transactional
-    public OrderResponseDto getOrder(OrderServiceDto orderServiceDto) {
+    public OrderResponseServiceDto getOrder(OrderRequestServiceDto orderRequestServiceDto) {
         // TODO: 마스터 확인
 
-        UUID orderId = orderServiceDto.orderId();
+        UUID orderId = orderRequestServiceDto.orderId();
         Order order = getByOrderId(orderId);
 
         return orderApplicationMapper.toOrderDto(
@@ -78,7 +81,7 @@ public class OrderAdminService {
     }
 
     @Transactional
-    public void updateOrder(OrderUpdateServiceDto update) {
+    public void updateOrder(OrderUpdateResponseServiceDto update) {
         // TODO: 마스터
         int totalPrice = 0;
         UUID orderId = update.id();
@@ -86,12 +89,12 @@ public class OrderAdminService {
         Order order = getByOrderId(orderId);
 
         if (update.orderDetails() != null) {
-            for (OrderDetailUpdateServiceDto orderDetailDto : update.orderDetails()) {
+            for (OrderDetailUpdateResponseServiceDto orderDetailDto : update.orderDetails()) {
                 OrderDetail orderDetail = getByOrderDetailId(order, orderDetailDto.orderDetailId());
-                OrderDetailUpdateDto orderDetailUpdateDto = orderApplicationMapper.toOrderDetailUpdateDto(
+                OrderDetailUpdateRequestServiceDto orderDetailUpdateRequestServiceDto = orderApplicationMapper.toOrderDetailUpdateDto(
                     orderDetailDto.price(), orderDetailDto.quantity()
                 );
-                orderDetail.update(orderDetailUpdateDto);
+                orderDetail.update(orderDetailUpdateRequestServiceDto);
 
                 log.info("상세 주문: {}, 수정 완료", orderDetail.getId());
             }
@@ -101,9 +104,9 @@ public class OrderAdminService {
             ).sum();
         }
 
-        OrderUpdateDto orderUpdateDto = orderApplicationMapper.toOrderUpdateDto(update.requests(), totalPrice);
+        OrderUpdateRequestServiceDto orderUpdateRequestServiceDto = orderApplicationMapper.toOrderUpdateDto(update.requests(), totalPrice);
 
-        order.update(orderUpdateDto);
+        order.update(orderUpdateRequestServiceDto);
         orderRepository.save(order);
         log.info("주문 수정 완료");
 
@@ -111,7 +114,7 @@ public class OrderAdminService {
     }
 
     @Transactional
-    public void deleteOrder(OrderDeleteDto delete) {
+    public void deleteOrder(OrderDeleteServiceDto delete) {
         // TODO: 마스터
 
         UUID orderId = delete.orderId();
@@ -153,20 +156,20 @@ public class OrderAdminService {
         ).findFirst().orElseThrow(() -> new OrderException(ErrorCode.ORDER_DETAIL_NOT_FOUND));
     }
 
-    private String makeOrdersCacheKey(OrdersServiceDto ordersServiceDto) {
-        String productName = ordersServiceDto.productName();
+    private String makeOrdersCacheKey(OrdersRequestServiceDto ordersRequestServiceDto) {
+        String productName = ordersRequestServiceDto.productName();
         productName = (productName == null) ? "" : productName;
 
-        String recipientName = ordersServiceDto.recipientName();
+        String recipientName = ordersRequestServiceDto.recipientName();
         recipientName = (recipientName == null) ? "" : recipientName;
 
-        String requesterName = ordersServiceDto.requesterName();
+        String requesterName = ordersRequestServiceDto.requesterName();
         requesterName = (requesterName == null) ? "" : requesterName;
 
-        Boolean isDeleted = ordersServiceDto.isDeleted();
+        Boolean isDeleted = ordersRequestServiceDto.isDeleted();
         isDeleted = isDeleted != null && isDeleted;
 
-        Pageable customPageable = ordersServiceDto.customPageable();
+        Pageable customPageable = ordersRequestServiceDto.customPageable();
         int customPageableHashCode = (customPageable != null) ? customPageable.hashCode() : 0;
 
         return "Orders_" +
@@ -177,12 +180,12 @@ public class OrderAdminService {
             customPageableHashCode;
     }
 
-    private Page<OrderResponseDto> getOrdersCache(String cacheKey) {
+    private Page<OrderResponseServiceDto> getOrdersCache(String cacheKey) {
         Cache cache = cacheManager.getCache("orders");
         return cache.get(cacheKey, Page.class);
     }
 
-    private void putOrdersCache(String cacheKey, Page<OrderResponseDto> results) {
+    private void putOrdersCache(String cacheKey, Page<OrderResponseServiceDto> results) {
         Cache cache = cacheManager.getCache("orders");
         cache.put(cacheKey, results);
         log.info("캐시 저장 성공: {}", cacheKey);

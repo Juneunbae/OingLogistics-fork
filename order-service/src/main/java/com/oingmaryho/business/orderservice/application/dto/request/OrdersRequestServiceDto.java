@@ -1,8 +1,8 @@
-package com.oingmaryho.business.orderservice.application.dto;
+package com.oingmaryho.business.orderservice.application.dto.request;
 
 import org.springframework.data.domain.Pageable;
 
-public record OrdersServiceDto(
+public record OrdersRequestServiceDto(
     String productName,
     String recipientName,
     String requesterName,

@@ -1,9 +1,9 @@
-package com.oingmaryho.business.orderservice.presentation;
+package com.oingmaryho.business.orderservice.presentation.controller;
 
-import com.oingmaryho.business.orderservice.application.OrderApplicationMapper;
-import com.oingmaryho.business.orderservice.application.OrderFeignService;
-import com.oingmaryho.business.orderservice.application.dto.OrderServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.request.OrderRequestServiceDto;
+import com.oingmaryho.business.orderservice.application.service.OrderFeignService;
 import com.oingmaryho.business.orderservice.domain.Order;
+import com.oingmaryho.business.orderservice.presentation.dto.mapper.OrderPresentationMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Description;
 import org.springframework.http.ResponseEntity;
@@ -19,14 +19,14 @@ import java.util.UUID;
 @RequestMapping("/order-service/orders")
 public class OrderFeignClientController {
     private final OrderFeignService orderFeignService;
-    private final OrderApplicationMapper orderApplicationMapper;
+    private final OrderPresentationMapper orderPresentationMapper;
 
     @Description(
         "FeignClient - 주문 조회"
     )
     @GetMapping("/{id}")
     public ResponseEntity<Order> orderServiceGetById(@PathVariable UUID id) {
-        OrderServiceDto orderServiceDto = orderApplicationMapper.toOrderServiceDto(id);
-        return ResponseEntity.ok(orderFeignService.orderServiceGetById(orderServiceDto));
+        OrderRequestServiceDto orderRequestServiceDto = orderPresentationMapper.toOrderServiceDto(id);
+        return ResponseEntity.ok(orderFeignService.orderServiceGetById(orderRequestServiceDto));
     }
 }

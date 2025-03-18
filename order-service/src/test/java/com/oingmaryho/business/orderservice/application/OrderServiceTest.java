@@ -1,15 +1,17 @@
 package com.oingmaryho.business.orderservice.application;
 
-import com.oingmaryho.business.orderservice.application.dto.OrderServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.OrdersServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.mapper.OrderApplicationMapper;
+import com.oingmaryho.business.orderservice.application.dto.request.OrderRequestServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.request.OrdersRequestServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.service.OrderAdminService;
 import com.oingmaryho.business.orderservice.config.pageable.PageableConfig;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
 import com.oingmaryho.business.orderservice.domain.Status;
 import com.oingmaryho.business.orderservice.infrastructure.OrderRepository;
-import com.oingmaryho.business.orderservice.presentation.OrderPresentationMapper;
+import com.oingmaryho.business.orderservice.presentation.dto.mapper.OrderPresentationMapper;
 import com.oingmaryho.business.orderservice.presentation.dto.response.OrderDetailResponseDto;
-import com.oingmaryho.business.orderservice.presentation.dto.response.OrderResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,10 +51,10 @@ class OrderServiceTest {
     private OrderRepository orderRepository;
 
     @Mock
-    private OrderServiceDto orderServiceDto;
+    private OrderRequestServiceDto orderRequestServiceDto;
 
     @Mock
-    private OrdersServiceDto ordersServiceDto;
+    private OrdersRequestServiceDto ordersRequestServiceDto;
 
     @Mock
     private OrderApplicationMapper orderApplicationMapper;
@@ -75,22 +77,22 @@ class OrderServiceTest {
         // given
         when(cacheManager.getCache("orders")).thenReturn(cache); // CacheManager 설정 추가
 
-        when(ordersServiceDto.productName()).thenReturn("");
-        when(ordersServiceDto.recipientName()).thenReturn("");
-        when(ordersServiceDto.requesterName()).thenReturn("");
-        when(ordersServiceDto.isDeleted()).thenReturn(false);
+        when(ordersRequestServiceDto.productName()).thenReturn("");
+        when(ordersRequestServiceDto.recipientName()).thenReturn("");
+        when(ordersRequestServiceDto.requesterName()).thenReturn("");
+        when(ordersRequestServiceDto.isDeleted()).thenReturn(false);
         when(pageableConfig.customPageable(1, null, null)).thenReturn(pageable);
-        String cacheKey = makeOrdersCacheKey(ordersServiceDto);
+        String cacheKey = makeOrdersCacheKey(ordersRequestServiceDto);
 
         when(cache.get(cacheKey, Page.class)).thenReturn(null); // 캐시 미스 설정
-        when(ordersServiceDto.customPageable()).thenReturn(pageable);
+        when(ordersRequestServiceDto.customPageable()).thenReturn(pageable);
 
         List<Order> orderList = Collections.emptyList(); // 빈 리스트 또는 가상의 데이터 리스트
         Page<Order> orderPage = new PageImpl<>(orderList);
         when(orderRepository.findAll(any(Pageable.class))).thenReturn(orderPage);
 
         // when: getOrders 호출
-        Page<OrderResponseDto> result = orderAdminService.getOrders(ordersServiceDto);
+        Page<OrderResponseServiceDto> result = orderAdminService.getOrders(ordersRequestServiceDto);
 
         // then: 캐시된 데이터가 반환되었는지 확인
         assertNotNull(result);
@@ -102,22 +104,22 @@ class OrderServiceTest {
     @DisplayName("마스터 - 전체 조회 (캐시 히트)")
     void testGetOrdersCacheHit() {
         // given
-        when(ordersServiceDto.productName()).thenReturn("");
-        when(ordersServiceDto.recipientName()).thenReturn("");
-        when(ordersServiceDto.requesterName()).thenReturn("");
-        when(ordersServiceDto.isDeleted()).thenReturn(false);
+        when(ordersRequestServiceDto.productName()).thenReturn("");
+        when(ordersRequestServiceDto.recipientName()).thenReturn("");
+        when(ordersRequestServiceDto.requesterName()).thenReturn("");
+        when(ordersRequestServiceDto.isDeleted()).thenReturn(false);
         when(pageableConfig.customPageable(1, null, null)).thenReturn(pageable);
-        String cacheKey = makeOrdersCacheKey(ordersServiceDto);
-        List<OrderResponseDto> orderResponseDtoList = List.of(createOrderDto());
-        Page<OrderResponseDto> cachedOrderDto = new PageImpl<>(orderResponseDtoList); // 가상의 캐시 데이터
+        String cacheKey = makeOrdersCacheKey(ordersRequestServiceDto);
+        List<OrderResponseServiceDto> orderResponseServiceDtoList = List.of(createOrderDto());
+        Page<OrderResponseServiceDto> cachedOrderDto = new PageImpl<>(orderResponseServiceDtoList); // 가상의 캐시 데이터
         cache.put(cacheKey, cachedOrderDto);
 
         when(cacheManager.getCache("orders")).thenReturn(cache);
-        when(ordersServiceDto.customPageable()).thenReturn(pageable);
+        when(ordersRequestServiceDto.customPageable()).thenReturn(pageable);
         when(cache.get(cacheKey, Page.class)).thenReturn(cachedOrderDto);
 
         // when: getOrders 호출
-        Page<OrderResponseDto> result = orderAdminService.getOrders(ordersServiceDto);
+        Page<OrderResponseServiceDto> result = orderAdminService.getOrders(ordersRequestServiceDto);
 
         // then: 캐시된 데이터가 반환되었는지 확인
         assertNotNull(result);
@@ -130,24 +132,24 @@ class OrderServiceTest {
     void testGetOrderCacheMiss() {
         // given
         UUID orderId = UUID.fromString("0ab88134-13ce-4f24-963e-4f8ad716a69e");
-        OrderServiceDto orderServiceDto = createOrderServiceDto(orderId);
+        OrderRequestServiceDto orderRequestServiceDto = createOrderServiceDto(orderId);
         Order order = createOrder();
-        OrderResponseDto expectedOrderResponseDto = createOrderDto();
+        OrderResponseServiceDto expectedOrderResponseServiceDto = createOrderDto();
 
         when(cacheManager.getCache("order")).thenReturn(cache); // CacheManager 설정 추가
 
-        when(cache.get(orderId, OrderResponseDto.class)).thenReturn(null);
+        when(cache.get(orderId, OrderResponseServiceDto.class)).thenReturn(null);
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
-        when(orderApplicationMapper.toOrderDto(any(Order.class), anyList())).thenReturn(expectedOrderResponseDto);
+        when(orderApplicationMapper.toOrderDto(any(Order.class), anyList())).thenReturn(expectedOrderResponseServiceDto);
 
         // when
-        OrderResponseDto result = orderAdminService.getOrder(orderServiceDto);
+        OrderResponseServiceDto result = orderAdminService.getOrder(orderRequestServiceDto);
 
         // then
         assertNotNull(result);
-        assertEquals(expectedOrderResponseDto, result);
+        assertEquals(expectedOrderResponseServiceDto, result);
         verify(orderRepository, times(1)).findById(orderId); // DB 조회는 1번 확인되어야 함
-        verify(cache, times(0)).put(orderId, expectedOrderResponseDto); // 캐시 저장 확인
+        verify(cache, times(0)).put(orderId, expectedOrderResponseServiceDto); // 캐시 저장 확인
     }
 
     @Test
@@ -157,23 +159,23 @@ class OrderServiceTest {
         when(cacheManager.getCache("order")).thenReturn(cache);
 
         UUID orderId = UUID.fromString("0ab88134-13ce-4f24-963e-4f8ad716a69e");
-        OrderServiceDto orderServiceDto = createOrderServiceDto(orderId);
-        OrderResponseDto cachedOrderResponseDto = createOrderDto();
+        OrderRequestServiceDto orderRequestServiceDto = createOrderServiceDto(orderId);
+        OrderResponseServiceDto cachedOrderResponseServiceDto = createOrderDto();
 
-        when(cache.get(orderId, OrderResponseDto.class)).thenReturn(cachedOrderResponseDto);
-        when(orderApplicationMapper.toOrderDto(any(Order.class), anyList())).thenReturn(cachedOrderResponseDto);
+        when(cache.get(orderId, OrderResponseServiceDto.class)).thenReturn(cachedOrderResponseServiceDto);
+        when(orderApplicationMapper.toOrderDto(any(Order.class), anyList())).thenReturn(cachedOrderResponseServiceDto);
 
         // when
-        OrderResponseDto result = orderAdminService.getOrder(orderServiceDto);
+        OrderResponseServiceDto result = orderAdminService.getOrder(orderRequestServiceDto);
 
         // then
         assertNotNull(result);
-        assertEquals(cachedOrderResponseDto, result);
-        verify(cache, times(1)).get(orderId, OrderResponseDto.class);
+        assertEquals(cachedOrderResponseServiceDto, result);
+        verify(cache, times(1)).get(orderId, OrderResponseServiceDto.class);
         verify(orderRepository, times(0)).findById(orderId);
     }
 
-    OrderResponseDto createOrderDto() {
+    OrderResponseServiceDto createOrderDto() {
         OrderDetailResponseDto orderDetailResponseDto = new OrderDetailResponseDto(
             UUID.randomUUID(),
             UUID.randomUUID(),
@@ -188,7 +190,7 @@ class OrderServiceTest {
 
         List<OrderDetailResponseDto> orderDetails = List.of(orderDetailResponseDto);
 
-        return new OrderResponseDto(
+        return new OrderResponseServiceDto(
             UUID.randomUUID(),
             UUID.randomUUID(),
             "테스트1",
@@ -206,20 +208,20 @@ class OrderServiceTest {
         );
     }
 
-    private OrderServiceDto createOrderServiceDto(UUID orderId) {
-        return new OrderServiceDto(
+    private OrderRequestServiceDto createOrderServiceDto(UUID orderId) {
+        return new OrderRequestServiceDto(
             orderId
         );
     }
 
-    String makeOrdersCacheKey(OrdersServiceDto ordersServiceDto) {
-        String productName = ordersServiceDto.productName();
+    String makeOrdersCacheKey(OrdersRequestServiceDto ordersRequestServiceDto) {
+        String productName = ordersRequestServiceDto.productName();
         productName = (productName == null) ? "" : productName;
 
-        String recipientName = ordersServiceDto.recipientName();
+        String recipientName = ordersRequestServiceDto.recipientName();
         recipientName = (recipientName == null) ? "" : recipientName;
 
-        String requesterName = ordersServiceDto.requesterName();
+        String requesterName = ordersRequestServiceDto.requesterName();
         requesterName = (requesterName == null) ? "" : requesterName;
 
         Pageable customPageable = pageableConfig.customPageable(1, null, null);
@@ -229,7 +231,7 @@ class OrderServiceTest {
             productName.hashCode() +
             recipientName.hashCode() +
             requesterName.hashCode() +
-            ordersServiceDto.isDeleted().hashCode() +
+            ordersRequestServiceDto.isDeleted().hashCode() +
             customPageableHashCode;
     }
 

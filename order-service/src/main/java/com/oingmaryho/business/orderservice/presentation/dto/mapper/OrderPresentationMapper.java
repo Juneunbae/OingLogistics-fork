@@ -1,13 +1,14 @@
-package com.oingmaryho.business.orderservice.application;
+package com.oingmaryho.business.orderservice.presentation.dto.mapper;
 
-import com.oingmaryho.business.orderservice.application.dto.*;
-import com.oingmaryho.business.orderservice.domain.Order;
-import com.oingmaryho.business.orderservice.domain.OrderDetail;
+import com.oingmaryho.business.orderservice.application.dto.request.OrderDeleteServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.request.OrderRequestServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.request.OrdersRequestServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderDetailUpdateRequestDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderSearchRequestDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderUpdateRequestDto;
-import com.oingmaryho.business.orderservice.presentation.dto.response.OrderDetailResponseDto;
-import com.oingmaryho.business.orderservice.presentation.dto.response.OrderResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.data.domain.Pageable;
@@ -16,39 +17,31 @@ import java.util.List;
 import java.util.UUID;
 
 @Mapper(componentModel = "spring")
-public interface OrderApplicationMapper {
+public interface OrderPresentationMapper {
     @Mapping(target = "productName", source = "orderSearchRequestDto.productName")
     @Mapping(target = "recipientName", source = "orderSearchRequestDto.recipientName")
     @Mapping(target = "requesterName", source = "orderSearchRequestDto.requesterName")
     @Mapping(target = "isDeleted", source = "orderSearchRequestDto.isDeleted")
-    OrdersServiceDto toOrdersServiceDto(
+    OrdersRequestServiceDto toOrdersServiceDto(
         OrderSearchRequestDto orderSearchRequestDto,
         Pageable customPageable
     );
 
-    OrderServiceDto toOrderServiceDto(UUID orderId);
-
-
     @Mapping(target = "orderDetailId", source = "source.orderDetailId")
     @Mapping(target = "quantity", source = "source.quantity")
     @Mapping(target = "price", source = "source.price")
-    OrderDetailUpdateServiceDto toOrderDetailUpdateServiceDto(OrderDetailUpdateRequestDto source);
+    OrderDetailUpdateResponseServiceDto toOrderDetailUpdateServiceDto(OrderDetailUpdateRequestDto source);
+
+    OrderResponseServiceDto toOrderResponseServiceDto(OrderResponseServiceDto source);
+
+    OrderRequestServiceDto toOrderServiceDto(UUID orderId);
 
     @Mapping(target = "requests", source = "source.requests")
-    OrderUpdateServiceDto toOrderUpdateServiceDto(
+    OrderUpdateResponseServiceDto toOrderUpdateServiceDto(
         UUID id,
         OrderUpdateRequestDto source,
-        List<OrderDetailUpdateServiceDto> orderDetails
+        List<OrderDetailUpdateResponseServiceDto> orderDetails
     );
 
-    @Mapping(target = "orderDetails", source = "orderDetails")
-    OrderResponseDto toOrderDto(Order order, List<OrderDetailResponseDto> orderDetails);
-
-    OrderDetailResponseDto toOrderDetailDto(UUID orderId, OrderDetail orderDetail);
-
-    OrderDetailUpdateDto toOrderDetailUpdateDto(Integer price, Integer quantity);
-
-    OrderUpdateDto toOrderUpdateDto(String requests, Integer totalPrice);
-
-    OrderDeleteDto toOrderDeleteDto(UUID orderId);
+    OrderDeleteServiceDto toOrderDeleteDto(UUID orderId);
 }

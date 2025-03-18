@@ -1,15 +1,15 @@
-package com.oingmaryho.business.orderservice.presentation;
+package com.oingmaryho.business.orderservice.presentation.controller;
 
-import com.oingmaryho.business.orderservice.application.OrderAdminService;
-import com.oingmaryho.business.orderservice.application.OrderApplicationMapper;
-import com.oingmaryho.business.orderservice.application.dto.OrderDeleteDto;
-import com.oingmaryho.business.orderservice.application.dto.OrderServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.OrderUpdateServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.OrdersServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.request.OrderDeleteServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.request.OrderRequestServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.request.OrdersRequestServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderUpdateResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.service.OrderAdminService;
 import com.oingmaryho.business.orderservice.config.pageable.PageableConfig;
+import com.oingmaryho.business.orderservice.presentation.dto.mapper.OrderPresentationMapper;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderSearchRequestDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderUpdateRequestDto;
-import com.oingmaryho.business.orderservice.presentation.dto.response.OrderResponseDto;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Description;
@@ -24,15 +24,15 @@ import java.util.UUID;
 @RequestMapping("/admin/v1/orders")
 @RequiredArgsConstructor
 public class OrderAdminController {
-    private final OrderAdminService orderAdminService;
     private final PageableConfig pageableConfig;
-    private final OrderApplicationMapper orderApplicationMapper;
+    private final OrderAdminService orderAdminService;
+    private final OrderPresentationMapper orderPresentationMapper;
 
     @Description(
         "마스터 - 주문 전체 조회"
     )
     @GetMapping
-    public ResponseEntity<Page<OrderResponseDto>> getOrders(
+    public ResponseEntity<?> getOrders(
         @Min(value = 1, message = "페이지 번호는 1 이상이어야 합니다.")
         @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
         @RequestParam(value = "size", required = false) Integer size,
@@ -40,21 +40,23 @@ public class OrderAdminController {
         @RequestBody OrderSearchRequestDto orderSearchRequestDto
     ) {
         Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
-        OrdersServiceDto ordersServiceDto = orderApplicationMapper.toOrdersServiceDto(
+        OrdersRequestServiceDto ordersRequestServiceDto = orderPresentationMapper.toOrdersServiceDto(
             orderSearchRequestDto, customPageable
         );
+        Page<OrderResponseServiceDto> response = orderAdminService.getOrders(ordersRequestServiceDto);
 
-        return ResponseEntity.ok(orderAdminService.getOrders(ordersServiceDto));
+        return ResponseEntity.ok(response.map(orderPresentationMapper::toOrderResponseServiceDto));
     }
 
     @Description(
         "마스터 - 주문 상세 조회"
     )
     @GetMapping("/{id}")
-    public ResponseEntity<OrderResponseDto> getOrder(@PathVariable UUID id) {
-        OrderServiceDto orderServiceDto = orderApplicationMapper.toOrderServiceDto(id);
+    public ResponseEntity<?> getOrder(@PathVariable UUID id) {
+        OrderRequestServiceDto orderRequestServiceDto = orderPresentationMapper.toOrderServiceDto(id);
+        OrderResponseServiceDto response = orderAdminService.getOrder(orderRequestServiceDto);
 
-        return ResponseEntity.ok(orderAdminService.getOrder(orderServiceDto));
+        return ResponseEntity.ok(orderPresentationMapper.toOrderResponseServiceDto(response));
     }
 
     @Description(
@@ -62,12 +64,12 @@ public class OrderAdminController {
     )
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateOrder(@PathVariable UUID id, @RequestBody OrderUpdateRequestDto update) {
-        OrderUpdateServiceDto orderUpdateServiceDto = orderApplicationMapper.toOrderUpdateServiceDto(
+        OrderUpdateResponseServiceDto orderUpdateResponseServiceDto = orderPresentationMapper.toOrderUpdateServiceDto(
             id, update, update.requestOrderDetails().stream().map(
-                orderApplicationMapper::toOrderDetailUpdateServiceDto
+                orderPresentationMapper::toOrderDetailUpdateServiceDto
             ).toList()
         );
-        orderAdminService.updateOrder(orderUpdateServiceDto);
+        orderAdminService.updateOrder(orderUpdateResponseServiceDto);
 
         return ResponseEntity.ok().build();
     }
@@ -77,8 +79,8 @@ public class OrderAdminController {
     )
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteOrder(@PathVariable UUID id) {
-        OrderDeleteDto orderServiceDto = orderApplicationMapper.toOrderDeleteDto(id);
-        orderAdminService.deleteOrder(orderServiceDto);
+        OrderDeleteServiceDto orderDeleteServiceDto = orderPresentationMapper.toOrderDeleteDto(id);
+        orderAdminService.deleteOrder(orderDeleteServiceDto);
 
         return ResponseEntity.ok().build();
     }
