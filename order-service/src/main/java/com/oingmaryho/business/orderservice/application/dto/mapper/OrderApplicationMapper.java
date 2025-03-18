@@ -14,8 +14,9 @@ import java.util.UUID;
 
 @Mapper(componentModel = "spring")
 public interface OrderApplicationMapper {
+    @Mapping(target = "id", source = "order.id")
     @Mapping(target = "orderDetails", source = "orderDetails")
-    OrderResponseServiceDto toOrderDto(Order order, List<OrderDetailResponseDto> orderDetails);
+    OrderResponseServiceDto toOrderResponseServiceDto(Order order, List<OrderDetailResponseDto> orderDetails);
 
     OrderDetailResponseDto toOrderDetailDto(UUID orderId, OrderDetail orderDetail);
 

@@ -10,7 +10,6 @@ import com.oingmaryho.business.orderservice.domain.OrderDetail;
 import com.oingmaryho.business.orderservice.exception.ErrorCode;
 import com.oingmaryho.business.orderservice.exception.OrderException;
 import com.oingmaryho.business.orderservice.infrastructure.OrderRepository;
-import com.oingmaryho.business.orderservice.presentation.dto.mapper.OrderPresentationMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
@@ -30,7 +29,6 @@ import java.util.UUID;
 public class OrderAdminService {
     private final CacheManager cacheManager;
     private final OrderRepository orderRepository;
-    private final OrderPresentationMapper orderPresentationMapper;
     private final OrderApplicationMapper orderApplicationMapper;
 
     @Transactional
@@ -50,7 +48,7 @@ public class OrderAdminService {
         // TODO: QueryDSL 반영하여 LIKE 문 수정하기
 
         List<OrderResponseServiceDto> ordersDto = orders.stream().map(
-            order -> orderApplicationMapper.toOrderDto(
+            order -> orderApplicationMapper.toOrderResponseServiceDto(
                 order,
                 order.getOrderDetails().stream().map(
                     orderDetail -> orderApplicationMapper.toOrderDetailDto(order.getId(), orderDetail)
@@ -72,7 +70,7 @@ public class OrderAdminService {
         UUID orderId = orderRequestServiceDto.orderId();
         Order order = getByOrderId(orderId);
 
-        return orderApplicationMapper.toOrderDto(
+        return orderApplicationMapper.toOrderResponseServiceDto(
             order,
             order.getOrderDetails().stream().map(
                 orderDetail -> orderApplicationMapper.toOrderDetailDto(order.getId(), orderDetail)
