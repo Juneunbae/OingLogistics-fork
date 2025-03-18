@@ -29,15 +29,22 @@ public class HubController {
 	private final HubService hubService;
 	private final HubPresentationMapper mapper;
 
-	@PostMapping
+	@GetMapping
 	public ResponseEntity<?> searchHubs(
-		@RequestBody(required = false) HubSearchRequestDto requestDto,
 		@RequestParam(value = "page", required = false, defaultValue = "1") int page,
 		@RequestParam(value = "size", required = false, defaultValue = "10") int size,
 		@RequestParam(value = "sortDirection", required = false, defaultValue = "DESC") String sortDirection,
-		@RequestParam(value = "by", required = false) String by
+		@RequestParam(value = "by", required = false) String by,
+		@RequestParam(value = "id", required = false) UUID id,
+		@RequestParam(value = "name", required = false) String name,
+		@RequestParam(value = "address", required = false) String address,
+		@RequestParam(value = "latitude", required = false) Double latitude,
+		@RequestParam(value = "longitude", required = false) Double longitude,
+		@RequestParam(value = "managerId", required = false) Long managerId
 	) {
 		Pageable pageable = PageableUtils.customPageable(page, size, sortDirection, by);
+		HubSearchRequestDto requestDto = new HubSearchRequestDto(id, name, address, latitude, longitude, managerId);
+
 		Page<HubSearchResponseServiceDto> responseDto = hubService.searchHubs(mapper.toHubsSearchRequestServiceDto(requestDto), pageable);
 		return ResponseEntity.ok(responseDto.map(mapper::toHubSearchResponseDto));
 	}

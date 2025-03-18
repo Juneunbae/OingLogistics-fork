@@ -2,20 +2,20 @@ package com.oingmaryho.business.hubservice.infrastructure;
 
 import static com.oingmaryho.business.hubservice.domain.QHub.*;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import com.oingmaryho.business.hubservice.domain.Hub;
 import com.oingmaryho.business.hubservice.domain.HubSearchCriteria;
 import com.oingmaryho.business.hubservice.domain.repository.CustomHubRepository;
 import com.oingmaryho.business.hubservice.utils.QueryDslUtils;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -30,23 +30,31 @@ public class HubQueryRepository implements CustomHubRepository {
 
 	@Override
 	public Page<Hub> findDynamicQuery(HubSearchCriteria criteria, Pageable pageable) {
+		BooleanBuilder conditions = new BooleanBuilder();
+		conditions
+			.and(eqId(criteria.getId()))
+			.and(eqName(criteria.getName()))
+			.and(eqAddress(criteria.getAddress()))
+			.and(eqLatitude(criteria.getLatitude()))
+			.and(eqLongitude(criteria.getLongitude()))
+			.and(eqManagerId(criteria.getManagerId()))
+			.and(eqIsDeleted(criteria.getIsDeleted()));
+
 		JPAQuery<Hub> query = queryFactory
 			.selectFrom(hub)
-			.where(
-				eqId(criteria.getId()),
-				eqName(criteria.getName()),
-				eqAddress(criteria.getAddress()),
-				eqLatitude(criteria.getLatitude()),
-				eqLongitude(criteria.getLongitude()),
-				eqManagerId(criteria.getManagerId()),
-				eqIsDeleted(criteria.getIsDeleted())
-			)
+			.where(conditions)
 			.orderBy(QueryDslUtils.getOrderSpecifiers(pageable.getSort(), Hub.class))
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize());
 
-		List<Hub> results = query.fetch();
-		return new PageImpl<>(results, pageable, results.size());
+		Long total = queryFactory
+			.select(hub.id.count())
+			.from(hub)
+			.where(conditions)
+			.fetchOne();
+		assert total != null;
+
+		return new PageImpl<>(query.fetch(), pageable, total);
 	}
 
 	@Override
@@ -69,14 +77,14 @@ public class HubQueryRepository implements CustomHubRepository {
 	}
 
 	private BooleanExpression eqName(String name) {
-		if (StringUtils.isEmpty(name)) {
+		if (!StringUtils.hasText(name)) {
 			return null;
 		}
-		return hub.name.eq(name);
+		return hub.name.contains(name);
 	}
 
 	private BooleanExpression eqAddress(String address) {
-		if (StringUtils.isEmpty(address)) {
+		if (!StringUtils.hasText(address)) {
 			return null;
 		}
 		return hub.address.address.contains(address);
