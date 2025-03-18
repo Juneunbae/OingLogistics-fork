@@ -3,10 +3,10 @@ package com.oingmaryho.business.hubservice.utils;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.util.StringUtils;
 
 public class PageableUtils {
 
@@ -26,7 +26,7 @@ public class PageableUtils {
 	private static Sort getSort(String sortDirection, String sortProperty) {
 		List<Sort.Order> orders = new ArrayList<>();
 
-		if (StringUtils.isEmpty(sortProperty)) {
+		if (!StringUtils.hasText(sortProperty)) {
 			orders.add(getOrder(sortDirection, SortConstants.CREATED_AT));
 			orders.add(getOrder(sortDirection, SortConstants.UPDATED_AT));
 		} else {
