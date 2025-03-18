@@ -4,6 +4,8 @@ import lombok.Getter;
 
 @Getter
 public enum DeliveryManagerType {
+
+
     HUB_DELIVERY_MANAGER("허브 배송담당자"),
     COMPANY_DELIVERY_MANAGER("업체 배송담당자");
 

@@ -1,32 +1,26 @@
 package com.oingmaryho.business.delivery_service.application;
 
-import com.oingmaryho.business.delivery_service.application.dto.response.*;
-import com.oingmaryho.business.delivery_service.presentation.dto.response.*;
+import com.oingmaryho.business.delivery_service.application.dto.response.DeliveryResponseServiceDto;
+import com.oingmaryho.business.delivery_service.application.dto.response.DeliveryRouteResponseServiceDto;
+import com.oingmaryho.business.delivery_service.domain.Delivery;
+import com.oingmaryho.business.delivery_service.domain.DeliveryRoute;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
+
 
 @Mapper(componentModel = "spring")
 public interface DeliveryApplicationMapper {
     DeliveryApplicationMapper INSTANCE = Mappers.getMapper(DeliveryApplicationMapper.class);
 
-    DeliveryCreationResponseDto toCreationResponseDto(DeliveryCreationResponseServiceDto responseServiceDto);
+    // RequestServiceDto -> Entity
 
-    DeliveryUpdateResponseDto toUpdateResponseDto(DeliveryUpdateResponseServiceDto responseServiceDto);
+    // Entity -> ResponseServiceDto
+    // 배송 정보
+    DeliveryResponseServiceDto toDeliveryResponseServiceDto(Delivery delivery);
 
-    DeliveryUpdateStatusResponseDto toUpdateStatusResponseDto(DeliveryUpdateStatusResponseServiceDto responseServiceDto);
+    // 배송 경로 정보
+    @Mapping(target = "deliveryId", source = "route.delivery.id")
+    DeliveryRouteResponseServiceDto toRouteResponseServiceDto(DeliveryRoute route);
 
-    DeliveryDetailResponseDto toDetailResponseDto(DeliveryDetailResponseServiceDto responseServiceDto);
-
-    @Mapping(target = "page", source = "customPageable.page")
-    @Mapping(target = "size", source = "customPageable.size")
-    @Mapping(target = "sortDirection", source = "customPageable.sortDirection")
-    DeliveryResponseDto toSearchResponseDto(DeliveryResponseServiceDto responseServiceDto);
-
-    DeliveryRouteDetailResponseDto toRouteDetailResponseDto(DeliveryRouteDetailResponseServiceDto responseServiceDto);
-
-    @Mapping(target = "page", source = "customPageable.page")
-    @Mapping(target = "size", source = "customPageable.size")
-    @Mapping(target = "sortDirection", source = "customPageable.sortDirection")
-    DeliveryRouteResponseDto toRouteSearchResponseDto(DeliveryRouteResponseServiceDto responseServiceDto);
 }

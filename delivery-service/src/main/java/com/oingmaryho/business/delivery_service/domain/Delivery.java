@@ -1,13 +1,12 @@
 package com.oingmaryho.business.delivery_service.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -16,7 +15,7 @@ import java.util.UUID;
 @DynamicInsert
 @DynamicUpdate
 @Table(name = "p_delivery")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(force = true, access = AccessLevel.PROTECTED)
 public class Delivery extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -27,6 +26,7 @@ public class Delivery extends BaseEntity{
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private DeliveryStatus status = DeliveryStatus.HUB_WAITING;
 
     @Column(nullable = false)
@@ -45,6 +45,9 @@ public class Delivery extends BaseEntity{
     private String receiverSlackId;
 
     @Column(nullable = false)
-    private Long managerId;
+    private UUID managerId; // 업체 배송 담당자 id
+
+    @OneToMany(mappedBy = "delivery", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DeliveryRoute> routes;
 
 }

@@ -2,7 +2,6 @@ package com.oingmaryho.business.delivery_service.application;
 
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
-import com.oingmaryho.business.delivery_service.domain.Delivery;
 import com.oingmaryho.business.delivery_service.domain.DeliveryManagerType;
 import com.oingmaryho.business.delivery_service.infrastructure.DeliveryRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,9 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class DeliveryService {
-
+public class DeliveryAdminService {
     private final DeliveryRepository deliveryRepository;
+
+    public DeliveryCreationResponseServiceDto createDelivery(DeliveryCreationRequestServiceDto requestServiceDto) {
+        return null;
+    }
 
     public DeliveryUpdateResponseServiceDto updateDelivery(DeliveryUpdateRequestServiceDto requestServiceDto) {
         return null;
@@ -38,13 +40,13 @@ public class DeliveryService {
     public Page<DeliveryResponseServiceDto> GetDeliveriesBySearch(DeliverySearchRequestServiceDto requestServiceDto) {
         // TODO 1. userId로 사용자 권한 조회
         // TODO 2. QueryDSL search 쿼리를 호출
-        Page<Delivery> deliveries = deliveryRepository.searchDelivery(
+        deliveryRepository.searchDelivery(
                 requestServiceDto.hubId(),
                 requestServiceDto.companyId(),
                 requestServiceDto.managerId(),
                 DeliveryManagerType.HUB_DELIVERY_MANAGER,   // TODO 3. userId로 조회해 온 사용자의 권한 입력
                 requestServiceDto.customPageable());
-        return deliveries.map(DeliveryApplicationMapper.INSTANCE::toDeliveryResponseServiceDto);
+        return null;
     }
 
     public DeliveryRouteResponseServiceDto GetDeliveryRouteDetail(DeliveryRouteDetailRequestServiceDto requestServiceDto) {

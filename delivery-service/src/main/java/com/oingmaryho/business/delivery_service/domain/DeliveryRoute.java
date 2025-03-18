@@ -2,6 +2,7 @@ package com.oingmaryho.business.delivery_service.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -16,14 +17,15 @@ import java.util.UUID;
 @DynamicInsert
 @DynamicUpdate
 @Table(name = "p_delivery_route")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(force = true, access = AccessLevel.PROTECTED)
 public class DeliveryRoute extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
-    private UUID deliveryId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "delivery_id", nullable = false)
+    private Delivery delivery;
 
     @Column(nullable = false)
     private Integer sequence;
@@ -36,6 +38,7 @@ public class DeliveryRoute extends BaseEntity{
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private DeliveryRouteStatus status = DeliveryRouteStatus.HUB_WAITING;
 
     @Column(nullable = false)
@@ -48,7 +51,7 @@ public class DeliveryRoute extends BaseEntity{
     private Integer actualTime;
 
     @Column(nullable = false)
-    private Long managerId;
+    private UUID managerId; // 허브 배송 담당자 id
 
     /**
      * 배송 상태 변경
