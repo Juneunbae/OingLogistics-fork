@@ -31,14 +31,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserAdminService {
 
-	private UserRepository userRepository;
-	private UserApplicationMapper userApplicationMapper;
-	private PasswordEncoder passwordEncoder;
+	private final UserRepository userRepository;
+	private final UserApplicationMapper userApplicationMapper;
+	private final PasswordEncoder passwordEncoder;
 
 	@Value("${admin.key}")
 	private String adminKey;
 
-	public void signUpUserMaster(UserAdminSignUpRequestServiceDto requestServiceDto) {
+	public void signUpUserAdmin(UserAdminSignUpRequestServiceDto requestServiceDto) {
 		//null처리
 		if (requestServiceDto.username() == null || requestServiceDto.username().isEmpty()) {
 			throw new IllegalArgumentException("사용자 이름은 비어 있을 수 없습니다.");
@@ -60,7 +60,7 @@ public class UserAdminService {
 
 		//key 검증
 		if (!requestServiceDto.key().equals(adminKey)) {
-			throw new IllegalArgumentException("admin 키가 일치하지 않습니다.");
+			throw new IllegalArgumentException("admin키가 일치하지 않습니다.");
 		}
 
 		// 비번 암호화
@@ -85,7 +85,7 @@ public class UserAdminService {
 
 	}
 
-	public void findUserMaster(UserAdminFindRequestServiceDto requestServiceDto) {
+	public void findUserAdmin(UserAdminFindRequestServiceDto requestServiceDto) {
 
 	}
 

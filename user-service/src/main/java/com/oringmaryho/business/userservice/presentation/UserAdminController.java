@@ -50,13 +50,14 @@ public class UserAdminController {
 	@PostMapping("/sign-up")
 	public ResponseEntity<?> signUpMasterUser(
 		@RequestBody UserAdminSignUpRequestDto userAdminSignUpRequestDto) {
+		System.out.println("admin signup requested: " + userAdminSignUpRequestDto.toString());
 		UserAdminSignUpRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminSignUpServiceDto(
 			userAdminSignUpRequestDto);
-		userAdminService.signUpUserMaster(requestServiceDto);
+		userAdminService.signUpUserAdmin(requestServiceDto);
 		return ResponseEntity.ok().build();
 	}
 
-	@PostMapping("")
+	@PostMapping()
 	public ResponseEntity<?> createUser(
 		@RequestBody UserAdminCreateRequestDto userAdminCreateRequestDto) {
 		UserAdminCreateRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminCreateRequestServiceDto(
@@ -70,11 +71,11 @@ public class UserAdminController {
 		UserAdminFindRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminFindRequestServiceDto(
 			id);
 		//todo: responsedto로 변환
-		userAdminService.findUserMaster(requestServiceDto);
+		userAdminService.findUserAdmin(requestServiceDto);
 		return ResponseEntity.ok().build();
 	}
 
-	@GetMapping("/users")
+	@GetMapping()
 	public ResponseEntity<List<UserAdminSearchResponseDto>> searchUsers(
 		@RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
 		@RequestParam(value = "size", required = false) Integer size,

@@ -5,9 +5,26 @@ spring:
     active: dev
   application:
     name: user-service
+  datasource: #h2 설정
+    url: jdbc:h2:mem:testdb  # H2 인메모리 데이터베이스 사용
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+    hikari:
+      maximum-pool-size: 5
+  h2:
+    console:
+      enabled: true  # H2 콘솔 활성화 (브라우저에서 http://localhost:8080/h2-console로 접속 가능)
+      path: /h2-console  # H2 콘솔 경로 설정
+  jpa:
+    hibernate:
+      ddl-auto: update  # 데이터베이스 스키마 자동 업데이트
+    show-sql: true  # SQL 쿼리 출력
 
 server:
   port: 0
 
 admin:
-  key: admin-key123
+  key: "admin-key123"
+
+

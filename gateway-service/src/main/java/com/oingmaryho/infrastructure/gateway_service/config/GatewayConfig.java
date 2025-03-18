@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class GatewayConfig {
 
-  @Bean
-  public GlobalFilter jwtAuthFilter() {
-    return new JwtAuthFilter();
-  }
+  // @Bean
+  // public GlobalFilter jwtAuthFilter() {
+  //   return new JwtAuthFilter();
+  // }
 }
