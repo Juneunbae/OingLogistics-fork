@@ -3,6 +3,7 @@ package com.oingmaryho.business.delivery_service.presentation;
 import com.oingmaryho.business.delivery_service.application.DeliveryAdminService;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
+import com.oingmaryho.business.delivery_service.domain.UserRoleType;
 import com.oingmaryho.business.delivery_service.utils.PageableUtils;
 import com.oingmaryho.business.delivery_service.presentation.dto.mapper.DeliveryPresentationMapper;
 import com.oingmaryho.business.delivery_service.presentation.dto.request.*;
@@ -25,8 +26,9 @@ public class DeliveryAdminController {
     @PostMapping
     public ResponseEntity<DeliveryCreationResponseDto> createDelivery(
             @RequestBody DeliveryCreationRequestDto requestDto) {
+        // TODO change userId, userRole type from UserVO
         DeliveryCreationRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toCreationServiceDto(requestDto);
-        DeliveryCreationResponseServiceDto responseServiceDto = deliveryAdminService.createDelivery(requestServiceDto);
+        DeliveryCreationResponseServiceDto responseServiceDto = deliveryAdminService.createDelivery(1L, UserRoleType.HUB_DELIVERY_MANAGER,requestServiceDto);
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toCreationResponseDto(responseServiceDto));
     }
 
@@ -34,8 +36,9 @@ public class DeliveryAdminController {
     public ResponseEntity<DeliveryUpdateResponseDto> updateDelivery(
             @PathVariable UUID id,
             @RequestBody DeliveryUpdateRequestDto requestDto) {
+        // TODO change userId, userRole type from UserVO
         DeliveryUpdateRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateServiceDto(id, requestDto);
-        DeliveryUpdateResponseServiceDto responseServiceDto = deliveryAdminService.updateDelivery(requestServiceDto);
+        DeliveryUpdateResponseServiceDto responseServiceDto = deliveryAdminService.updateDelivery(1L, UserRoleType.HUB_DELIVERY_MANAGER,requestServiceDto);
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateResponseDto(responseServiceDto));
     }
 
@@ -43,16 +46,18 @@ public class DeliveryAdminController {
     public ResponseEntity<DeliveryUpdateStatusResponseDto> updateDeliveryStatus(
             @PathVariable UUID id,
             @RequestBody DeliveryUpdateStatusRequestDto requestDto) {
+        // TODO change userId, userRole type from UserVO
         DeliveryUpdateStatusRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateStatusServiceDto(id, requestDto);
-        DeliveryUpdateStatusResponseServiceDto responseServiceDto = deliveryAdminService.updateStatusDelivery(requestServiceDto);
+        DeliveryUpdateStatusResponseServiceDto responseServiceDto = deliveryAdminService.updateStatusDelivery(1L, UserRoleType.HUB_DELIVERY_MANAGER,requestServiceDto);
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateStatusResponseDto(responseServiceDto));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDelivery(
             @PathVariable UUID id) {
+        // TODO change userId, userRole type from UserVO
         DeliveryDeletionRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toDeletionServiceDto(id);
-        deliveryAdminService.deleteDelivery(requestServiceDto);
+        deliveryAdminService.deleteDelivery(1L, UserRoleType.HUB_DELIVERY_MANAGER,requestServiceDto);
         return ResponseEntity.noContent().build();
     }
 
@@ -60,8 +65,9 @@ public class DeliveryAdminController {
     @GetMapping("/{id}")
     public ResponseEntity<DeliveryResponseDto> getDeliveryDetail(
             @PathVariable UUID id) {
+        // TODO change userId, userRole type from UserVO
         DeliveryDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toDetailServiceDto(id);
-        DeliveryResponseServiceDto responseServiceDto = deliveryAdminService.GetDeliveryDetail(requestServiceDto);
+        DeliveryResponseServiceDto responseServiceDto = deliveryAdminService.GetDeliveryDetail(1L, UserRoleType.HUB_DELIVERY_MANAGER,requestServiceDto);
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toDetailResponseDto(responseServiceDto));
     }
 
@@ -78,9 +84,9 @@ public class DeliveryAdminController {
 
         DeliverySearchRequestDto requestDto = new DeliverySearchRequestDto(hubId, companyId, managerId);
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
-        // TODO userId
-        DeliverySearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toSearchServiceDto(1L, requestDto, customPageable);
-        Page<DeliveryResponseServiceDto> responseServiceDtos = deliveryAdminService.GetDeliveriesBySearch(requestServiceDto);
+        // TODO change userId, userRole type from UserVO
+        DeliverySearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toSearchServiceDto(requestDto, customPageable);
+        Page<DeliveryResponseServiceDto> responseServiceDtos = deliveryAdminService.GetDeliveriesBySearch(1L, UserRoleType.HUB_DELIVERY_MANAGER,requestServiceDto);
 
         return ResponseEntity.ok(responseServiceDtos.map(DeliveryPresentationMapper.INSTANCE::toSearchResponseDto));
     }
@@ -89,8 +95,9 @@ public class DeliveryAdminController {
     @GetMapping("/routes/{id}")
     public ResponseEntity<DeliveryRouteResponseDto> getDeliveryRouteDetail(
             @PathVariable UUID id) {
+        // TODO change userId, userRole type from UserVO
         DeliveryRouteDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteDetailServiceDto(id);
-        DeliveryRouteResponseServiceDto responseServiceDto = deliveryAdminService.GetDeliveryRouteDetail(requestServiceDto);
+        DeliveryRouteResponseServiceDto responseServiceDto = deliveryAdminService.GetDeliveryRouteDetail(1L, UserRoleType.HUB_DELIVERY_MANAGER,requestServiceDto);
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toRouteDetailResponseDto(responseServiceDto));
     }
 
@@ -108,9 +115,9 @@ public class DeliveryAdminController {
 
         DeliveryRouteSearchRequestDto requestDto = new DeliveryRouteSearchRequestDto(hubId, companyId, managerId);
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
-        // TODO userId
-        DeliveryRouteSearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteSearchServiceDto(id, 1L, requestDto, customPageable);
-        Page<DeliveryRouteResponseServiceDto> responseServiceDtos = deliveryAdminService.GetDeliveryRoutesBySearch(requestServiceDto);
+        // TODO change userId, userRole type from UserVO
+        DeliveryRouteSearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteSearchServiceDto(id, requestDto, customPageable);
+        Page<DeliveryRouteResponseServiceDto> responseServiceDtos = deliveryAdminService.GetDeliveryRoutesBySearch(1L, UserRoleType.HUB_DELIVERY_MANAGER,requestServiceDto);
 
         return ResponseEntity.ok(responseServiceDtos.map(DeliveryPresentationMapper.INSTANCE::toRouteSearchResponseDto));
     }

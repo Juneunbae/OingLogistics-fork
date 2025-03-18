@@ -3,6 +3,7 @@ package com.oingmaryho.business.delivery_service.presentation;
 import com.oingmaryho.business.delivery_service.application.DeliveryService;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
+import com.oingmaryho.business.delivery_service.domain.UserRoleType;
 import com.oingmaryho.business.delivery_service.utils.PageableUtils;
 import com.oingmaryho.business.delivery_service.presentation.dto.mapper.DeliveryPresentationMapper;
 import com.oingmaryho.business.delivery_service.presentation.dto.request.DeliveryRouteSearchRequestDto;
@@ -31,8 +32,10 @@ public class DeliveryController {
     public ResponseEntity<DeliveryUpdateResponseDto> updateDelivery(
             @PathVariable UUID id,
             @RequestBody DeliveryUpdateRequestDto requestDto) {
+
+        // TODO change userId, userRole type from UserVO
         DeliveryUpdateRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateServiceDto(id, requestDto);
-        DeliveryUpdateResponseServiceDto responseServiceDto = deliveryService.updateDelivery(requestServiceDto);
+        DeliveryUpdateResponseServiceDto responseServiceDto = deliveryService.updateDelivery(1L, UserRoleType.HUB_DELIVERY_MANAGER,requestServiceDto);
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateResponseDto(responseServiceDto));
     }
 
@@ -40,16 +43,20 @@ public class DeliveryController {
     public ResponseEntity<DeliveryUpdateStatusResponseDto> updateDeliveryStatus(
             @PathVariable UUID id,
             @RequestBody DeliveryUpdateStatusRequestDto requestDto) {
+
+        // TODO change userId, userRole type from UserVO
         DeliveryUpdateStatusRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateStatusServiceDto(id, requestDto);
-        DeliveryUpdateStatusResponseServiceDto responseServiceDto = deliveryService.updateStatusDelivery(requestServiceDto);
+        DeliveryUpdateStatusResponseServiceDto responseServiceDto = deliveryService.updateStatusDelivery(1L, UserRoleType.HUB_DELIVERY_MANAGER, requestServiceDto);
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateStatusResponseDto(responseServiceDto));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDelivery(
             @PathVariable UUID id) {
+
+        // TODO change userId, userRole type from UserVO
         DeliveryDeletionRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toDeletionServiceDto(id);
-        deliveryService.deleteDelivery(requestServiceDto);
+        deliveryService.deleteDelivery(1L, UserRoleType.HUB_DELIVERY_MANAGER, requestServiceDto);
         return ResponseEntity.noContent().build();
     }
 
@@ -57,8 +64,10 @@ public class DeliveryController {
     @GetMapping("/{id}")
     public ResponseEntity<DeliveryResponseDto> getDeliveryDetail(
             @PathVariable UUID id) {
+
+        // TODO change userId, userRole type from UserVO
         DeliveryDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toDetailServiceDto(id);
-        DeliveryResponseServiceDto responseServiceDto = deliveryService.GetDeliveryDetail(requestServiceDto);
+        DeliveryResponseServiceDto responseServiceDto = deliveryService.GetDeliveryDetail(1L, UserRoleType.HUB_DELIVERY_MANAGER, requestServiceDto);
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toDetailResponseDto(responseServiceDto));
     }
 
@@ -72,9 +81,10 @@ public class DeliveryController {
             @RequestBody DeliverySearchRequestDto requestDto) {
 
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
-        // TODO userId
-        DeliverySearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toSearchServiceDto(1L, requestDto, customPageable);
-        Page<DeliveryResponseServiceDto> responseServiceDtos = deliveryService.GetDeliveriesBySearch(requestServiceDto);
+
+        // TODO change userId, userRole type from UserVO
+        DeliverySearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toSearchServiceDto(requestDto, customPageable);
+        Page<DeliveryResponseServiceDto> responseServiceDtos = deliveryService.GetDeliveriesBySearch(1L, UserRoleType.HUB_DELIVERY_MANAGER, requestServiceDto);
 
         return ResponseEntity.ok(responseServiceDtos.map(DeliveryPresentationMapper.INSTANCE::toSearchResponseDto));
     }
@@ -83,8 +93,10 @@ public class DeliveryController {
     @GetMapping("/routes/{id}")
     public ResponseEntity<DeliveryRouteResponseDto> getDeliveryRouteDetail(
             @PathVariable UUID id) {
+
+        // TODO change userId, userRole type from UserVO
         DeliveryRouteDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteDetailServiceDto(id);
-        DeliveryRouteResponseServiceDto responseServiceDto = deliveryService.GetDeliveryRouteDetail(requestServiceDto);
+        DeliveryRouteResponseServiceDto responseServiceDto = deliveryService.GetDeliveryRouteDetail(1L, UserRoleType.HUB_DELIVERY_MANAGER, requestServiceDto);
 
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toRouteDetailResponseDto(responseServiceDto));
     }
@@ -101,9 +113,9 @@ public class DeliveryController {
 
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
 
-        // TODO userId
-        DeliveryRouteSearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteSearchServiceDto(id, 1L, requestDto, customPageable);
-        Page<DeliveryRouteResponseServiceDto> responseServiceDtos = deliveryService.GetDeliveryRoutesBySearch(requestServiceDto);
+        // TODO change userId, userRole type from UserVO
+        DeliveryRouteSearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteSearchServiceDto(id, requestDto, customPageable);
+        Page<DeliveryRouteResponseServiceDto> responseServiceDtos = deliveryService.GetDeliveryRoutesBySearch(1L, UserRoleType.HUB_DELIVERY_MANAGER, requestServiceDto);
 
         return ResponseEntity.ok(responseServiceDtos.map(DeliveryPresentationMapper.INSTANCE::toRouteSearchResponseDto));
     }
