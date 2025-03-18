@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -19,11 +20,21 @@ import java.util.UUID;
 public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
     private final JPAQueryFactory queryFactory;
 
+
+    /**
+     * 배송 검색
+     * @param hubId 허브 id
+     * @param companyId 업체 id
+     * @param managerId 배송 담당자 id
+     * @param managerType   배송 담당자 타입
+     * @param pageable customPageable
+     * @return 배송
+     */
     @Override
-    public Page<Delivery> searchDelivery(UUID hubId,                      // 허브 id
-                                         UUID companyId,                  // 업체 id
-                                         UUID managerId,                  // 배송 담당자 id
-                                         DeliveryManagerType managerType, // 배송 담당자 타입
+    public Page<Delivery> searchDelivery(UUID hubId,
+                                         UUID companyId,
+                                         UUID managerId,
+                                         DeliveryManagerType managerType,
                                          Pageable pageable) {
 
         QDelivery qDelivery = QDelivery.delivery;
@@ -78,6 +89,15 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
 
     }
 
+    /**
+     * 배송 경로 검색
+     * @param hubId 허브 id
+     * @param companyId 업체 id
+     * @param managerId 배송 담당자 id
+     * @param managerType   배송 담당자 타입
+     * @param pageable customPageable
+     * @return 배송 경로
+     */
     @Override
     public Page<DeliveryRoute> searchRoute(UUID hubId,
                                            UUID companyId,
@@ -137,5 +157,20 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
                 PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()),
                 total != null ? total : 0L);
 
+    }
+
+    /**
+     * 배송 경로 상세 조회
+     * @param routeId 배송 경로 id
+     */
+    @Override
+    public Optional<DeliveryRoute> findByRouteId(UUID routeId) {
+        QDeliveryRoute qDeliveryRoute = QDeliveryRoute.deliveryRoute;
+
+        return Optional.ofNullable(
+                queryFactory.selectFrom(qDeliveryRoute)
+                        .where(qDeliveryRoute.id.eq(routeId))
+                        .fetchOne()
+        );
     }
 }

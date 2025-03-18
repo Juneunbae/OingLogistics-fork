@@ -56,7 +56,10 @@ public class DeliveryService {
     }
 
     public DeliveryRouteResponseServiceDto GetDeliveryRouteDetail(DeliveryRouteDetailRequestServiceDto requestServiceDto) {
-        return null;
+        DeliveryRoute route = deliveryRepository.findByRouteId(requestServiceDto.id())
+                .orElseThrow(() -> new EntityNotFoundException("delivery route not found"));   // TODO 커스텀 예외 처리
+
+        return DeliveryApplicationMapper.INSTANCE.toRouteResponseServiceDto(route);
     }
 
     @Transactional(readOnly = true)

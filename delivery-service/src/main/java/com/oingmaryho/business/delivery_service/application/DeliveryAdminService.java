@@ -58,7 +58,10 @@ public class DeliveryAdminService {
     }
 
     public DeliveryRouteResponseServiceDto GetDeliveryRouteDetail(DeliveryRouteDetailRequestServiceDto requestServiceDto) {
-        return null;
+        DeliveryRoute route = deliveryRepository.findByRouteId(requestServiceDto.id())
+                .orElseThrow(() -> new EntityNotFoundException("delivery route not found"));
+
+        return DeliveryApplicationMapper.INSTANCE.toRouteResponseServiceDto(route);   // TODO 커스텀 예외 처리
     }
 
     public Page<DeliveryRouteResponseServiceDto> GetDeliveryRoutesBySearch(DeliveryRouteSearchRequestServiceDto requestServiceDto) {
