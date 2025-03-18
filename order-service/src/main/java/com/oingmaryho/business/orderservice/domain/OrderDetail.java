@@ -1,6 +1,6 @@
 package com.oingmaryho.business.orderservice.domain;
 
-import com.oingmaryho.business.orderservice.application.dto.OrderDetailUpdateDto;
+import com.oingmaryho.business.orderservice.application.dto.request.OrderDetailUpdateRequestServiceDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -60,7 +60,7 @@ public class OrderDetail extends BaseEntity {
     )
     private Boolean isDeleted;
 
-    public void update(OrderDetailUpdateDto update) {
+    public void update(OrderDetailUpdateRequestServiceDto update) {
         if (update.price() != null) {
             this.price = update.price();
         }

@@ -1,6 +1,6 @@
-package com.oingmaryho.business.orderservice.application;
+package com.oingmaryho.business.orderservice.application.service;
 
-import com.oingmaryho.business.orderservice.application.dto.OrderServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.request.OrderRequestServiceDto;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.exception.ErrorCode;
 import com.oingmaryho.business.orderservice.exception.OrderException;
@@ -19,8 +19,8 @@ public class OrderFeignService {
     private final OrderRepository orderRepository;
 
     @Transactional
-    public Order orderServiceGetById(OrderServiceDto orderServiceDto) {
-        return getByOrderId(orderServiceDto.orderId());
+    public Order orderServiceGetById(OrderRequestServiceDto orderRequestServiceDto) {
+        return getByOrderId(orderRequestServiceDto.orderId());
     }
 
     public Order getByOrderId(UUID orderId) {

@@ -1,6 +1,6 @@
 package com.oingmaryho.business.orderservice.domain;
 
-import com.oingmaryho.business.orderservice.application.dto.OrderUpdateDto;
+import com.oingmaryho.business.orderservice.application.dto.request.OrderUpdateRequestServiceDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -59,13 +59,13 @@ public class Order extends BaseEntity {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrderDetail> orderDetails;
 
-    public void update(OrderUpdateDto orderUpdateDto) {
-        if (orderUpdateDto.requests() != null) {
-            this.requests = orderUpdateDto.requests();
+    public void update(OrderUpdateRequestServiceDto orderUpdateRequestServiceDto) {
+        if (orderUpdateRequestServiceDto.requests() != null) {
+            this.requests = orderUpdateRequestServiceDto.requests();
         }
 
-        if (orderUpdateDto.totalPrice() != null) {
-            this.totalPrice = orderUpdateDto.totalPrice();
+        if (orderUpdateRequestServiceDto.totalPrice() != null) {
+            this.totalPrice = orderUpdateRequestServiceDto.totalPrice();
         }
     }
 

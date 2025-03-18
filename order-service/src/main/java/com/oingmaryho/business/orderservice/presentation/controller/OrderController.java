@@ -1,7 +1,7 @@
-package com.oingmaryho.business.orderservice.presentation;
+package com.oingmaryho.business.orderservice.presentation.controller;
 
-import com.oingmaryho.business.orderservice.application.OrderApplicationMapper;
-import com.oingmaryho.business.orderservice.application.OrderService;
+import com.oingmaryho.business.orderservice.application.dto.mapper.OrderApplicationMapper;
+import com.oingmaryho.business.orderservice.application.service.OrderService;
 import com.oingmaryho.business.orderservice.config.pageable.PageableConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
