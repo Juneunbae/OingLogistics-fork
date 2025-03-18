@@ -25,7 +25,6 @@ public interface CompanyPresentationMapper {
 
 	CompanySearchRequestServiceDto toSearchServiceDto(CompanySearchRequestDto companySearchRequestDto, Pageable pageable);
 
-	@Mapping(target="id",source="id")
 	CompanyUpdateRequestServiceDto toUpdateServiceDto(UUID id, CompanyUpdateRequestDto companyUpdateRequestDto);
 
 	CompanyDeleteRequestServiceDto toDeleteServiceDto(UUID id);
