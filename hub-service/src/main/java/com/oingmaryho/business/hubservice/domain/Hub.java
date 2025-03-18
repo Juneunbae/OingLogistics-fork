@@ -11,12 +11,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "p_hub")
 @Getter
+@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Hub extends BaseEntity {
@@ -35,6 +37,7 @@ public class Hub extends BaseEntity {
 	private Long managerId;
 
 	@Column(nullable = false)
-	private Boolean isDeleted;
+	@Builder.Default
+	private Boolean isDeleted = false;
 
 }
