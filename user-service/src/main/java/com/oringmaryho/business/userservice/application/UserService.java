@@ -5,9 +5,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +35,6 @@ public class UserService {
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RedisTemplate<String, Object> redisTemplate;
-	private final AuthenticationManager authenticationManager;
 
 	@Transactional
 	public void signUpUser(UserSignUpRequestServiceDto requestServiceDto) {
@@ -74,7 +70,7 @@ public class UserService {
 
 	public UserSignInResponseDto signInUser(UserSignInRequestServiceDto requestServiceDto) {
 		// 사용자 인증
-		if(!userRepository.existsByUsername(requestServiceDto.username())){
+		if (!userRepository.existsByUsername(requestServiceDto.username())) {
 			throw new UserException(ErrorCode.NOT_FOUND);
 		}
 
