@@ -1,4 +1,4 @@
-package com.oingmaryho.business.delivery_service.config.querydsl;
+package com.oingmaryho.business.delivery_service.utils;
 
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;

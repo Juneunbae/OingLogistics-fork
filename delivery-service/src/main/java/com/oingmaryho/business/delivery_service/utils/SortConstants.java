@@ -1,4 +1,4 @@
-package com.oingmaryho.business.delivery_service.config.pageable;
+package com.oingmaryho.business.delivery_service.utils;
 
 public class SortConstants {
     public static final String CREATED_AT = "createdAt";
