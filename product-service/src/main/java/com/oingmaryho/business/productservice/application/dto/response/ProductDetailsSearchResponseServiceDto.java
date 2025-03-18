@@ -7,7 +7,8 @@ public record ProductDetailsSearchResponseServiceDto(
 	String name,
 	UUID companyId,
 	UUID manageHubId,
-	Integer price,
-	Integer stock
+	Long price,
+	Long stock
+
 ) {
 }
