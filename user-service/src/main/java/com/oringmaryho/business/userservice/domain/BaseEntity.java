@@ -1,18 +1,22 @@
 package com.oringmaryho.business.userservice.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
+
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
@@ -21,18 +25,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
 
-  @Id
-  @Column(updatable = false, nullable = false)
-  private Long id;
-
-  @Column(updatable = false)
-  private Long deletedBy;
-
-  @Column(updatable = false)
-  private LocalDateTime deletedAt;
-
   @CreatedDate
   @Column(updatable = false)
+  @Temporal(TemporalType.TIMESTAMP)
   private LocalDateTime createdAt;
 
   @CreatedBy
@@ -41,12 +36,21 @@ public abstract class BaseEntity {
 
   @LastModifiedDate
   @Column
+  @Temporal(TemporalType.TIMESTAMP)
   private LocalDateTime updatedAt;
 
   @LastModifiedBy
   private Long updatedBy;
 
+  @Column(updatable = false)
+  private Long deletedBy;
+
+  @Column(updatable = false)
+  @Temporal(TemporalType.TIMESTAMP)
+  private LocalDateTime deletedAt;
+
   @Column(name = "is_deleted", nullable = false)
+  @Builder.Default
   private Boolean isDeleted = false;
 
   // soft delete 처리할 때 사용할 메소드

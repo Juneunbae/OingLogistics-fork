@@ -40,34 +40,34 @@ public interface UserPresentationMapper {
 	UserSlackConfirmRequestServiceDto toUserSlackConfirmRequestServiceDto(
 		UserSlackConfirmRequestDto requestDto);
 
-	UserAdminSignUpRequestServiceDto toUserMasterSignUpServiceDto(
+	UserAdminSignUpRequestServiceDto toUserAdminSignUpServiceDto(
 		UserAdminSignUpRequestDto requestDto);
 
-	UserAdminCreateRequestServiceDto toUserMasterCreateRequestServiceDto(
+	UserAdminCreateRequestServiceDto toUserAdminCreateRequestServiceDto(
 		UserAdminCreateRequestDto requestDto);
 
 	@Mapping(target = "id", source = "id")
-	UserAdminFindRequestServiceDto toUserMasterFindRequestServiceDto(Long id);
+	UserAdminFindRequestServiceDto toUserAdminFindRequestServiceDto(Long id);
 
-	UserAdminSearchRequestServiceDto toUserMasterSearchRequestServiceDto(
+	UserAdminSearchRequestServiceDto toUserAdminSearchRequestServiceDto(
 		UserAdminSearchRequestDto requestDto, Pageable pageable);
 
 	@Mapping(target = "id", expression = "java(id)")
-	UserAdminUpdateRequestServiceDto toUserMasterUpdateRequestServiceDto(UserAdminUpdateRequestDto requestDto,
+	UserAdminUpdateRequestServiceDto toUserAdminUpdateRequestServiceDto(UserAdminUpdateRequestDto requestDto,
 		Long id);
 
 	@Mapping(target = "id", expression = "java(id)")
-	UserAdminGrantRoleRequestServiceDto toUserMasterGrantRoleRequestServiceDto(UserAdminGrantRoleRequestDto requstDto,
+	UserAdminGrantRoleRequestServiceDto toUserAdminGrantRoleRequestServiceDto(UserAdminGrantRoleRequestDto requstDto,
 		Long id);
 
 	@Mapping(target = "id", expression = "java(id)")
 	@Mapping(target = "newRole", expression = "java(requestDto.role())")
-	UserAdminUpdateRoleRequestServiceDto toUserMasterUpdateRoleRequestServiceDto(
+	UserAdminUpdateRoleRequestServiceDto toUserAdminUpdateRoleRequestServiceDto(
 		UserAdminUpdateRoleRequestDto requestDto, Long id);
 
 	@Mapping(target = "id", source = "id")
-	UserAdminDeleteRoleRequestServiceDto toUserMasterDeleteRoleRequestServiceDto(Long id);
+	UserAdminDeleteRoleRequestServiceDto toUserAdminDeleteRoleRequestServiceDto(Long id);
 
 	@Mapping(target = "id", source = "id")
-	UserAdminDeleteRequestServiceDto toUserMasterDeleteRequestServiceDto(Long id);
+	UserAdminDeleteRequestServiceDto toUserAdminDeleteRequestServiceDto(Long id);
 }

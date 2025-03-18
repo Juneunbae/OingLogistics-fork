@@ -5,6 +5,3 @@ spring:
     active: dev
   application:
     name: user-service
-
-server:
-  port: 0

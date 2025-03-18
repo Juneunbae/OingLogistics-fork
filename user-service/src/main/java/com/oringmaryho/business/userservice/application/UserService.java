@@ -21,9 +21,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserService {
 
-	private UserRepository userRepository;
-	private UserApplicationMapper userApplicationMapper;
-	private PasswordEncoder passwordEncoder;
+	private final UserRepository userRepository;
+	private final UserApplicationMapper userApplicationMapper;
+	private final PasswordEncoder passwordEncoder;
 
 	@Transactional
 	public void signUpUser(UserSignUpRequestServiceDto requestServiceDto) {
