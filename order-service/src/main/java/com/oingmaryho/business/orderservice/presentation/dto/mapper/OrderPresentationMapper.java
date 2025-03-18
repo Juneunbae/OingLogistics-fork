@@ -7,7 +7,6 @@ import com.oingmaryho.business.orderservice.application.dto.response.OrderDetail
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderDetailUpdateRequestDto;
-import com.oingmaryho.business.orderservice.presentation.dto.request.OrderSearchRequestDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderUpdateRequestDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -18,12 +17,11 @@ import java.util.UUID;
 
 @Mapper(componentModel = "spring")
 public interface OrderPresentationMapper {
-    @Mapping(target = "productName", source = "orderSearchRequestDto.productName")
-    @Mapping(target = "recipientName", source = "orderSearchRequestDto.recipientName")
-    @Mapping(target = "requesterName", source = "orderSearchRequestDto.requesterName")
-    @Mapping(target = "isDeleted", source = "orderSearchRequestDto.isDeleted")
     OrdersRequestServiceDto toOrdersServiceDto(
-        OrderSearchRequestDto orderSearchRequestDto,
+        String productName,
+        String recipientName,
+        String requesterName,
+        Boolean isDeleted,
         Pageable customPageable
     );
 
