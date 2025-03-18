@@ -7,6 +7,7 @@ import com.oingmaryho.business.delivery_service.domain.Delivery;
 import com.oingmaryho.business.delivery_service.domain.DeliveryManagerType;
 import com.oingmaryho.business.delivery_service.domain.DeliveryRoute;
 import com.oingmaryho.business.delivery_service.infrastructure.DeliveryRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -34,8 +35,11 @@ public class DeliveryAdminService {
 
     }
 
-    public DeliveryResponseServiceDto GetDeliveryDetail(DeliveryDetailRequestServiceDto requestDto) {
-        return null;
+    public DeliveryResponseServiceDto GetDeliveryDetail(DeliveryDetailRequestServiceDto requestServiceDto) {
+        Delivery delivery = deliveryRepository.findById(requestServiceDto.id())
+                .orElseThrow(() -> new EntityNotFoundException("delivery not found"));  // TODO 커스텀 예외 처리
+
+        return DeliveryApplicationMapper.INSTANCE.toDeliveryResponseServiceDto(delivery);
     }
 
     @Transactional(readOnly =true)
