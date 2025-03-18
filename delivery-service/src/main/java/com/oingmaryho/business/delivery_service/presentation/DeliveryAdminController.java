@@ -72,8 +72,11 @@ public class DeliveryAdminController {
             @RequestParam(value = "size", required = false) Integer size,
             @RequestParam(value = "sortDirection", required = false) String sortDirection,
             @RequestParam(value = "by", required = false) String by,
-            @RequestBody DeliverySearchRequestDto requestDto) {
+            @RequestParam(value = "hubId", required = false) UUID hubId,
+            @RequestParam(value = "companyId", required = false) UUID companyId,
+            @RequestParam(value = "managerId", required = false) UUID managerId) {
 
+        DeliverySearchRequestDto requestDto = new DeliverySearchRequestDto(hubId, companyId, managerId);
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
         // TODO userId
         DeliverySearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toSearchServiceDto(1L, requestDto, customPageable);
@@ -99,8 +102,11 @@ public class DeliveryAdminController {
             @RequestParam(value = "size", required = false) Integer size,
             @RequestParam(value = "sortDirection", required = false) String sortDirection,
             @RequestParam(value = "by", required = false) String by,
-            @RequestBody DeliveryRouteSearchRequestDto requestDto) {
+            @RequestParam(value = "hubId", required = false) UUID hubId,
+            @RequestParam(value = "companyId", required = false) UUID companyId,
+            @RequestParam(value = "managerId", required = false) UUID managerId) {
 
+        DeliveryRouteSearchRequestDto requestDto = new DeliveryRouteSearchRequestDto(hubId, companyId, managerId);
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
         // TODO userId
         DeliveryRouteSearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteSearchServiceDto(id, 1L, requestDto, customPageable);
