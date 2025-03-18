@@ -20,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeliveryAdminService {
     private final DeliveryRepository deliveryRepository;
 
+
+    @Transactional
     public DeliveryCreationResponseServiceDto createDelivery(Long userId,
                                                              UserRoleType userRole,
                                                              DeliveryCreationRequestServiceDto requestServiceDto) {
@@ -47,34 +49,44 @@ public class DeliveryAdminService {
         return null;
     }
 
+    @Transactional
     public DeliveryUpdateResponseServiceDto updateDelivery(Long userId,
                                                            UserRoleType userRole,
                                                            DeliveryUpdateRequestServiceDto requestServiceDto) {
         Delivery delivery = deliveryRepository.findById(requestServiceDto.id())
-                .orElseThrow(() -> new EntityNotFoundException("delivery not found"));
+                .orElseThrow(() -> new EntityNotFoundException("delivery not found"));  // TODO 커스텀 예외 처리
 
         // TODO 권한 확인
         delivery.update(requestServiceDto);
         return DeliveryApplicationMapper.INSTANCE.toUpdateResponseServiceDto(delivery.getId());
     }
 
+    @Transactional
     public DeliveryUpdateStatusResponseServiceDto updateStatusDelivery(Long userId,
                                                                        UserRoleType userRole,
                                                                        DeliveryUpdateStatusRequestServiceDto requestServiceDto) {
         Delivery delivery = deliveryRepository.findById(requestServiceDto.id())
-                .orElseThrow(() -> new EntityNotFoundException("delivery not found"));
+                .orElseThrow(() -> new EntityNotFoundException("delivery not found"));  // TODO 커스텀 예외 처리
 
         // TODO 권한 확인
         delivery.updateStatus(requestServiceDto);
         return DeliveryApplicationMapper.INSTANCE.toUpdateStatusResponseServiceDto(delivery.getId());
     }
 
+    @Transactional
     public void deleteDelivery(Long userId,
                                UserRoleType userRole,
                                DeliveryDeletionRequestServiceDto requestServiceDto) {
+        // TODO 권한 확인
+
+        Delivery delivery = deliveryRepository.findById(requestServiceDto.id())
+                .orElseThrow(() -> new EntityNotFoundException("delivery not found"));  // TODO 커스텀 예외 처리
+
+        deliveryRepository.delete(delivery);
 
     }
 
+    @Transactional(readOnly = true)
     public DeliveryResponseServiceDto GetDeliveryDetail(Long userId,
                                                         UserRoleType userRole,
                                                         DeliveryDetailRequestServiceDto requestServiceDto) {
@@ -101,6 +113,7 @@ public class DeliveryAdminService {
         return deliveries.map(DeliveryApplicationMapper.INSTANCE::toDeliveryResponseServiceDto);
     }
 
+    @Transactional(readOnly = true)
     public DeliveryRouteResponseServiceDto GetDeliveryRouteDetail(Long userId,
                                                                   UserRoleType userRole,
                                                                   DeliveryRouteDetailRequestServiceDto requestServiceDto) {
@@ -110,6 +123,8 @@ public class DeliveryAdminService {
         return DeliveryApplicationMapper.INSTANCE.toRouteResponseServiceDto(route);   // TODO 커스텀 예외 처리
     }
 
+    @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "routes")
     public Page<DeliveryRouteResponseServiceDto> GetDeliveryRoutesBySearch(Long userId,
                                                                            UserRoleType userRole,
                                                                            DeliveryRouteSearchRequestServiceDto requestServiceDto) {
