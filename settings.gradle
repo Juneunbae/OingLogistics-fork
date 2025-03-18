@@ -4,7 +4,3 @@ rootProject.name = 'logistics-platform'
 include 'common'
 include 'product-service'
 include 'company-service'
-
-include 'config-service'
-include 'eureka-service'
-include 'gateway-service'
