@@ -2,11 +2,11 @@ package com.oringmaryho.business.userservice.application;
 
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,14 +71,11 @@ public class UserService {
 	public UserSignInResponseDto signInUser(UserSignInRequestServiceDto requestServiceDto) {
 		// 1. 사용자 인증(여기서 정보를 가져옴)
 		Authentication authentication = authenticationManager.authenticate(
-			new UsernamePasswordAuthenticationToken(
-				requestServiceDto.username(),
-				requestServiceDto.password()
-			)
+			new UsernamePasswordAuthenticationToken(requestServiceDto.username(), requestServiceDto.password())
 		);
 
 		// 2. 인증된 사용자 정보 가져오기(레디스에 저장하기 위해)
-		User user = (User) authentication.getPrincipal();
+		User user = (User)authentication.getPrincipal();
 
 		// 3. JWT 토큰 생성
 		String accessToken = jwtTokenProvider.generateAccessToken(user.getId());
