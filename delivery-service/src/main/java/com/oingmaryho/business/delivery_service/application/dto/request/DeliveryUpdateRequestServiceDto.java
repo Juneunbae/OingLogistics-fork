@@ -6,5 +6,5 @@ public record DeliveryUpdateRequestServiceDto(UUID id,
                                              String receiver,
                                              String receiverSlackId,
                                              String address,
-                                             Long managerId){
+                                             UUID managerId){
 }
