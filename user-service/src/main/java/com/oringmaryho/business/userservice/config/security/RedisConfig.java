@@ -1,14 +1,19 @@
 package com.oringmaryho.business.userservice.config.security;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -24,22 +29,30 @@ public class RedisConfig {
 		RedisTemplate<String, Object> template = new RedisTemplate<>();
 		template.setConnectionFactory(connectionFactory);
 
-		// JSON 직렬화를 위한 설정
-		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.registerModule(new JavaTimeModule()); // LocalDateTime 등 지원
-		objectMapper.registerModule(new SimpleModule());
+		// 직렬화 설정
+		ObjectMapper objectMapper = new ObjectMapper()
+			.registerModule(new JavaTimeModule())
+			.registerModule(new Jdk8Module())
+			.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+			.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-		Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
+		// GenericJackson2JsonRedisSerializer 사용 (타입 정보 포함)
+		GenericJackson2JsonRedisSerializer serializer =
+			new GenericJackson2JsonRedisSerializer(objectMapper);
 
-		// Key -> String 직렬화
-		template.setKeySerializer(new StringRedisSerializer());
-		template.setHashKeySerializer(new StringRedisSerializer());
+		// String 직렬화 설정
+		RedisSerializer<String> stringSerializer = new StringRedisSerializer();
 
-		// Value -> JSON 직렬화
+		// Key 직렬화
+		template.setKeySerializer(stringSerializer);
+		template.setHashKeySerializer(stringSerializer);
+
+		// Value 직렬화
 		template.setValueSerializer(serializer);
 		template.setHashValueSerializer(serializer);
 
 		template.afterPropertiesSet();
 		return template;
 	}
+
 }

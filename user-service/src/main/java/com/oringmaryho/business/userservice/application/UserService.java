@@ -1,5 +1,7 @@
 package com.oringmaryho.business.userservice.application;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.RedisTemplate;
@@ -71,30 +73,41 @@ public class UserService {
 	}
 
 	public UserSignInResponseDto signInUser(UserSignInRequestServiceDto requestServiceDto) {
-		// 1. 사용자 인증
+		// 사용자 인증
 		if(!userRepository.existsByUsername(requestServiceDto.username())){
 			throw new UserException(ErrorCode.NOT_FOUND);
 		}
 
-		// 2. 인증된 사용자 정보 가져오기
+		// 인증된 사용자 정보 가져오기
 		User user = userRepository.findByUsername(requestServiceDto.username()).orElseThrow(
 			() -> new EntityNotFoundException("User not found with username: " + requestServiceDto.username())
 		);
 
-		// 3. JWT 토큰 생성
+		// JWT 토큰 생성
 		String accessToken = jwtTokenProvider.generateAccessToken(user.getId());
 		String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
 
-		// 4. Redis에 사용자 정보 저장 (refresh token과 함께)
-		String redisKey = "user:" + user.getId();
-		redisTemplate.opsForValue().set(
-			redisKey,
-			user,
-			jwtTokenProvider.getRefreshTokenExpiration(),
-			TimeUnit.MILLISECONDS
-		);
+		// Redis에 사용자 정보 + 토큰 저장
+		// 유저 정보 키
+		String userInfoKey = "user:info:" + user.getId();
+		// 토큰 정보 키
+		String tokenKey = "user:token:" + user.getId();
 
-		// 5. 응답 DTO 생성
+		// 유저 정보 저장
+		redisTemplate.opsForValue().set(userInfoKey, user);
+
+		// 토큰 정보 저장
+		Map<String, String> tokenMap = new HashMap<>();
+		tokenMap.put("accessToken", accessToken);
+		tokenMap.put("refreshToken", refreshToken);
+		redisTemplate.opsForHash().putAll(tokenKey, tokenMap);
+
+		// 만료 시간 설정 (둘 다 동일한 만료 시간 사용)
+		long expirationTime = jwtTokenProvider.getRefreshTokenExpiration();
+		redisTemplate.expire(userInfoKey, expirationTime, TimeUnit.MILLISECONDS);
+		redisTemplate.expire(tokenKey, expirationTime, TimeUnit.MILLISECONDS);
+
+		// 응답 DTO 생성
 		UserSignInResponseServiceDto serviceDto = new UserSignInResponseServiceDto(
 			accessToken,
 			refreshToken
@@ -111,4 +124,5 @@ public class UserService {
 	public void slackConfirmUser(UserSlackConfirmRequestServiceDto requestServiceDto) {
 
 	}
+
 }
