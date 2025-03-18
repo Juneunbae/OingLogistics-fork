@@ -12,5 +12,5 @@ public interface HubApplicationMapper {
 	@Mapping(target = "address", source = "hub.address.address")
 	@Mapping(target = "latitude", source = "hub.address.latitude")
 	@Mapping(target = "longitude", source = "hub.address.longitude")
-	HubSearchResponseServiceDto toHubInfoResponseServiceDto(Hub hub);
+	HubSearchResponseServiceDto toHubSearchResponseServiceDto(Hub hub);
 }

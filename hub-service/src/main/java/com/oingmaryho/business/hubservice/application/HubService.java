@@ -27,11 +27,11 @@ public class HubService {
 
 	@Transactional(readOnly = true)
 	@Cacheable(cacheNames = "hub")
-	public HubSearchResponseServiceDto getHubById(HubSearchRequestServiceDto requestServiceDto) {
-		Hub hub = customHubRepository.findActiveHubById(requestServiceDto.id())
+	public HubSearchResponseServiceDto getHubById(HubSearchRequestServiceDto requestDto) {
+		Hub hub = customHubRepository.findActiveHubById(requestDto.id())
 			.orElseThrow(() -> new HubException(ErrorCode.NOT_FOUND));
 
-		return mapper.toHubInfoResponseServiceDto(hub);
+		return mapper.toHubSearchResponseServiceDto(hub);
 	}
 
 	@Transactional(readOnly = true)
@@ -39,7 +39,7 @@ public class HubService {
 	public Page<HubSearchResponseServiceDto> searchHubs(HubsSearchRequestServiceDto requestDto, Pageable pageable) {
 		Page<Hub> hubs = customHubRepository.findDynamicQuery(createHubSearchCriteria(requestDto), pageable);
 
-		return hubs.map(mapper::toHubInfoResponseServiceDto);
+		return hubs.map(mapper::toHubSearchResponseServiceDto);
 	}
 
 	private HubSearchCriteria createHubSearchCriteria(HubsSearchRequestServiceDto requestDto) {
