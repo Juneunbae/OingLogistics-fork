@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
-
+import com.oingmaryho.business.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -41,7 +41,7 @@ public class Product extends BaseEntity {
 	private Long stock;
 
 	@Column(nullable = false)
-	private Integer price;
+	private Long price;
 
 	@Column(nullable = false)
 	private Boolean isDeleted;

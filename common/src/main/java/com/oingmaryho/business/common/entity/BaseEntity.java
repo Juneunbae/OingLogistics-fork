@@ -1,4 +1,4 @@
-package com.oingmaryho.business.productservice.domain;
+package com.oingmaryho.business.common.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
