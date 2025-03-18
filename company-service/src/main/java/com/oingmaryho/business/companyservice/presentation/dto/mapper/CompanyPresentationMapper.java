@@ -11,10 +11,12 @@ import com.oingmaryho.business.companyservice.application.dto.request.CompanyDet
 import com.oingmaryho.business.companyservice.application.dto.request.CompanySearchRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyUpdateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyDetailsSearchResponseServiceDto;
+import com.oingmaryho.business.companyservice.application.dto.response.CompanySearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanyCreateRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanySearchRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanyUpdateRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.response.CompanyDetailsSearchResponseDto;
+import com.oingmaryho.business.companyservice.presentation.dto.response.CompanySearchResponseDto;
 
 @Mapper(componentModel = "spring")
 public interface CompanyPresentationMapper {
@@ -23,11 +25,13 @@ public interface CompanyPresentationMapper {
 
 	CompanyDetailsSearchRequestServiceDto toDetailsSearchServiceDto(UUID id);
 
-	CompanySearchRequestServiceDto toSearchServiceDto(CompanySearchRequestDto companySearchRequestDto, Pageable pageable);
+	CompanySearchRequestServiceDto toCompanySearchResponseServiceDto(CompanySearchRequestDto companySearchRequestDto);
 
 	CompanyUpdateRequestServiceDto toUpdateServiceDto(UUID id, CompanyUpdateRequestDto companyUpdateRequestDto);
 
 	CompanyDeleteRequestServiceDto toDeleteServiceDto(UUID id);
 
 	CompanyDetailsSearchResponseDto toDetailsSearchResponseDto(CompanyDetailsSearchResponseServiceDto responseServiceDto);
+
+	CompanySearchResponseDto toCompanySearchResponseDto(CompanySearchResponseServiceDto responseServiceDto);
 }

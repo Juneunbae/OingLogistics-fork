@@ -1,6 +1,9 @@
 package com.oingmaryho.business.companyservice.presentation.controller;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.context.annotation.Description;
@@ -21,6 +24,7 @@ import com.oingmaryho.business.companyservice.application.dto.request.CompanyDet
 import com.oingmaryho.business.companyservice.application.dto.request.CompanySearchRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyUpdateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyDetailsSearchResponseServiceDto;
+import com.oingmaryho.business.companyservice.application.dto.response.CompanySearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.service.CompanyService;
 import com.oingmaryho.business.companyservice.config.pageable.PageableConfig;
 import com.oingmaryho.business.companyservice.presentation.dto.mapper.CompanyPresentationMapper;
@@ -32,6 +36,7 @@ import com.oingmaryho.business.companyservice.presentation.dto.response.CompanyD
 import com.oingmaryho.business.companyservice.presentation.dto.response.CompanyDetailsSearchResponseDto;
 import com.oingmaryho.business.companyservice.presentation.dto.response.CompanySearchResponseDto;
 import com.oingmaryho.business.companyservice.presentation.dto.response.CompanyUpdateResponseDto;
+import com.oingmaryho.business.companyservice.utils.PageableUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -51,18 +56,24 @@ public class CompanyController {
 		return null;
 	}
 
-	@Description("일반 - 업체 조회")
-	@GetMapping("/api/v1/companies")
-	public ResponseEntity<CompanySearchResponseDto> getCompany(
-		@RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
-		@RequestParam(value = "size", required = false) Integer size,
-		@RequestParam(value = "sortDirection", required = false) String sortDirection,
-		@RequestBody CompanySearchRequestDto companySearchRequestDto
-	) {
-		Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
-		CompanySearchRequestServiceDto requestServiceDto = companyPresentationMapper.toSearchServiceDto(companySearchRequestDto,customPageable);
-		// TODO : Service Method 활용 및 presentation dto 로 변환
-		return null;
+	@Description("일반 - 업체 전체 조회")
+	@GetMapping
+	public ResponseEntity<Page<CompanySearchResponseDto>> getCompanies(
+		@RequestParam(name = "page", defaultValue = "0") int page,
+		@RequestParam(name = "size", defaultValue = "10") int size,
+		@RequestParam(name = "sortDirection", defaultValue = "ASC") String sortDirection,
+		@RequestParam(name = "by", defaultValue = "name") String by,
+		@RequestParam(value = "id", required = false) UUID id,
+		@RequestParam(name = "name", required = false) String name,
+		@RequestParam(name = "type", required = false) String type,
+		@RequestParam(name = "managerId", required = false) Long managerId,
+		@RequestParam(name = "manageHubId", required = false) UUID manageHubId,
+		@RequestParam(name = "address", required = false) String address) {
+		Pageable pageable = PageableUtils.customPageable(page, size, sortDirection, by);
+		CompanySearchRequestDto requestDto = new CompanySearchRequestDto(id, name, type, managerId,manageHubId, address);
+
+		Page<CompanySearchResponseServiceDto> responseDto = companyService.searchCompanies(companyPresentationMapper.toCompanySearchResponseServiceDto(requestDto),pageable);
+		return ResponseEntity.ok(responseDto.map(companyPresentationMapper::toCompanySearchResponseDto));
 	}
 
 	@Description("일반 - 업체 상세 조회")
