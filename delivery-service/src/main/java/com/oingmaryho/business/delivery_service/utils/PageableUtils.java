@@ -1,4 +1,4 @@
-package com.oingmaryho.business.delivery_service.config.pageable;
+package com.oingmaryho.business.delivery_service.utils;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

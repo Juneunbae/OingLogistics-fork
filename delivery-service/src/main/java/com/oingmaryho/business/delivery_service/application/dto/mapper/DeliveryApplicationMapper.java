@@ -1,4 +1,4 @@
-package com.oingmaryho.business.delivery_service.application;
+package com.oingmaryho.business.delivery_service.application.dto.mapper;
 
 import com.oingmaryho.business.delivery_service.application.dto.response.DeliveryResponseServiceDto;
 import com.oingmaryho.business.delivery_service.application.dto.response.DeliveryRouteResponseServiceDto;

@@ -1,6 +1,6 @@
 package com.oingmaryho.business.delivery_service.infrastructure;
 
-import com.oingmaryho.business.delivery_service.config.querydsl.QueryDslUtils;
+import com.oingmaryho.business.delivery_service.utils.QueryDslUtils;
 import com.oingmaryho.business.delivery_service.domain.*;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -19,12 +20,23 @@ import java.util.UUID;
 public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
     private final JPAQueryFactory queryFactory;
 
+
+    /**
+     * 배송 검색
+     * @param hubId 허브 id
+     * @param companyId 업체 id
+     * @param managerId 배송 담당자 id
+     * @param managerType   배송 담당자 타입
+     * @param pageable customPageable
+     * @return 배송
+     */
     @Override
-    public Page<Delivery> searchDelivery(UUID hubId,                      // 허브 id
-                                         UUID companyId,                  // 업체 id
-                                         UUID managerId,                  // 배송 담당자 id
-                                         DeliveryManagerType managerType, // 배송 담당자 타입
+    public Page<Delivery> searchDelivery(UUID hubId,
+                                         UUID companyId,
+                                         UUID managerId,
+                                         DeliveryManagerType managerType,
                                          Pageable pageable) {
+
         QDelivery qDelivery = QDelivery.delivery;
         QDeliveryRoute qDeliveryRoute = QDeliveryRoute.deliveryRoute;
         QDeliveryManager qDeliveryManager = QDeliveryManager.deliveryManager;
@@ -52,11 +64,10 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
             }
         }
 
-
         // 조회 쿼리
         List<Delivery> deliveries = queryFactory.selectDistinct(qDelivery)
                 .from(qDelivery)
-                .join(qDeliveryRoute).on(qDeliveryRoute.delivery.eq(qDelivery))
+                .join(qDeliveryRoute).on(qDeliveryRoute.delivery.eq(qDelivery)).fetchJoin()
                 .where(builder)
                 .orderBy(QueryDslUtils.getOrderSpecifiers(pageable.getSort(), Delivery.class))
                 .offset(pageable.getOffset())
@@ -67,6 +78,7 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
         // Count 쿼리
         Long total = queryFactory.select(qDelivery.id.count())
                 .from(qDelivery)
+                .join(qDelivery).on(qDeliveryRoute.delivery.eq(qDelivery)).fetchJoin()
                 .where(builder)
                 .fetchOne();
 
@@ -75,5 +87,90 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
                 PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()),
                 total != null ? total : 0L);
 
+    }
+
+    /**
+     * 배송 경로 검색
+     * @param hubId 허브 id
+     * @param companyId 업체 id
+     * @param managerId 배송 담당자 id
+     * @param managerType   배송 담당자 타입
+     * @param pageable customPageable
+     * @return 배송 경로
+     */
+    @Override
+    public Page<DeliveryRoute> searchRoute(UUID hubId,
+                                           UUID companyId,
+                                           UUID managerId,
+                                           DeliveryManagerType managerType,
+                                           Pageable pageable) {
+
+        QDelivery qDelivery = QDelivery.delivery;
+        QDeliveryRoute qDeliveryRoute = QDeliveryRoute.deliveryRoute;
+        QDeliveryManager qDeliveryManager = QDeliveryManager.deliveryManager;
+
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if (hubId != null) {        // 허브 관리자가 허브 id로 조회
+            builder.and(qDeliveryRoute.departureHubId.eq(hubId));
+        }
+
+        if (companyId != null) {    // 업체 관리자가 업체 id로 조회
+            builder.and(qDeliveryRoute.managerId.in(
+                    queryFactory.select(qDeliveryManager.id)
+                            .from(qDeliveryManager)
+                            .where(qDeliveryManager.companyId.eq(companyId))
+            ));
+        }
+
+        if (managerId != null && managerType != null) {
+
+            if (managerType.equals(DeliveryManagerType.HUB_DELIVERY_MANAGER)) {         // 허브 배송 담당자인 경우
+                builder.and(qDeliveryRoute.managerId.eq(managerId));
+            }
+            if (managerType.equals(DeliveryManagerType.COMPANY_DELIVERY_MANAGER)) {     // 업체 배송 담당자인 경우
+                builder.and(qDeliveryRoute.delivery.managerId.eq(managerId));
+            }
+
+        }
+
+        // 조회 쿼리
+        List<DeliveryRoute> routes = queryFactory.selectDistinct(qDeliveryRoute)
+                .from(qDeliveryRoute)
+                .join(qDeliveryRoute.delivery, qDelivery).fetchJoin()
+                .where(builder)
+                .orderBy(QueryDslUtils.getOrderSpecifiers(pageable.getSort(), DeliveryRoute.class))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+
+        // Count 쿼리
+        Long total = queryFactory.select(qDeliveryRoute.id.count())
+                .from(qDeliveryRoute)
+                .join(qDeliveryRoute.delivery, qDelivery).fetchJoin()
+                .where(builder)
+                .fetchOne();
+
+        return new PageImpl<>(
+                routes,
+                PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()),
+                total != null ? total : 0L);
+
+    }
+
+    /**
+     * 배송 경로 상세 조회
+     * @param routeId 배송 경로 id
+     */
+    @Override
+    public Optional<DeliveryRoute> findByRouteId(UUID routeId) {
+        QDeliveryRoute qDeliveryRoute = QDeliveryRoute.deliveryRoute;
+
+        return Optional.ofNullable(
+                queryFactory.selectFrom(qDeliveryRoute)
+                        .where(qDeliveryRoute.id.eq(routeId))
+                        .fetchOne()
+        );
     }
 }
