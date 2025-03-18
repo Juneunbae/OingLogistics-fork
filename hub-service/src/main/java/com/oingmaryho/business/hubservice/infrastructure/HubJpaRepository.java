@@ -1,0 +1,9 @@
+package com.oingmaryho.business.hubservice.infrastructure;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.oingmaryho.business.hubservice.domain.Hub;
+import com.oingmaryho.business.hubservice.domain.repository.HubRepository;
+
+public interface HubJpaRepository extends JpaRepository<Hub, Long>, HubRepository {
+}
