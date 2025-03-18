@@ -1,10 +1,17 @@
 package com.oingmaryho.business.delivery_service.application.dto.response;
 
-import org.springframework.data.domain.Pageable;
+import java.util.UUID;
 
-import java.util.List;
-
-public record DeliveryRouteResponseServiceDto(Pageable customPageable,
-                                              List<DeliveryRouteDetailResponseServiceDto> routes){
+public record DeliveryRouteResponseServiceDto(UUID id,
+                                              UUID deliveryId,
+                                              Integer sequence,
+                                              UUID departureHubId,
+                                              UUID destinationHubId,
+                                              String status,
+                                              Double estimatedDistance,
+                                              Integer estimatedTime,
+                                              Double actualDistance,
+                                              Integer actualTime,
+                                              UUID managerId){
 
 }

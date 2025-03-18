@@ -6,7 +6,6 @@ import com.oingmaryho.business.delivery_service.presentation.dto.request.*;
 import com.oingmaryho.business.delivery_service.presentation.dto.response.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Pageable;
 
@@ -29,15 +28,16 @@ public interface DeliveryPresentationMapper {
 
     DeliveryDetailRequestServiceDto toDetailServiceDto(UUID id);
 
+    @Mapping(target = "userId", source = "userId")
     @Mapping(target = "customPageable", source = "customPageable")
-    DeliverySearchRequestServiceDto toSearchServiceDto(DeliverySearchRequestDto searchDto, Pageable customPageable);
+    DeliverySearchRequestServiceDto toSearchServiceDto(Long userId, DeliverySearchRequestDto requestDto, Pageable customPageable);
 
     DeliveryRouteDetailRequestServiceDto toRouteDetailServiceDto(UUID id);
 
     @Mapping(target = "id", source = "id")
+    @Mapping(target = "userId", source = "userId")
     @Mapping(target = "customPageable", source = "customPageable")
-    DeliveryRouteSearchRequestServiceDto toRouteSearchServiceDto(UUID id, DeliveryRouteSearchRequestDto searchDto, Pageable customPageable);
-
+    DeliveryRouteSearchRequestServiceDto toRouteSearchServiceDto(UUID id, Long userId, DeliveryRouteSearchRequestDto searchDto, Pageable customPageable);
 
     // ResponseServiceDto -> ResponseDto
     DeliveryCreationResponseDto toCreationResponseDto(DeliveryCreationResponseServiceDto responseServiceDto);
@@ -46,27 +46,16 @@ public interface DeliveryPresentationMapper {
 
     DeliveryUpdateStatusResponseDto toUpdateStatusResponseDto(DeliveryUpdateStatusResponseServiceDto responseServiceDto);
 
-    DeliveryDetailResponseDto toDetailResponseDto(DeliveryDetailResponseServiceDto responseServiceDto);
+    // 배송 조회
+    DeliveryResponseDto toDetailResponseDto(DeliveryResponseServiceDto responseServiceDto);
 
-    @Mapping(target = "page", source = "responseServiceDto.customPageable.pageNumber")
-    @Mapping(target = "size", source = "responseServiceDto.customPageable.pageSize")
-    @Mapping(target = "sortDirection", source = "responseServiceDto.customPageable", qualifiedByName = "getSortDirection")
+    // 배송 검색
     DeliveryResponseDto toSearchResponseDto(DeliveryResponseServiceDto responseServiceDto);
 
-    DeliveryRouteDetailResponseDto toRouteDetailResponseDto(DeliveryRouteDetailResponseServiceDto responseServiceDto);
+    // 배송 경로 조회
+    DeliveryRouteResponseDto toRouteDetailResponseDto(DeliveryRouteResponseServiceDto responseServiceDto);
 
-    @Mapping(target = "page", source = "responseServiceDto.customPageable.pageNumber")
-    @Mapping(target = "size", source = "responseServiceDto.customPageable.pageSize")
-    @Mapping(target = "sortDirection", source = "responseServiceDto.customPageable", qualifiedByName = "getSortDirection")
+    // 배송 경로 검색
     DeliveryRouteResponseDto toRouteSearchResponseDto(DeliveryRouteResponseServiceDto responseServiceDto);
-
-    @Named("getSortDirection")
-    default String getSortDirection(Pageable customPageable) {
-        if (customPageable == null || customPageable.getSort().isUnsorted()) {
-            return "DESC";  // 정렬이 없을 경우 기본값
-        }
-        return customPageable.getSort().getOrderFor("id") != null &&
-                customPageable.getSort().getOrderFor("id").isAscending() ? "ASC" : "DESC";
-    }
 
 }

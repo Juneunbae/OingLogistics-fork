@@ -4,5 +4,5 @@ import java.util.UUID;
 
 public record DeliverySearchRequestDto(UUID hubId,
                                        UUID companyId,
-                                       Long managerId){
+                                       UUID managerId) {
 }

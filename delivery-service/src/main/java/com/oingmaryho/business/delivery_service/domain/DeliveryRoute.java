@@ -23,8 +23,9 @@ public class DeliveryRoute extends BaseEntity{
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
-    private UUID deliveryId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "delivery_id", nullable = false)
+    private Delivery delivery;
 
     @Column(nullable = false)
     private Integer sequence;
@@ -50,7 +51,7 @@ public class DeliveryRoute extends BaseEntity{
     private Integer actualTime;
 
     @Column(nullable = false)
-    private Long managerId;
+    private UUID managerId; // 허브 배송 담당자 id
 
     /**
      * 배송 상태 변경

@@ -6,6 +6,7 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -44,6 +45,9 @@ public class Delivery extends BaseEntity{
     private String receiverSlackId;
 
     @Column(nullable = false)
-    private Long managerId;
+    private UUID managerId; // 업체 배송 담당자 id
+
+    @OneToMany(mappedBy = "delivery", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DeliveryRoute> routes;
 
 }

@@ -3,7 +3,7 @@ package com.oingmaryho.business.delivery_service.presentation;
 import com.oingmaryho.business.delivery_service.application.DeliveryService;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
-import com.oingmaryho.business.delivery_service.config.pageable.PageableConfig;
+import com.oingmaryho.business.delivery_service.config.pageable.PageableUtils;
 import com.oingmaryho.business.delivery_service.presentation.dto.request.DeliveryRouteSearchRequestDto;
 import com.oingmaryho.business.delivery_service.presentation.dto.request.DeliverySearchRequestDto;
 import com.oingmaryho.business.delivery_service.presentation.dto.request.DeliveryUpdateRequestDto;
@@ -12,6 +12,7 @@ import com.oingmaryho.business.delivery_service.presentation.dto.response.*;
 import com.oingmaryho.business.delivery_service.presentation.dto.response.DeliveryRouteResponseDto;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,6 @@ import java.util.UUID;
 @RequestMapping("/api/v1/deliveries")
 public class DeliveryController {
 
-    private final PageableConfig pageableConfig;
     private final DeliveryService deliveryService;
 
     @PutMapping("/{id}")
@@ -54,52 +54,57 @@ public class DeliveryController {
 
     // 배송 조회
     @GetMapping("/{id}")
-    public ResponseEntity<DeliveryDetailResponseDto> getDeliveryDetail(
+    public ResponseEntity<DeliveryResponseDto> getDeliveryDetail(
             @PathVariable UUID id) {
         DeliveryDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toDetailServiceDto(id);
-        DeliveryDetailResponseServiceDto responseServiceDto = deliveryService.GetDeliveryDetail(requestServiceDto);
+        DeliveryResponseServiceDto responseServiceDto = deliveryService.GetDeliveryDetail(requestServiceDto);
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toDetailResponseDto(responseServiceDto));
     }
 
     // 배송 전체 조회 (검색)
     @GetMapping
-    public ResponseEntity<DeliveryResponseDto> searchDelivery(
+    public ResponseEntity<Page<DeliveryResponseDto>> searchDelivery(
             @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
             @RequestParam(value = "size", required = false) Integer size,
             @RequestParam(value = "sortDirection", required = false) String sortDirection,
+            @RequestParam(value = "by", required = false) String by,
             @RequestBody DeliverySearchRequestDto requestDto) {
 
-        Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
-        DeliverySearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toSearchServiceDto(requestDto, customPageable);
-        DeliveryResponseServiceDto responseServiceDto = deliveryService.GetDeliveriesBySearch(requestServiceDto);
+        Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
+        // TODO userId
+        DeliverySearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toSearchServiceDto(1L, requestDto, customPageable);
+        Page<DeliveryResponseServiceDto> responseServiceDtos = deliveryService.GetDeliveriesBySearch(requestServiceDto);
 
-        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toSearchResponseDto(responseServiceDto));
+        return ResponseEntity.ok(responseServiceDtos.map(DeliveryPresentationMapper.INSTANCE::toSearchResponseDto));
     }
 
     // 배송 경로 조회
     @GetMapping("/routes/{id}")
-    public ResponseEntity<DeliveryRouteDetailResponseDto> getDeliveryRouteDetail(
+    public ResponseEntity<DeliveryRouteResponseDto> getDeliveryRouteDetail(
             @PathVariable UUID id) {
         DeliveryRouteDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteDetailServiceDto(id);
-        DeliveryRouteDetailResponseServiceDto responseServiceDto = deliveryService.GetDeliveryRouteDetail(requestServiceDto);
+        DeliveryRouteResponseServiceDto responseServiceDto = deliveryService.GetDeliveryRouteDetail(requestServiceDto);
 
         return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toRouteDetailResponseDto(responseServiceDto));
     }
 
     // 배송 경로 전체 조회 (검색)
     @GetMapping("/{id}/routes")
-    public ResponseEntity<DeliveryRouteResponseDto> searchDeliveryRoute(
+    public ResponseEntity<Page<DeliveryRouteResponseDto>> searchDeliveryRoute(
             @PathVariable UUID id,
             @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
             @RequestParam(value = "size", required = false) Integer size,
             @RequestParam(value = "sortDirection", required = false) String sortDirection,
+            @RequestParam(value = "by", required = false) String by,
             @RequestBody DeliveryRouteSearchRequestDto requestDto) {
 
-        Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
-        DeliveryRouteSearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteSearchServiceDto(id, requestDto, customPageable);
-        DeliveryRouteResponseServiceDto responseServiceDto = deliveryService.GetDeliveryRoutesBySearch(requestServiceDto);
+        Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
 
-        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toRouteSearchResponseDto(responseServiceDto));
+        // TODO userId
+        DeliveryRouteSearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteSearchServiceDto(id, 1L, requestDto, customPageable);
+        Page<DeliveryRouteResponseServiceDto> responseServiceDtos = deliveryService.GetDeliveryRoutesBySearch(requestServiceDto);
+
+        return ResponseEntity.ok(responseServiceDtos.map(DeliveryPresentationMapper.INSTANCE::toRouteSearchResponseDto));
     }
 
 }

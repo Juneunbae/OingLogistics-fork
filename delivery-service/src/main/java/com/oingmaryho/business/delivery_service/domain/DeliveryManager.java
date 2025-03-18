@@ -16,7 +16,7 @@ import java.util.UUID;
 @DynamicUpdate
 @Table(name = "p_delivery_manager")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-class DeliveryManger extends BaseEntity{
+class DeliveryManager extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -24,10 +24,12 @@ class DeliveryManger extends BaseEntity{
     @Column(nullable = false)
     private String slackId;
 
-    private UUID hubId;
+    private UUID hubId; // 허브 배송 담당자, 업체 배송 담당자 -> 소속 허브
+
+    private UUID companyId; // 업체 배송 담당자 -> 소속 업체
 
     @Column(nullable = false)
-    private Long managerId;
+    private Long managerId; // 실제 user-service에서 조회할 때 사용할 id
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

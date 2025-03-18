@@ -1,9 +1,16 @@
 package com.oingmaryho.business.delivery_service.presentation.dto.response;
 
-import java.util.List;
+import java.util.UUID;
 
-public record DeliveryRouteResponseDto(int page,
-                                       int size,
-                                       int sortDirection,
-                                       List<DeliveryRouteDetailResponseDto> routes){
+public record DeliveryRouteResponseDto(UUID id,
+                                       UUID deliveryId,
+                                       Integer sequence,
+                                       UUID departureHubId,
+                                       UUID destinationHubId,
+                                       String status,
+                                       Double estimatedDistance,
+                                       Integer estimatedTime,
+                                       Double actualDistance,
+                                       Integer actualTime,
+                                       UUID managerId){
 }
