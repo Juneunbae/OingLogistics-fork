@@ -1,6 +1,6 @@
 package com.oingmaryho.business.delivery_service.infrastructure;
 
-import com.oingmaryho.business.delivery_service.config.querydsl.QueryDslUtils;
+import com.oingmaryho.business.delivery_service.utils.QueryDslUtils;
 import com.oingmaryho.business.delivery_service.domain.*;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;

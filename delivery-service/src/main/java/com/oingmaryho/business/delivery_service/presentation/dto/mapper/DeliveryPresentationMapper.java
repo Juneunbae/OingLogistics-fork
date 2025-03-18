@@ -1,4 +1,4 @@
-package com.oingmaryho.business.delivery_service.presentation;
+package com.oingmaryho.business.delivery_service.presentation.dto.mapper;
 
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
