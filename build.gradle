@@ -48,3 +48,9 @@ project(':user-service') {
         implementation project(':common')
     }
 }
+
+project(':delivery-service') {
+    dependencies {
+        implementation project(':common')
+    }
+}
