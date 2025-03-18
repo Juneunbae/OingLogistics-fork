@@ -37,3 +37,8 @@ project(':product-service') {
     }
 }
 
+project(':company-service') {
+    dependencies {
+        implementation project(':common')
+    }
+}
