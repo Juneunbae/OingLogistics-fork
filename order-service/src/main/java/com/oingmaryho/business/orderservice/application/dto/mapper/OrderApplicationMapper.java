@@ -1,6 +1,7 @@
 package com.oingmaryho.business.orderservice.application.dto.mapper;
 
 import com.oingmaryho.business.orderservice.application.dto.request.OrderDetailUpdateRequestServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.request.OrderTotalPriceUpdateRequestServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.request.OrderUpdateRequestServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.domain.Order;
@@ -23,4 +24,6 @@ public interface OrderApplicationMapper {
     OrderDetailUpdateRequestServiceDto toOrderDetailUpdateDto(Integer price, Integer quantity);
 
     OrderUpdateRequestServiceDto toOrderUpdateDto(String requests, Integer totalPrice);
+
+    OrderTotalPriceUpdateRequestServiceDto toOrderTotalPriceUpdateRequestDto(Integer totalPrice);
 }
