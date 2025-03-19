@@ -17,4 +17,6 @@ public interface CompanyRepository {
 	Page<Company> findDynamicQuery(CompanySearchCriteria searchCriteria, Pageable pageable);
 
 	Company save(Company company);
+
+	Company update(Company company);
 }

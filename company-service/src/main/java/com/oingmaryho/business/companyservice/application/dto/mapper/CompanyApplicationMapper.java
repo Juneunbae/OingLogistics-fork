@@ -23,7 +23,7 @@ public interface CompanyApplicationMapper {
 
 	CompanySearchResponseServiceDto toCompanySearchResponseServiceDto(Company company);
 
-	CompanyUpdateResponseDto toUpdateResponseDto(CompanyUpdateResponseServiceDto companyUpdateResponseServiceDto);
+	CompanyUpdateResponseServiceDto toUpdateResponseDto(Company company);
 
 	Company toCompanyEntity(CompanyDetailsSearchRequestServiceDto companyDetailsSearchRequestServiceDto);
 
