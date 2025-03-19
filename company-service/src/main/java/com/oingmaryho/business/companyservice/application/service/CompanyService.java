@@ -18,6 +18,7 @@ import com.oingmaryho.business.companyservice.application.dto.response.CompanyUp
 import com.oingmaryho.business.companyservice.domain.Company;
 import com.oingmaryho.business.companyservice.domain.CompanySearchCriteria;
 import com.oingmaryho.business.companyservice.domain.repository.CompanyRepository;
+import com.oingmaryho.business.companyservice.domain.repository.CustomCompanyRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CompanyService {
 	private final CompanyRepository companyRepository;
+	private final CustomCompanyRepository companyCustomRepository;
 	private final CompanyApplicationMapper companyApplicationMapper;
 
 	@Transactional
@@ -43,7 +45,7 @@ public class CompanyService {
 	}
 
 	public Page<CompanySearchResponseServiceDto> searchCompanies(CompanySearchRequestServiceDto requestDto, Pageable pageable) {
-		Page<Company> companies = companyRepository.findDynamicQuery(createCompanySearchCriteria(requestDto), pageable);
+		Page<Company> companies = companyCustomRepository.findDynamicQuery(createCompanySearchCriteria(requestDto), pageable);
 
 		return companies.map(companyApplicationMapper::toCompanySearchResponseServiceDto);
 	}
