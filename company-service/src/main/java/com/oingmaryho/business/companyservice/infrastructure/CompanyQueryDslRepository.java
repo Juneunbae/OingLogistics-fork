@@ -4,6 +4,7 @@ import com.oingmaryho.business.companyservice.domain.Company;
 import com.oingmaryho.business.companyservice.domain.CompanySearchCriteria;
 import com.oingmaryho.business.companyservice.domain.QCompany;
 import com.oingmaryho.business.companyservice.domain.repository.CustomCompanyRepository;
+import com.oingmaryho.business.companyservice.utils.QueryDslUtils;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
@@ -34,6 +35,7 @@ public class CompanyQueryDslRepository implements CustomCompanyRepository {
 		List<Company> result = queryFactory
 			.selectFrom(company)
 			.where(builder)
+			.orderBy(QueryDslUtils.getOrderSpecifiers(pageable.getSort(), Company.class))
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
 			.fetch();
