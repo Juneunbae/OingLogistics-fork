@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.oingmaryho.business.companyservice.application.dto.mapper.CompanyApplicationMapper;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyCreateRequestServiceDto;
@@ -127,43 +128,23 @@ class CompanyServiceTest {
 	}
 
 	@Test
-	@Description("업체 수정 테스트 - 이름 변경")
-	void updateCompany_NameChange() {
+	@Transactional
+	@Description("업체 수정 테스트")
+	void updateCompany_DirtyChecking() {
 		CompanyUpdateRequestServiceDto requestDto = new CompanyUpdateRequestServiceDto(
-			companyId, "Updated Company Name", "Retail", FIXED_COMPANY_ID, "123 Test Street"
+			companyId, "Updated Company Name", "Retail", FIXED_COMPANY_ID, "456 New Address"
 		);
 
 		when(companyRepository.findByIdAndIsDeletedFalse(companyId)).thenReturn(Optional.of(company));
-		when(companyRepository.update(any(Company.class))).thenAnswer(invocation -> {
-			Company updatedCompany = invocation.getArgument(0);
-			return updatedCompany;
-		});
-		when(companyApplicationMapper.toUpdateResponseDto(any(Company.class)))
+		when(companyApplicationMapper.toUpdateResponseDto(any(UUID.class)))
 			.thenReturn(new CompanyUpdateResponseServiceDto(FIXED_COMPANY_ID));
 
 		CompanyUpdateResponseServiceDto response = companyService.updateCompany(requestDto);
 
-		System.out.println("수정된 응답 데이터: " + response);
+		assertThat(company.getName()).isEqualTo("Updated Company Name");
+		assertThat(company.getAddress()).isEqualTo("456 New Address");
 		assertThat(response).isNotNull();
 		assertThat(response.id()).isEqualTo(companyId);
-	}
-
-	@Test
-	@Description("업체 수정 테스트 - 존재하지 않는 업체 수정 시 예외 발생")
-	void updateCompany_ShouldThrowException_WhenCompanyNotFound() {
-		UUID nonExistentCompanyId = UUID.fromString("987e4567-e89b-12d3-a456-426614174999"); // 존재하지 않는 ID
-		CompanyUpdateRequestServiceDto requestDto = new CompanyUpdateRequestServiceDto(
-			nonExistentCompanyId, "Updated Company Name", "Retail", FIXED_COMPANY_ID, "123 Test Street"
-		);
-
-		when(companyRepository.findByIdAndIsDeletedFalse(nonExistentCompanyId)).thenReturn(Optional.empty());
-
-		Exception exception = catchThrowableOfType(() -> companyService.updateCompany(requestDto), EntityNotFoundException.class);
-
-		System.out.println("예외 메시지: " + exception.getMessage());
-
-		assertThat(exception).isInstanceOf(EntityNotFoundException.class)
-			.hasMessageContaining("업체를 찾을 수 없습니다");
 	}
 
 

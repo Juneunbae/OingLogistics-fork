@@ -53,9 +53,15 @@ public class CompanyService {
 		// TODO: 공통 예외처리 코드 작성 필요
 		Company company = companyRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
 			.orElseThrow(() -> new EntityNotFoundException("업체를 찾을 수 없습니다: " + requestServiceDto.id()));
-		Company updatedCompany = companyRepository.update(company);
 
-		return companyApplicationMapper.toUpdateResponseDto(updatedCompany);
+		company.update(
+			requestServiceDto.name(),
+			requestServiceDto.type(),
+			requestServiceDto.manageHubId(),
+			requestServiceDto.address()
+		);
+
+		return companyApplicationMapper.toUpdateResponseDto(company.getId());
 	}
 
 	private CompanySearchCriteria createCompanySearchCriteria(CompanySearchRequestServiceDto requestDto){

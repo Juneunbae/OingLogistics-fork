@@ -36,11 +36,6 @@ public class CompanyRepositoryImpl implements CompanyRepository {
 	public Company save(Company company) {
 		return companyJpaRepository.save(company);
 	}
-
-	@Override
-	public Company update(Company company) {
-		return companyJpaRepository.save(company);
-	}
 }
 
 

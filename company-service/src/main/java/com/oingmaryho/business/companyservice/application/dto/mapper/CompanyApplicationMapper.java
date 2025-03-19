@@ -1,6 +1,8 @@
 package com.oingmaryho.business.companyservice.application.dto.mapper;
 
 
+import java.util.UUID;
+
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 
@@ -23,7 +25,7 @@ public interface CompanyApplicationMapper {
 
 	CompanySearchResponseServiceDto toCompanySearchResponseServiceDto(Company company);
 
-	CompanyUpdateResponseServiceDto toUpdateResponseDto(Company company);
+	CompanyUpdateResponseServiceDto toUpdateResponseDto(UUID id);
 
 	Company toCompanyEntity(CompanyDetailsSearchRequestServiceDto companyDetailsSearchRequestServiceDto);
 
