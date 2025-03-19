@@ -141,9 +141,14 @@ public class OrderAdminService {
         orderDetail.delete();
         log.info("주문: {}, 상세 주문: {}, 삭제 완료", order.getId(), orderDetail.getId());
 
+        Integer orderDetailPrice = (orderDetail.getQuantity() * orderDetail.getPrice());
+        OrderTotalPriceUpdateRequestServiceDto updateDto = orderApplicationMapper.toOrderTotalPriceUpdateRequestDto(orderDetailPrice);
+
+        order.updateTotalPrice(updateDto);
+        orderRepository.save(order);
+
         evictCache(order);
     }
-
 
     public Order getByOrderId(UUID orderId) {
         Cache cache = cacheManager.getCache("order");
