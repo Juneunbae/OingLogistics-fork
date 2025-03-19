@@ -2,14 +2,18 @@ package com.oingmaryho.business.hubservice.presentation;
 
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.oingmaryho.business.hubservice.application.HubAdminService;
@@ -18,7 +22,9 @@ import com.oingmaryho.business.hubservice.application.dto.response.HubSearchAdmi
 import com.oingmaryho.business.hubservice.application.dto.response.HubUpdateResponseServiceDto;
 import com.oingmaryho.business.hubservice.presentation.dto.mapper.HubPresentationMapper;
 import com.oingmaryho.business.hubservice.presentation.dto.request.HubCreateRequestDto;
+import com.oingmaryho.business.hubservice.presentation.dto.request.HubSearchAdminRequestDto;
 import com.oingmaryho.business.hubservice.presentation.dto.request.HubUpdateRequestDto;
+import com.oingmaryho.business.hubservice.utils.PageableUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,6 +42,29 @@ public class HubAdminController {
 		return ResponseEntity.ok(mapper.toHubSearchAdminResponseDto(responseDto));
 	}
 
+	@GetMapping
+	public ResponseEntity<?> searchHubs(
+		@RequestParam(value = "page", required = false, defaultValue = "1") int page,
+		@RequestParam(value = "size", required = false, defaultValue = "10") int size,
+		@RequestParam(value = "sortDirection", required = false, defaultValue = "DESC") String sortDirection,
+		@RequestParam(value = "by", required = false) String by,
+		@RequestParam(value = "id", required = false) UUID id,
+		@RequestParam(value = "name", required = false) String name,
+		@RequestParam(value = "address", required = false) String address,
+		@RequestParam(value = "latitude", required = false) Double latitude,
+		@RequestParam(value = "longitude", required = false) Double longitude,
+		@RequestParam(value = "managerId", required = false) Long managerId,
+		@RequestParam(value = "isDeleted", required = false) Boolean isDeleted
+	) {
+		Pageable pageable = PageableUtils.customPageable(page, size, sortDirection, by);
+		HubSearchAdminRequestDto requestDto =
+			new HubSearchAdminRequestDto(id, name, address, latitude, longitude, managerId, isDeleted);
+
+		Page<HubSearchAdminResponseServiceDto> responseDto =
+			hubAdminService.searchHubs(mapper.toHubsSearchAdminRequestServiceDto(requestDto), pageable);
+		return ResponseEntity.ok(responseDto.map(mapper::toHubSearchAdminResponseDto));
+	}
+
 	@PostMapping // TODO : 권한 확인하기
 	public ResponseEntity<?> createHub(@RequestBody HubCreateRequestDto requestDto) {
 		HubCreateResponseServiceDto responseDto = hubAdminService.createHub(mapper.toHubCreateRequestServiceDto(requestDto));
@@ -44,7 +73,7 @@ public class HubAdminController {
 			.body(mapper.toHubCreateResponseDto(responseDto));
 	}
 
-	@PostMapping("/{id}") // TODO : 권한 확인하기
+	@PutMapping("/{id}") // TODO : 권한 확인하기
 	public ResponseEntity<?> updateHub(
 		@PathVariable UUID id,
 		@RequestBody HubUpdateRequestDto requestDto
