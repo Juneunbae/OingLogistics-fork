@@ -2,6 +2,7 @@ package com.oringmaryho.business.userservice.application;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.RedisTemplate;
@@ -79,6 +80,12 @@ public class UserService {
 			() -> new EntityNotFoundException("User not found with username: " + requestServiceDto.username())
 		);
 
+		Map<String, Object> userInfoMap = new ConcurrentHashMap<>();
+		userInfoMap.put("username", user.getUsername());
+		userInfoMap.put("slackId", user.getSlackId());
+		userInfoMap.put("role", user.getRole());
+		userInfoMap.put("status", user.getStatus());
+
 		// JWT 토큰 생성
 		String accessToken = jwtTokenProvider.generateAccessToken(user.getId());
 		String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
@@ -90,7 +97,7 @@ public class UserService {
 		String tokenKey = "user:token:" + user.getId();
 
 		// 유저 정보 저장
-		redisTemplate.opsForValue().set(userInfoKey, user);
+		redisTemplate.opsForValue().set(userInfoKey, userInfoMap);
 
 		// 토큰 정보 저장
 		Map<String, String> tokenMap = new HashMap<>();
