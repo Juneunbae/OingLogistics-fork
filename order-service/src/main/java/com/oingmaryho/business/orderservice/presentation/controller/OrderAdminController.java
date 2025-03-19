@@ -1,14 +1,10 @@
 package com.oingmaryho.business.orderservice.presentation.controller;
 
-import com.oingmaryho.business.orderservice.application.dto.request.OrderDeleteServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.request.OrderRequestServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.request.OrdersRequestServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.request.*;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.response.OrderUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.service.OrderAdminService;
 import com.oingmaryho.business.orderservice.config.pageable.PageableConfig;
 import com.oingmaryho.business.orderservice.presentation.dto.mapper.OrderPresentationMapper;
-import com.oingmaryho.business.orderservice.presentation.dto.request.OrderSearchRequestDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderUpdateRequestDto;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -37,11 +33,19 @@ public class OrderAdminController {
         @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
         @RequestParam(value = "size", required = false) Integer size,
         @RequestParam(value = "sortDirection", required = false) String sortDirection,
-        @RequestBody OrderSearchRequestDto orderSearchRequestDto
+        @RequestParam(value = "by", required = false) String by,
+        @RequestParam(value = "productName", required = false) String productName,
+        @RequestParam(value = "recipientName", required = false) String recipientName,
+        @RequestParam(value = "requesterName", required = false) String requesterName,
+        @RequestParam(value = "isDeleted", required = false) Boolean isDeleted
     ) {
         Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
         OrdersRequestServiceDto ordersRequestServiceDto = orderPresentationMapper.toOrdersServiceDto(
-            orderSearchRequestDto, customPageable
+            productName,
+            recipientName,
+            requesterName,
+            isDeleted,
+            customPageable
         );
         Page<OrderResponseServiceDto> response = orderAdminService.getOrders(ordersRequestServiceDto);
 
@@ -64,12 +68,12 @@ public class OrderAdminController {
     )
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateOrder(@PathVariable UUID id, @RequestBody OrderUpdateRequestDto update) {
-        OrderUpdateResponseServiceDto orderUpdateResponseServiceDto = orderPresentationMapper.toOrderUpdateServiceDto(
+        OrderUpdateServiceDto orderUpdateServiceDto = orderPresentationMapper.toOrderUpdateServiceDto(
             id, update, update.requestOrderDetails().stream().map(
                 orderPresentationMapper::toOrderDetailUpdateServiceDto
             ).toList()
         );
-        orderAdminService.updateOrder(orderUpdateResponseServiceDto);
+        orderAdminService.updateOrder(orderUpdateServiceDto);
 
         return ResponseEntity.ok().build();
     }
@@ -81,6 +85,17 @@ public class OrderAdminController {
     public ResponseEntity<Void> deleteOrder(@PathVariable UUID id) {
         OrderDeleteServiceDto orderDeleteServiceDto = orderPresentationMapper.toOrderDeleteDto(id);
         orderAdminService.deleteOrder(orderDeleteServiceDto);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @Description(
+        "마스터 - 상세 주문 삭제"
+    )
+    @DeleteMapping("/{id}/details/{orderDetailId}")
+    public ResponseEntity<Void> deleteOrderDetail(@PathVariable UUID id, @PathVariable UUID orderDetailId) {
+        OrderDetailDeleteRequestServiceDto request = orderPresentationMapper.toOrderDetailDeleteRequestServiceDto(id, orderDetailId);
+        orderAdminService.deleteOrderDetail(request);
 
         return ResponseEntity.ok().build();
     }

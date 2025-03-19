@@ -4,7 +4,6 @@ import com.oingmaryho.business.orderservice.application.dto.mapper.OrderApplicat
 import com.oingmaryho.business.orderservice.application.dto.request.*;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.response.OrderUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
 import com.oingmaryho.business.orderservice.exception.ErrorCode;
@@ -33,7 +32,7 @@ public class OrderAdminService {
 
     @Transactional
     public Page<OrderResponseServiceDto> getOrders(OrdersRequestServiceDto ordersRequestServiceDto) {
-        // TODO: 마스터 확인
+        // TODO: 마스터 권한 검증
 
         String cacheKey = makeOrdersCacheKey(ordersRequestServiceDto);
 
@@ -65,7 +64,7 @@ public class OrderAdminService {
 
     @Transactional
     public OrderResponseServiceDto getOrder(OrderRequestServiceDto orderRequestServiceDto) {
-        // TODO: 마스터 확인
+        // TODO: 마스터 권한 검증
 
         UUID orderId = orderRequestServiceDto.orderId();
         Order order = getByOrderId(orderId);
@@ -79,8 +78,8 @@ public class OrderAdminService {
     }
 
     @Transactional
-    public void updateOrder(OrderUpdateResponseServiceDto update) {
-        // TODO: 마스터
+    public void updateOrder(OrderUpdateServiceDto update) {
+        // TODO: 마스터 권한 검증
         int totalPrice = 0;
         UUID orderId = update.id();
 
@@ -113,7 +112,7 @@ public class OrderAdminService {
 
     @Transactional
     public void deleteOrder(OrderDeleteServiceDto delete) {
-        // TODO: 마스터
+        // TODO: 마스터 권한 검증
 
         UUID orderId = delete.orderId();
 
@@ -129,6 +128,22 @@ public class OrderAdminService {
 
         evictCache(order);
     }
+
+    @Transactional
+    public void deleteOrderDetail(OrderDetailDeleteRequestServiceDto request) {
+        // TODO: 마스터 권한 검증
+
+        UUID orderId = request.orderId();
+
+        Order order = getByOrderId(orderId);
+        OrderDetail orderDetail = getByOrderDetailId(order, request.orderDetailId());
+
+        orderDetail.delete();
+        log.info("주문: {}, 상세 주문: {}, 삭제 완료", order.getId(), orderDetail.getId());
+
+        evictCache(order);
+    }
+
 
     public Order getByOrderId(UUID orderId) {
         Cache cache = cacheManager.getCache("order");
