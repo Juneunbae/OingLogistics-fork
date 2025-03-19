@@ -1,13 +1,11 @@
 package com.oingmaryho.business.hubservice.application;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 import java.util.UUID;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,8 +16,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.oingmaryho.business.hubservice.application.dto.mapper.HubApplicationMapper;
 import com.oingmaryho.business.hubservice.application.dto.request.HubCreateRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubDeleteRequestServiceDto;
+import com.oingmaryho.business.hubservice.application.dto.request.HubSearchRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubUpdateRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubCreateResponseServiceDto;
+import com.oingmaryho.business.hubservice.application.dto.response.HubSearchAdminResponseServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubUpdateResponseServiceDto;
 import com.oingmaryho.business.hubservice.domain.Address;
 import com.oingmaryho.business.hubservice.domain.Hub;
@@ -73,6 +73,51 @@ class HubAdminServiceTest {
 		assertThat(result).isNotNull()
 			.extracting(HubCreateResponseServiceDto::id)
 			.isEqualTo(savedHub.getId());
+	}
+
+	@DisplayName("마스터 관리자는 soft delete 된 허브를 포함한 모든 허브를 조회할 수 있다.")
+	@Test
+	void admin_hub_search_test() {
+		// Given
+		UUID hubId = UUID.randomUUID();
+		Hub hub = Hub.builder()
+			.id(hubId)
+			.name("허브 이름")
+			.address(new Address("허브 주소", 1.0, 2.0))
+			.managerId(1L)
+			.isDeleted(true)
+			.build();
+
+		HubSearchRequestServiceDto requestDto = new HubSearchRequestServiceDto(hubId);
+		HubSearchAdminResponseServiceDto responseDto = new HubSearchAdminResponseServiceDto(
+			hubId, "허브 이름", "허브 주소", 1.0, 2.0, 1L, true
+		);
+
+		when(hubRepository.findById(hubId)).thenReturn(Optional.of(hub));
+		when(mapper.toHubSearchAdminResponseServiceDto(hub)).thenReturn(responseDto);
+
+		// When
+		HubSearchAdminResponseServiceDto result = hubAdminService.getHubById(requestDto);
+
+		// Then
+		assertThat(result).isNotNull()
+			.extracting(
+				HubSearchAdminResponseServiceDto::id,
+				HubSearchAdminResponseServiceDto::name,
+				HubSearchAdminResponseServiceDto::address,
+				HubSearchAdminResponseServiceDto::latitude,
+				HubSearchAdminResponseServiceDto::longitude,
+				HubSearchAdminResponseServiceDto::managerId,
+				HubSearchAdminResponseServiceDto::isDeleted)
+			.containsExactly(
+				responseDto.id(),
+				responseDto.name(),
+				responseDto.address(),
+				responseDto.latitude(),
+				responseDto.longitude(),
+				responseDto.managerId(),
+				responseDto.isDeleted()
+			);
 	}
 
 	@DisplayName("허브 ID와 허브 수정 정보를 통해 허브를 수정할 수 있다.")
