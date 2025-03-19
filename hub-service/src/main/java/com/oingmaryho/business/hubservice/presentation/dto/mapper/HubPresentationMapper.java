@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.mapstruct.Mapper;
 
 import com.oingmaryho.business.hubservice.application.dto.request.HubCreateRequestServiceDto;
+import com.oingmaryho.business.hubservice.application.dto.request.HubDeleteRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubSearchRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubUpdateRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubsSearchRequestServiceDto;
@@ -34,4 +35,6 @@ public interface HubPresentationMapper {
 	HubUpdateRequestServiceDto toHubUpdateRequestServiceDto(HubUpdateRequestDto dto);
 
 	HubUpdateResponseDto toHubUpdateResponseDto(HubUpdateResponseServiceDto dto);
+
+	HubDeleteRequestServiceDto toHubDeleteRequestServiceDto(UUID id);
 }

@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.oingmaryho.business.hubservice.application.dto.mapper.HubApplicationMapper;
 import com.oingmaryho.business.hubservice.application.dto.request.HubCreateRequestServiceDto;
+import com.oingmaryho.business.hubservice.application.dto.request.HubDeleteRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubUpdateRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubCreateResponseServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubUpdateResponseServiceDto;
@@ -53,6 +54,14 @@ public class HubAdminService {
 			requestDto.managerId()
 		);
 		return new HubUpdateResponseServiceDto(id);
+	}
+
+	// TODO : Auditing 추가하기
+	@Transactional
+	public void deleteHub(HubDeleteRequestServiceDto requestDto) {
+		Hub hub = findHubById(requestDto.id());
+
+		hub.delete();
 	}
 
 	private Hub findHubById(UUID id) {
