@@ -3,14 +3,10 @@ package com.oingmaryho.business.delivery_service.application.service;
 import com.oingmaryho.business.delivery_service.application.dto.mapper.DeliveryApplicationMapper;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
-import com.oingmaryho.business.delivery_service.domain.Delivery;
-import com.oingmaryho.business.delivery_service.domain.DeliveryManagerType;
-import com.oingmaryho.business.delivery_service.domain.DeliveryRoute;
-import com.oingmaryho.business.delivery_service.domain.UserRoleType;
+import com.oingmaryho.business.delivery_service.domain.*;
 import com.oingmaryho.business.delivery_service.exception.DeliveryException;
 import com.oingmaryho.business.delivery_service.exception.ErrorCode;
 import com.oingmaryho.business.delivery_service.infrastructure.DeliveryRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -59,7 +55,10 @@ public class DeliveryAdminService {
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
         // TODO 권한 확인
-        delivery.update(requestServiceDto);
+        DeliveryManager newManager = deliveryRepository.findManagerById(requestServiceDto.managerId())
+                .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_MANGER_NOT_FOUND));
+
+        delivery.update(requestServiceDto.receiver(), requestServiceDto.receiverSlackId(), requestServiceDto.address(), newManager);
         return DeliveryApplicationMapper.INSTANCE.toUpdateResponseServiceDto(delivery.getId());
     }
 
@@ -71,7 +70,7 @@ public class DeliveryAdminService {
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
         // TODO 권한 확인
-        delivery.updateStatus(requestServiceDto);
+        delivery.updateStatus(requestServiceDto.status());
         return DeliveryApplicationMapper.INSTANCE.toUpdateStatusResponseServiceDto(delivery.getId());
     }
 
@@ -119,7 +118,7 @@ public class DeliveryAdminService {
     public DeliveryRouteResponseServiceDto GetDeliveryRouteDetail(Long userId,
                                                                   UserRoleType userRole,
                                                                   DeliveryRouteDetailRequestServiceDto requestServiceDto) {
-        DeliveryRoute route = deliveryRepository.findByRouteId(requestServiceDto.id())
+        DeliveryRoute route = deliveryRepository.findRouteById(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
         return DeliveryApplicationMapper.INSTANCE.toRouteResponseServiceDto(route);
@@ -141,5 +140,28 @@ public class DeliveryAdminService {
                 requestServiceDto.customPageable());
 
         return routes.map(DeliveryApplicationMapper.INSTANCE::toRouteResponseServiceDto);
+    }
+
+    @Transactional
+    public DeliveryRouteUpdateStatusResponseServiceDto updateRouteStatusDelivery(Long userId,
+                                                                                 UserRoleType userRole,
+                                                                                 DeliveryRouteUpdateStatusRequestServiceDto requestServiceDto) {
+
+        DeliveryRoute route = deliveryRepository.findRouteById(requestServiceDto.id())
+                .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_ROUTE_NOT_FOUND));
+
+        route.changeStatus(requestServiceDto.status());
+
+        if (route.getStatus() == DeliveryRouteStatus.HUB_ARRIVED) { // 목적지 허브 도착 상태로 변경 시도하는 경우
+            Delivery delivery = deliveryRepository.findById(requestServiceDto.id())
+                    .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
+
+            if (delivery.getDestinationHubId() == route.getDestinationHubId()) {    // 경로 상 목적지 허브가 배송 목적지 허브와 같으면 배송 상태 변경
+                delivery.updateStatus(DeliveryStatus.HUB_ARRIVED);
+            }
+        }
+
+        return DeliveryApplicationMapper.INSTANCE.toUpdateRouteStatusResponseServiceDto(route.getId());
+
     }
 }

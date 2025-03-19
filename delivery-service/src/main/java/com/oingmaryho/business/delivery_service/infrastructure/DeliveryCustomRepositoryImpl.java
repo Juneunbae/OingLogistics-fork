@@ -20,6 +20,9 @@ import java.util.UUID;
 public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
     private final JPAQueryFactory queryFactory;
 
+    QDelivery qDelivery = QDelivery.delivery;
+    QDeliveryRoute qDeliveryRoute = QDeliveryRoute.deliveryRoute;
+    QDeliveryManager qDeliveryManager = QDeliveryManager.deliveryManager;
 
     /**
      * 배송 검색
@@ -37,10 +40,6 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
                                          DeliveryManagerType managerType,
                                          Pageable pageable) {
 
-        QDelivery qDelivery = QDelivery.delivery;
-        QDeliveryRoute qDeliveryRoute = QDeliveryRoute.deliveryRoute;
-        QDeliveryManager qDeliveryManager = QDeliveryManager.deliveryManager;
-
         BooleanBuilder builder = new BooleanBuilder();
 
         if (hubId != null) {        // 허브 관리자가 허브 id로 조회
@@ -48,19 +47,15 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
         }
 
         if (companyId != null) {    // 업체 관리자가 업체 id로 조회
-            builder.and(qDelivery.managerId.in(
-                    queryFactory.select(qDeliveryManager.id)
-                            .from(qDeliveryManager)
-                            .where(qDeliveryManager.companyId.eq(companyId))
-            ));
+            builder.and(qDelivery.manager.companyId.eq(companyId));
         }
 
         if (managerId != null && managerType != null) {
             if (managerType.equals(DeliveryManagerType.HUB_DELIVERY_MANAGER)) {         // 허브 배송 담당자인 경우
-                builder.and(qDeliveryRoute.managerId.eq(managerId));
+                builder.and(qDeliveryRoute.manager.id.eq(managerId));
             }
             if (managerType.equals(DeliveryManagerType.COMPANY_DELIVERY_MANAGER)) {     // 업체 배송 담당자인 경우
-                builder.and(qDelivery.managerId.eq(managerId));
+                builder.and(qDelivery.manager.id.eq(managerId));
             }
         }
 
@@ -68,6 +63,7 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
         List<Delivery> deliveries = queryFactory.selectDistinct(qDelivery)
                 .from(qDelivery)
                 .join(qDeliveryRoute).on(qDeliveryRoute.delivery.eq(qDelivery)).fetchJoin()
+                .join(qDeliveryManager).on(qDelivery.manager.id.eq(qDeliveryManager.id)).fetchJoin()
                 .where(builder)
                 .orderBy(QueryDslUtils.getOrderSpecifiers(pageable.getSort(), Delivery.class))
                 .offset(pageable.getOffset())
@@ -78,7 +74,8 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
         // Count 쿼리
         Long total = queryFactory.select(qDelivery.id.count())
                 .from(qDelivery)
-                .join(qDelivery).on(qDeliveryRoute.delivery.eq(qDelivery)).fetchJoin()
+                .join(qDeliveryRoute).on(qDeliveryRoute.delivery.eq(qDelivery)).fetchJoin()
+                .join(qDeliveryManager).on(qDelivery.manager.id.eq(qDeliveryManager.id)).fetchJoin()
                 .where(builder)
                 .fetchOne();
 
@@ -105,10 +102,6 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
                                            DeliveryManagerType managerType,
                                            Pageable pageable) {
 
-        QDelivery qDelivery = QDelivery.delivery;
-        QDeliveryRoute qDeliveryRoute = QDeliveryRoute.deliveryRoute;
-        QDeliveryManager qDeliveryManager = QDeliveryManager.deliveryManager;
-
         BooleanBuilder builder = new BooleanBuilder();
 
         if (hubId != null) {        // 허브 관리자가 허브 id로 조회
@@ -116,20 +109,16 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
         }
 
         if (companyId != null) {    // 업체 관리자가 업체 id로 조회
-            builder.and(qDeliveryRoute.managerId.in(
-                    queryFactory.select(qDeliveryManager.id)
-                            .from(qDeliveryManager)
-                            .where(qDeliveryManager.companyId.eq(companyId))
-            ));
+            builder.and(qDeliveryRoute.manager.companyId.eq(companyId));
         }
 
         if (managerId != null && managerType != null) {
 
             if (managerType.equals(DeliveryManagerType.HUB_DELIVERY_MANAGER)) {         // 허브 배송 담당자인 경우
-                builder.and(qDeliveryRoute.managerId.eq(managerId));
+                builder.and(qDeliveryRoute.manager.id.eq(managerId));
             }
             if (managerType.equals(DeliveryManagerType.COMPANY_DELIVERY_MANAGER)) {     // 업체 배송 담당자인 경우
-                builder.and(qDeliveryRoute.delivery.managerId.eq(managerId));
+                builder.and(qDeliveryRoute.delivery.manager.id.eq(managerId));
             }
 
         }
@@ -137,7 +126,8 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
         // 조회 쿼리
         List<DeliveryRoute> routes = queryFactory.selectDistinct(qDeliveryRoute)
                 .from(qDeliveryRoute)
-                .join(qDeliveryRoute.delivery, qDelivery).fetchJoin()
+                .join(qDelivery).on(qDeliveryRoute.delivery.eq(qDelivery)).fetchJoin()
+                .join(qDeliveryManager).on(qDelivery.manager.id.eq(qDeliveryManager.id)).fetchJoin()
                 .where(builder)
                 .orderBy(QueryDslUtils.getOrderSpecifiers(pageable.getSort(), DeliveryRoute.class))
                 .offset(pageable.getOffset())
@@ -148,7 +138,8 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
         // Count 쿼리
         Long total = queryFactory.select(qDeliveryRoute.id.count())
                 .from(qDeliveryRoute)
-                .join(qDeliveryRoute.delivery, qDelivery).fetchJoin()
+                .join(qDelivery).on(qDeliveryRoute.delivery.eq(qDelivery)).fetchJoin()
+                .join(qDeliveryManager).on(qDelivery.manager.id.eq(qDeliveryManager.id)).fetchJoin()
                 .where(builder)
                 .fetchOne();
 
@@ -160,17 +151,29 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
     }
 
     /**
-     * 배송 경로 상세 조회
+     * 배송 경로 조회
      * @param routeId 배송 경로 id
      */
     @Override
-    public Optional<DeliveryRoute> findByRouteId(UUID routeId) {
-        QDeliveryRoute qDeliveryRoute = QDeliveryRoute.deliveryRoute;
-
+    public Optional<DeliveryRoute> findRouteById(UUID routeId) {
         return Optional.ofNullable(
                 queryFactory.selectFrom(qDeliveryRoute)
                         .where(qDeliveryRoute.id.eq(routeId))
                         .fetchOne()
         );
+    }
+
+    /**
+     * 배송 담당자 조회
+     * @param managerId 배송 담당자 id
+     */
+    @Override
+    public Optional<DeliveryManager> findManagerById(UUID managerId) {
+        return Optional.ofNullable(
+                queryFactory.selectFrom(qDeliveryManager)
+                        .where(qDeliveryManager.id.eq(managerId))
+                        .fetchOne()
+        );
+
     }
 }

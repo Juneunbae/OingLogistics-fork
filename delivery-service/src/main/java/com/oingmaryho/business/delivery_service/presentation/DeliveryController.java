@@ -3,13 +3,11 @@ package com.oingmaryho.business.delivery_service.presentation;
 import com.oingmaryho.business.delivery_service.application.service.DeliveryService;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
+import com.oingmaryho.business.delivery_service.domain.DeliveryRoute;
 import com.oingmaryho.business.delivery_service.domain.UserRoleType;
+import com.oingmaryho.business.delivery_service.presentation.dto.request.*;
 import com.oingmaryho.business.delivery_service.utils.PageableUtils;
 import com.oingmaryho.business.delivery_service.presentation.dto.mapper.DeliveryPresentationMapper;
-import com.oingmaryho.business.delivery_service.presentation.dto.request.DeliveryRouteSearchRequestDto;
-import com.oingmaryho.business.delivery_service.presentation.dto.request.DeliverySearchRequestDto;
-import com.oingmaryho.business.delivery_service.presentation.dto.request.DeliveryUpdateRequestDto;
-import com.oingmaryho.business.delivery_service.presentation.dto.request.DeliveryUpdateStatusRequestDto;
 import com.oingmaryho.business.delivery_service.presentation.dto.response.*;
 import com.oingmaryho.business.delivery_service.presentation.dto.response.DeliveryRouteResponseDto;
 
@@ -120,4 +118,14 @@ public class DeliveryController {
         return ResponseEntity.ok(responseServiceDtos.map(DeliveryPresentationMapper.INSTANCE::toRouteSearchResponseDto));
     }
 
+    @PutMapping("/routes/{id}/status")
+    public ResponseEntity<DeliveryRouteUpdateStatusResponseDto> updateDeliveryRouteStatus(
+            @PathVariable UUID id,
+            @RequestBody DeliveryRouteUpdateStatusRequestDto requestDto) {
+
+        // TODO change userId, userRole type from UserVO
+        DeliveryRouteUpdateStatusRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateRouteStatusServiceDto(id, requestDto);
+        DeliveryRouteUpdateStatusResponseServiceDto responseServiceDto = deliveryService.updateRouteStatusDelivery(1L, UserRoleType.HUB_DELIVERY_MANAGER, requestServiceDto);
+        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateRouteStatusResponseDto(responseServiceDto));
+    }
 }

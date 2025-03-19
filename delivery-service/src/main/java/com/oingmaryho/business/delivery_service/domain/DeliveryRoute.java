@@ -1,6 +1,5 @@
 package com.oingmaryho.business.delivery_service.domain;
 
-import com.oingmaryho.business.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -51,8 +50,9 @@ public class DeliveryRoute extends BaseEntity {
     private Double actualDistance;
     private Integer actualTime;
 
-    @Column(nullable = false)
-    private UUID managerId; // 허브 배송 담당자 id
+    @OneToOne
+    @JoinColumn(name = "manager_id")
+    private DeliveryManager manager; // 허브 배송 담당자 id
 
     /**
      * 배송 상태 변경

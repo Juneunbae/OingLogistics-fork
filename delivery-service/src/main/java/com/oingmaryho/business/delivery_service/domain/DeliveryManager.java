@@ -1,6 +1,5 @@
 package com.oingmaryho.business.delivery_service.domain;
 
-import com.oingmaryho.business.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -9,7 +8,6 @@ import org.hibernate.annotations.DynamicUpdate;
 
 import java.util.UUID;
 
-
 @Getter
 @Entity
 @SuperBuilder
@@ -17,7 +15,7 @@ import java.util.UUID;
 @DynamicUpdate
 @Table(name = "p_delivery_manager")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-class DeliveryManager extends BaseEntity {
+public class DeliveryManager extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

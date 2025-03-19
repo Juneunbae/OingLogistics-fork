@@ -122,6 +122,17 @@ public class DeliveryAdminController {
         return ResponseEntity.ok(responseServiceDtos.map(DeliveryPresentationMapper.INSTANCE::toRouteSearchResponseDto));
     }
 
+    @PutMapping("/routes/{id}/status")
+    public ResponseEntity<DeliveryRouteUpdateStatusResponseDto> updateDeliveryRouteStatus(
+            @PathVariable UUID id,
+            @RequestBody DeliveryRouteUpdateStatusRequestDto requestDto) {
+
+        // TODO change userId, userRole type from UserVO
+        DeliveryRouteUpdateStatusRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateRouteStatusServiceDto(id, requestDto);
+        DeliveryRouteUpdateStatusResponseServiceDto responseServiceDto = deliveryAdminService.updateRouteStatusDelivery(1L, UserRoleType.HUB_DELIVERY_MANAGER, requestServiceDto);
+        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateRouteStatusResponseDto(responseServiceDto));
+    }
+
 
 
 }
