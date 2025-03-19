@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.oingmaryho.business.hubservice.application.HubAdminService;
 import com.oingmaryho.business.hubservice.application.dto.response.HubCreateResponseServiceDto;
+import com.oingmaryho.business.hubservice.application.dto.response.HubSearchAdminResponseServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubUpdateResponseServiceDto;
 import com.oingmaryho.business.hubservice.presentation.dto.mapper.HubPresentationMapper;
 import com.oingmaryho.business.hubservice.presentation.dto.request.HubCreateRequestDto;
@@ -27,6 +29,12 @@ public class HubAdminController {
 
 	private final HubAdminService hubAdminService;
 	private final HubPresentationMapper mapper;
+
+	@GetMapping("/{id}") // TODO : 권한 확인하기
+	public ResponseEntity<?> getHubById(@PathVariable UUID id) {
+		HubSearchAdminResponseServiceDto responseDto = hubAdminService.getHubById(mapper.toHubSearchRequestServiceDto(id));
+		return ResponseEntity.ok(mapper.toHubSearchAdminResponseDto(responseDto));
+	}
 
 	@PostMapping // TODO : 권한 확인하기
 	public ResponseEntity<?> createHub(@RequestBody HubCreateRequestDto requestDto) {
