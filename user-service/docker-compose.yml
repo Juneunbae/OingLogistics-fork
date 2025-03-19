@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  h2:
+    image: oscarfonts/h2  # H2 데이터베이스 이미지
+    container_name: h2-database
+    ports:
+      - "1521:1521"  # H2 TCP 포트
+      - "8082:8082"  # H2 콘솔 포트
+    environment:
+      H2_OPTIONS: "-ifNotExists"
+    volumes:
+      - h2-data:/opt/h2-data
+
+  redis:
+    image: redis:latest  # Redis 이미지
+    container_name: redis-server
+    ports:
+      - "6379:6379"  # Redis 포트
+    volumes:
+      - redis-data:/data  # Redis 데이터 저장소
+
+volumes:
+  h2-data:
+  redis-data:
+
+networks:
+  app_network:
+    driver: bridge

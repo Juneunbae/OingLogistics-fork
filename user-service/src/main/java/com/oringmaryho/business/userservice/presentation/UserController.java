@@ -37,6 +37,8 @@ public class UserController {
 		return ResponseEntity.ok().build();
 	}
 
+	//일반 사용자, 관리자 사용자 둘 다 같은 메서드 사용
+	//todo: 분리해야할까?
 	@PostMapping("/sign-in")
 	public ResponseEntity<UserSignInResponseDto> signInUser(
 		@RequestBody UserSignInRequestDto userSignInRequestDto) {
