@@ -52,8 +52,7 @@ public class CompanyQueryDslRepositoryImpl implements CompanyQueryDslRepository 
 		addManagerIdCondition(builder, searchCriteria.getManagerId(), company);
 		addManageHubIdCondition(builder, searchCriteria.getManageHubId(), company);
 		addAddressCondition(builder, searchCriteria.getAddress(), company);
-
-		builder.and(company.isDeleted.isFalse()); // 삭제된 데이터 제외
+		addIsDeletedCondition(builder, searchCriteria.getIsDeleted(), company);
 		return builder;
 	}
 
@@ -90,6 +89,12 @@ public class CompanyQueryDslRepositoryImpl implements CompanyQueryDslRepository 
 	private void addAddressCondition(BooleanBuilder builder, String address, QCompany company) {
 		if (address != null) {
 			builder.and(company.address.containsIgnoreCase(address));
+		}
+	}
+
+	private void addIsDeletedCondition(BooleanBuilder builder, Boolean isDeleted, QCompany company) {
+		if (isDeleted != null) {
+			builder.and(company.isDeleted.eq(isDeleted));
 		}
 	}
 }

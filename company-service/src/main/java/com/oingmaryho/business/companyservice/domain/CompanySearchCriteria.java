@@ -17,4 +17,5 @@ public class CompanySearchCriteria {
 	private final Long managerId;
 	private final UUID manageHubId;
 	private final String address;
+	private final Boolean isDeleted;
 }
