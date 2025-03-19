@@ -6,6 +6,7 @@ public record CompanyUpdateRequestServiceDto(
 	UUID id,
 	String name,
 	String type,
+	Long managerId,
 	UUID manageHubId,
 	String address
 ) {

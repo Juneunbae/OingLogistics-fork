@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyCreateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDetailsSearchRequestServiceDto;
@@ -23,11 +24,18 @@ public interface CompanyApplicationMapper {
 	@BeanMapping(ignoreByDefault = true)
 	CompanyDetailsSearchResponseServiceDto toResponseDto(Company company);
 
+	@BeanMapping(ignoreByDefault = true)
 	CompanySearchResponseServiceDto toCompanySearchResponseServiceDto(Company company);
 
 	CompanyUpdateResponseServiceDto toUpdateResponseDto(UUID id);
 
-	Company toCompanyEntity(CompanyDetailsSearchRequestServiceDto companyDetailsSearchRequestServiceDto);
-
+	@Mapping(target = "deletedBy", ignore = true)
+	@Mapping(target = "deletedAt", ignore = true)
+	@Mapping(target = "createdAt", ignore = true)
+	@Mapping(target = "createdBy", ignore = true)
+	@Mapping(target = "updatedAt", ignore = true)
+	@Mapping(target = "updatedBy", ignore = true)
+	@Mapping(target = "isDeleted", ignore = true)
+	@Mapping(target = "id", ignore = true)
 	Company toCreateEntity(CompanyCreateRequestServiceDto companyCreateRequestServiceDto);
 }
