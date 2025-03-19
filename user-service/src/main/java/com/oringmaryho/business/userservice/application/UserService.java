@@ -149,9 +149,7 @@ public class UserService {
 		//슬랙 코드 생성 및 codestorage에 저장
 		String slackCode = directMessageAuthService.generateCode();
 
-		String slackServerId = directMessageAuthService.getUserSlackId(requestServiceDto.slackId());
-
-		directMessageAuthService.sendDirectMessage(slackServerId, slackCode);
+		directMessageAuthService.sendDirectMessage(requestServiceDto.slackId(), slackCode);
 
 		//이전에 요청한 적 있는 유저 id라면 스토리지에 있는 내용 삭제 후 다시 저장
 		if (codeStorage.hasKey(requestServiceDto.username())) {

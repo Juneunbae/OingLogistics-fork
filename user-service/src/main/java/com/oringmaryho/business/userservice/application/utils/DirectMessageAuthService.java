@@ -2,7 +2,7 @@ package com.oringmaryho.business.userservice.application.utils;
 
 public interface DirectMessageAuthService {
 
-	public String getUserSlackId(String slackUsername);
+	public String getUserIdByEmail(String userEmail);
 
 	public String openDirectMessageChannel(String userId);
 
