@@ -1,5 +1,6 @@
 package com.oingmaryho.business.delivery_service.domain;
 
+import com.oingmaryho.business.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -18,7 +19,7 @@ import java.util.UUID;
 @DynamicUpdate
 @Table(name = "p_delivery_route")
 @NoArgsConstructor(force = true, access = AccessLevel.PROTECTED)
-public class DeliveryRoute extends BaseEntity{
+public class DeliveryRoute extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

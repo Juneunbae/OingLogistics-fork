@@ -1,5 +1,6 @@
 package com.oingmaryho.business.delivery_service.domain;
 
+import com.oingmaryho.business.common.entity.BaseEntity;
 import com.oingmaryho.business.delivery_service.application.dto.request.DeliveryUpdateRequestServiceDto;
 import com.oingmaryho.business.delivery_service.application.dto.request.DeliveryUpdateStatusRequestServiceDto;
 import jakarta.persistence.*;
@@ -18,7 +19,7 @@ import java.util.UUID;
 @DynamicUpdate
 @Table(name = "p_delivery")
 @NoArgsConstructor(force = true, access = AccessLevel.PROTECTED)
-public class Delivery extends BaseEntity{
+public class Delivery extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
