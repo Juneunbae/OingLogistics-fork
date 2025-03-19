@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.oingmaryho.business.hubservice.application.dto.mapper.HubApplicationMapper;
 import com.oingmaryho.business.hubservice.application.dto.request.HubCreateRequestServiceDto;
+import com.oingmaryho.business.hubservice.application.dto.request.HubDeleteRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubUpdateRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubCreateResponseServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubUpdateResponseServiceDto;
@@ -114,6 +115,31 @@ class HubAdminServiceTest {
 				requestDto.managerId()
 			);
 		verify(hubRepository).findById(hubId);
+	}
+
+	@DisplayName("허브 ID를 통해 허브를 soft delete 할 수 있다.")
+	@Test
+	void hub_soft_delete_test() {
+		// Given
+		UUID hubId = UUID.randomUUID();
+		Hub hub = Hub.builder()
+			.id(hubId)
+			.name("허브 이름")
+			.address(new Address("허브 주소", 1.0, 2.0))
+			.managerId(1L)
+			.build();
+
+		HubDeleteRequestServiceDto requestDto = new HubDeleteRequestServiceDto(hubId);
+
+		when(hubRepository.findById(hubId)).thenReturn(Optional.of(hub));
+
+		// When
+		hubAdminService.deleteHub(requestDto);
+
+		// Then
+		assertThat(hub).isNotNull()
+			.extracting(Hub::getIsDeleted)
+			.isEqualTo(true);
 	}
 }
 
