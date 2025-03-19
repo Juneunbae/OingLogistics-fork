@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.oingmaryho.business.companyservice.application.dto.mapper.CompanyApplicationMapper;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyCreateRequestServiceDto;
+import com.oingmaryho.business.companyservice.application.dto.request.CompanyDeleteRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDetailsSearchRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanySearchRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyUpdateRequestServiceDto;
@@ -64,6 +65,13 @@ public class CompanyService {
 		return companyApplicationMapper.toUpdateResponseDto(company.getId());
 	}
 
+	@Transactional
+	public void deleteCompany(Long userId, CompanyDeleteRequestServiceDto requestServiceDto) {
+		Company company = companyRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
+			.orElseThrow(() -> new EntityNotFoundException("업체를 찾을 수 업습니다: " + requestServiceDto.id()));
+		company.softDelete(userId);
+	}
+
 	private CompanySearchCriteria createCompanySearchCriteria(CompanySearchRequestServiceDto requestDto){
 		return CompanySearchCriteria.builder()
 			.id(requestDto.id())
@@ -72,6 +80,7 @@ public class CompanyService {
 			.managerId(requestDto.managerId())
 			.manageHubId(requestDto.manageHubId())
 			.address(requestDto.address())
+			.isDeleted(Boolean.FALSE)
 			.build();
 
 	}

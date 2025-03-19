@@ -3,7 +3,6 @@ package com.oingmaryho.business.companyservice.presentation.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.context.annotation.Description;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyCreateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDeleteRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDetailsSearchRequestServiceDto;
-import com.oingmaryho.business.companyservice.application.dto.request.CompanySearchRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyUpdateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyCreateResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyDetailsSearchResponseServiceDto;
@@ -34,7 +32,6 @@ import com.oingmaryho.business.companyservice.presentation.dto.request.CompanyCr
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanySearchRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanyUpdateRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.response.CompanyCreateResponseDto;
-import com.oingmaryho.business.companyservice.presentation.dto.response.CompanyDeleteResponseDto;
 import com.oingmaryho.business.companyservice.presentation.dto.response.CompanyDetailsSearchResponseDto;
 import com.oingmaryho.business.companyservice.presentation.dto.response.CompanySearchResponseDto;
 import com.oingmaryho.business.companyservice.presentation.dto.response.CompanyUpdateResponseDto;
@@ -46,13 +43,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/companies")
 public class CompanyController {
-	private final PageableConfig pageableConfig;
 	private final CompanyService companyService;
 	private final CompanyPresentationMapper companyPresentationMapper;
 
 	@Description("일반 - 업체 생성")
 	@PostMapping
 	public ResponseEntity<CompanyCreateResponseDto> createCompany(@RequestBody CompanyCreateRequestDto companyCreateRequestDto) {
+		// TODO: userId 받아오기
 		CompanyCreateRequestServiceDto requestServiceDto = companyPresentationMapper.toCreateServiceDto(companyCreateRequestDto);
 		CompanyCreateResponseServiceDto responseServiceDto = companyService.createCompany(requestServiceDto);
 		CompanyCreateResponseDto responseDto = companyPresentationMapper.toCreateDto(responseServiceDto);
@@ -72,6 +69,7 @@ public class CompanyController {
 		@RequestParam(name = "managerId", required = false) Long managerId,
 		@RequestParam(name = "manageHubId", required = false) UUID manageHubId,
 		@RequestParam(name = "address", required = false) String address) {
+		// TODO: userId 받아오기
 		Pageable pageable = PageableUtils.customPageable(page, size, sortDirection, by);
 		CompanySearchRequestDto requestDto = new CompanySearchRequestDto(id, name, type, managerId,manageHubId, address);
 
@@ -82,6 +80,7 @@ public class CompanyController {
 	@Description("일반 - 업체 상세 조회")
 	@GetMapping("/{id}")
 	public ResponseEntity<CompanyDetailsSearchResponseDto> getCompanyById(@PathVariable UUID id) {
+		// TODO: userId 받아오기
 		CompanyDetailsSearchRequestServiceDto requestServiceDto = companyPresentationMapper.toDetailsSearchServiceDto(id);
 		CompanyDetailsSearchResponseServiceDto responseServiceDto = companyService.getCompanyById(requestServiceDto);
 		CompanyDetailsSearchResponseDto responseDto = companyPresentationMapper.toDetailsSearchResponseDto(responseServiceDto);
@@ -91,6 +90,7 @@ public class CompanyController {
 	@Description("일반 - 업체 수정")
 	@PutMapping("/{id}")
 	public ResponseEntity<CompanyUpdateResponseDto> updateCompany(@PathVariable UUID id, @RequestBody CompanyUpdateRequestDto companyUpdateRequestDto) {
+		// TODO: userId 받아오기
 		CompanyUpdateRequestServiceDto requestServiceDto = companyPresentationMapper.toUpdateServiceDto(id,companyUpdateRequestDto);
 		CompanyUpdateResponseServiceDto responseServiceDto = companyService.updateCompany(requestServiceDto);
 		CompanyUpdateResponseDto responseDto = companyPresentationMapper.toUpdateResponseDto(responseServiceDto);
@@ -99,10 +99,11 @@ public class CompanyController {
 
 	@Description("일반 - 업체 식제")
 	@DeleteMapping("/api/v1/companies/{id}")
-	public ResponseEntity<CompanyDeleteResponseDto> deleteCompany(@PathVariable UUID id) {
+	public ResponseEntity<Void> deleteCompany(@PathVariable UUID id) {
+		// TODO: userId 받아오기
 		CompanyDeleteRequestServiceDto requestServiceDto = companyPresentationMapper.toDeleteServiceDto(id);
-		// TODO : Service Method 활용 및 presentation dto 로 변환
-		return null;
+		companyService.deleteCompany(1L, requestServiceDto);
+		return ResponseEntity.noContent().build();
 	}
 
 }
