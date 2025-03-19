@@ -23,7 +23,7 @@ import com.oringmaryho.business.userservice.application.utils.DirectMessageAuthS
 import com.oringmaryho.business.userservice.config.security.jwt.JwtTokenProvider;
 import com.oringmaryho.business.userservice.domain.User;
 import com.oringmaryho.business.userservice.domain.UserConfirmStatus;
-import com.oringmaryho.business.userservice.infrastructure.UserRepository;
+import com.oringmaryho.business.userservice.domain.repository.UserRepository;
 import com.oringmaryho.business.userservice.exception.ErrorCode;
 import com.oringmaryho.business.userservice.exception.UserException;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserSearchResponseDto;
