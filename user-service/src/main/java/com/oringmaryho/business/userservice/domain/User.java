@@ -1,5 +1,7 @@
 package com.oringmaryho.business.userservice.domain;
 
+import java.io.Serializable;
+
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -25,7 +27,7 @@ import lombok.experimental.SuperBuilder;
 @DynamicUpdate
 @Table(name = "p_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User extends BaseEntity {
+public class User extends BaseEntity implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)

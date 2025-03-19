@@ -40,4 +40,13 @@ public class Hub extends BaseEntity {
 	@Builder.Default
 	private Boolean isDeleted = false;
 
+	public void update(String name, Address address, Long managerId) {
+		this.name = name;
+		this.address = address;
+		this.managerId = managerId;
+	}
+
+	public void delete() {
+		this.isDeleted = true;
+	}
 }

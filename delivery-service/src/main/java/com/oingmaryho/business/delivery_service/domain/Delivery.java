@@ -1,5 +1,7 @@
 package com.oingmaryho.business.delivery_service.domain;
 
+import com.oingmaryho.business.delivery_service.application.dto.request.DeliveryUpdateRequestServiceDto;
+import com.oingmaryho.business.delivery_service.application.dto.request.DeliveryUpdateStatusRequestServiceDto;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -45,9 +47,28 @@ public class Delivery extends BaseEntity{
     private String receiverSlackId;
 
     @Column(nullable = false)
-    private UUID managerId; // 업체 배송 담당자 id
+    private UUID managerId; // 업체 배송 담당자 userId
 
     @OneToMany(mappedBy = "delivery", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DeliveryRoute> routes;
+
+    public void update(DeliveryUpdateRequestServiceDto requestServiceDto) {
+        if (receiver != null) {
+            this.receiver = requestServiceDto.receiver();
+        }
+        if (receiverSlackId != null) {
+            this.receiverSlackId = requestServiceDto.receiverSlackId();
+        }
+        if (address != null) {
+            this.address = requestServiceDto.address();
+        }
+        if (managerId != null) {
+            this.managerId = requestServiceDto.managerId();
+        }
+    }
+
+    public void updateStatus(DeliveryUpdateStatusRequestServiceDto requestServiceDto) {
+        this.status = requestServiceDto.status();
+    }
 
 }

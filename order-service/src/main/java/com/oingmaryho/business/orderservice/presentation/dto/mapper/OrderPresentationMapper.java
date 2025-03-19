@@ -1,11 +1,8 @@
 package com.oingmaryho.business.orderservice.presentation.dto.mapper;
 
-import com.oingmaryho.business.orderservice.application.dto.request.OrderDeleteServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.request.OrderRequestServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.request.OrdersRequestServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.request.*;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.response.OrderUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderDetailUpdateRequestDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderUpdateRequestDto;
 import org.mapstruct.Mapper;
@@ -35,11 +32,13 @@ public interface OrderPresentationMapper {
     OrderRequestServiceDto toOrderServiceDto(UUID orderId);
 
     @Mapping(target = "requests", source = "source.requests")
-    OrderUpdateResponseServiceDto toOrderUpdateServiceDto(
+    OrderUpdateServiceDto toOrderUpdateServiceDto(
         UUID id,
         OrderUpdateRequestDto source,
         List<OrderDetailUpdateResponseServiceDto> orderDetails
     );
 
     OrderDeleteServiceDto toOrderDeleteDto(UUID orderId);
+
+    OrderDetailDeleteRequestServiceDto toOrderDetailDeleteRequestServiceDto(UUID orderId, UUID orderDetailId);
 }

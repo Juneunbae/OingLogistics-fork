@@ -28,16 +28,14 @@ public interface DeliveryPresentationMapper {
 
     DeliveryDetailRequestServiceDto toDetailServiceDto(UUID id);
 
-    @Mapping(target = "userId", source = "userId")
     @Mapping(target = "customPageable", source = "customPageable")
-    DeliverySearchRequestServiceDto toSearchServiceDto(Long userId, DeliverySearchRequestDto requestDto, Pageable customPageable);
+    DeliverySearchRequestServiceDto toSearchServiceDto(DeliverySearchRequestDto requestDto, Pageable customPageable);
 
     DeliveryRouteDetailRequestServiceDto toRouteDetailServiceDto(UUID id);
 
     @Mapping(target = "id", source = "id")
-    @Mapping(target = "userId", source = "userId")
     @Mapping(target = "customPageable", source = "customPageable")
-    DeliveryRouteSearchRequestServiceDto toRouteSearchServiceDto(UUID id, Long userId, DeliveryRouteSearchRequestDto searchDto, Pageable customPageable);
+    DeliveryRouteSearchRequestServiceDto toRouteSearchServiceDto(UUID id,DeliveryRouteSearchRequestDto searchDto, Pageable customPageable);
 
     // ResponseServiceDto -> ResponseDto
     DeliveryCreationResponseDto toCreationResponseDto(DeliveryCreationResponseServiceDto responseServiceDto);

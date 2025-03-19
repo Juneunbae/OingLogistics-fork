@@ -40,14 +40,19 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
 	// querydsl
-	// implementation "com.querydsl:querydsl-jpa:${querydslVersion}:jakarta"
-	// annotationProcessor "com.querydsl:querydsl-apt:${querydslVersion}:jakarta"
-	// annotationProcessor "jakarta.annotation:jakarta.annotation-api"
-	// annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+	implementation "com.querydsl:querydsl-jpa:${querydslVersion}:jakarta"
+	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
-	// map struct
-	implementation "org.mapstruct:mapstruct:1.5.5.Final"
-	annotationProcessor "org.mapstruct:mapstruct-processor:1.5.5.Final"
+	// mapstruct + lombok
+	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
 
 	// flyway
 	runtimeOnly 'org.postgresql:postgresql'
@@ -55,9 +60,6 @@ dependencies {
 	implementation 'org.flywaydb:flyway-core'
 	implementation 'org.flywaydb:flyway-database-postgresql'
 
-	// lombok
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
 
 	// Cache
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
@@ -69,6 +71,8 @@ dependencies {
 	testImplementation 'org.springframework.amqp:spring-rabbit-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
+
+def querydslSrcDir = 'src/main/generated'
 
 dependencyManagement {
 	imports {

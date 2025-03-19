@@ -1,10 +1,7 @@
 package com.oingmaryho.business.orderservice.presentation.controller;
 
-import com.oingmaryho.business.orderservice.application.dto.request.OrderDeleteServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.request.OrderRequestServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.request.OrdersRequestServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.request.*;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.response.OrderUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.service.OrderAdminService;
 import com.oingmaryho.business.orderservice.config.pageable.PageableConfig;
 import com.oingmaryho.business.orderservice.presentation.dto.mapper.OrderPresentationMapper;
@@ -71,12 +68,12 @@ public class OrderAdminController {
     )
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateOrder(@PathVariable UUID id, @RequestBody OrderUpdateRequestDto update) {
-        OrderUpdateResponseServiceDto orderUpdateResponseServiceDto = orderPresentationMapper.toOrderUpdateServiceDto(
+        OrderUpdateServiceDto orderUpdateServiceDto = orderPresentationMapper.toOrderUpdateServiceDto(
             id, update, update.requestOrderDetails().stream().map(
                 orderPresentationMapper::toOrderDetailUpdateServiceDto
             ).toList()
         );
-        orderAdminService.updateOrder(orderUpdateResponseServiceDto);
+        orderAdminService.updateOrder(orderUpdateServiceDto);
 
         return ResponseEntity.ok().build();
     }
@@ -88,6 +85,17 @@ public class OrderAdminController {
     public ResponseEntity<Void> deleteOrder(@PathVariable UUID id) {
         OrderDeleteServiceDto orderDeleteServiceDto = orderPresentationMapper.toOrderDeleteDto(id);
         orderAdminService.deleteOrder(orderDeleteServiceDto);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @Description(
+        "마스터 - 상세 주문 삭제"
+    )
+    @DeleteMapping("/{id}/details/{orderDetailId}")
+    public ResponseEntity<Void> deleteOrderDetail(@PathVariable UUID id, @PathVariable UUID orderDetailId) {
+        OrderDetailDeleteRequestServiceDto request = orderPresentationMapper.toOrderDetailDeleteRequestServiceDto(id, orderDetailId);
+        orderAdminService.deleteOrderDetail(request);
 
         return ResponseEntity.ok().build();
     }

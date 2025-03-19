@@ -5,6 +5,9 @@ import java.util.UUID;
 public record CompanySearchRequestDto(
 	UUID id,
 	String type,
-	String name
+	String name,
+	Long managerId,
+	UUID manageHubId,
+	String address
 ) {
 }

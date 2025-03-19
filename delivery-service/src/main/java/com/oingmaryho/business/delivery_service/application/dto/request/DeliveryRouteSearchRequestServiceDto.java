@@ -5,7 +5,6 @@ import org.springframework.data.domain.Pageable;
 import java.util.UUID;
 
 public record DeliveryRouteSearchRequestServiceDto(UUID id, // 배송 id
-                                                   Long userId,
                                                    UUID hubId,
                                                    UUID companyId,
                                                    UUID managerId,
