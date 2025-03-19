@@ -147,6 +147,18 @@ public class UserService {
 			throw new UserException(ErrorCode.NOT_FOUND);
 		}
 
+		User user = userRepository.findByUsername(requestServiceDto.username())
+			.orElseThrow(()-> new UserException(ErrorCode.NOT_FOUND));
+
+		if(!requestServiceDto.slackId().equals(user.getSlackId())
+		|| !requestServiceDto.username().equals(user.getUsername())) {
+			throw new UserException(ErrorCode.USER_NOT_MATCH);
+		}
+
+		if(user.getStatus().equals(UserConfirmStatus.CONFIRMED)){
+			throw new UserException(ErrorCode.SLACK_ALREADY_AUTH);
+		}
+
 		//슬랙 코드 생성 및 codestorage에 저장
 		String slackCode = directMessageAuthService.generateCode();
 
