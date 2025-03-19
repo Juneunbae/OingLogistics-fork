@@ -139,7 +139,7 @@ class CompanyServiceTest {
 	@Description("업체 수정 테스트")
 	void updateCompany_DirtyChecking() {
 		CompanyUpdateRequestServiceDto requestDto = new CompanyUpdateRequestServiceDto(
-			companyId, "Updated Company Name", "Retail", FIXED_COMPANY_ID, "456 New Address"
+			companyId, "Updated Company Name", "Retail", 1L, FIXED_MANAGE_HUB_ID, "456 New Address"
 		);
 
 		when(companyRepository.findByIdAndIsDeletedFalse(companyId)).thenReturn(Optional.of(company));
