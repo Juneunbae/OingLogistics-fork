@@ -22,9 +22,10 @@ import com.oringmaryho.business.userservice.application.utils.CodeStorage;
 import com.oringmaryho.business.userservice.application.utils.DirectMessageAuthService;
 import com.oringmaryho.business.userservice.config.security.jwt.JwtTokenProvider;
 import com.oringmaryho.business.userservice.domain.User;
+import com.oringmaryho.business.userservice.domain.UserConfirmStatus;
+import com.oringmaryho.business.userservice.infrastructure.UserRepository;
 import com.oringmaryho.business.userservice.exception.ErrorCode;
 import com.oringmaryho.business.userservice.exception.UserException;
-import com.oringmaryho.business.userservice.infrastructure.UserRepository;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserSearchResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserSignInResponseDto;
 
@@ -171,10 +172,19 @@ public class UserService {
 			&& codeStorage.getSlackUsername(username).equals(slackId)
 			&& slackCode.equals(requestServiceDto.confirmCode())
 		) {
-			//todo : 인증 성공 절차 실행
-
+			User user = userRepository.findByUsername(username)
+				.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+			User verifiedUser = User.builder()
+				.id(user.getId())
+				.username(user.getUsername())
+				.password(user.getPassword())
+				.slackId(user.getSlackId())
+				.role(user.getRole())
+				.status(UserConfirmStatus.CONFIRMED)
+				.build();
+			userRepository.save(verifiedUser);
+			codeStorage.removeCode(requestServiceDto.username());
 		} else {
-			//todo: 인증 실패(재시도 요청 혹은 실패 처리)
 			throw new UserException(ErrorCode.SLACK_AUTH_FAIL);
 		}
 

@@ -52,7 +52,7 @@ public class SlackServiceImpl implements DirectMessageAuthService {
 
 		try {
 			ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, request, Map.class);
-			System.out.println(response.getBody());
+
 			Map<String, Object> body = response.getBody();
 
 			if (body == null || !Boolean.TRUE.equals(body.get("ok"))) {

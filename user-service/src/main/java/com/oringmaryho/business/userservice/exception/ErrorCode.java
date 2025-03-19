@@ -18,6 +18,8 @@ public enum ErrorCode {
 	SLACK_API_ERROR("U-006", "Slack API 호출 실패.", HttpStatus.BAD_REQUEST),
 	SLACK_INVALID_RESPONSE("U-007", "SLACK 응답 형식이 다릅니다.", HttpStatus.BAD_REQUEST),
 	SLACK_AUTH_FAIL("U-008", "SLACK 계정 인증에 실패했습니다.", HttpStatus.BAD_REQUEST),
+
+	STORAGE_NEGATIVE_ERROR("U-009", "TTL이 음수일 수 없습니다.", HttpStatus.BAD_REQUEST),
 	;
 
 	private final String errorCode;

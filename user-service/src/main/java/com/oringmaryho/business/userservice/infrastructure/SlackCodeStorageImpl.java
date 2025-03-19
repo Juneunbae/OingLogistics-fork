@@ -1,15 +1,17 @@
 package com.oringmaryho.business.userservice.infrastructure;
 
-import org.springframework.stereotype.Component;
-
-import jakarta.annotation.PreDestroy;
-
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.stereotype.Component;
+
 import com.oringmaryho.business.userservice.application.utils.CodeStorage;
+import com.oringmaryho.business.userservice.exception.ErrorCode;
+import com.oringmaryho.business.userservice.exception.UserException;
+
+import jakarta.annotation.PreDestroy;
 
 @Component
 public class SlackCodeStorageImpl implements CodeStorage {
@@ -17,9 +19,8 @@ public class SlackCodeStorageImpl implements CodeStorage {
 	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
 	public void storeCode(String key, String slackUsername, String code, long ttl) {
-		if (ttl< 0) {
-			//todo: custom exception 추가
-			throw new IllegalArgumentException("TTL이 음수면 안됩니다.");
+		if (ttl < 0) {
+			throw new UserException(ErrorCode.STORAGE_NEGATIVE_ERROR);
 		}
 		storage.put(key, new Pair(slackUsername, code));
 		scheduler.schedule(() -> storage.remove(key), ttl, TimeUnit.MILLISECONDS);
@@ -59,6 +60,7 @@ public class SlackCodeStorageImpl implements CodeStorage {
 	class Pair {
 		String slackUsername;
 		String slackCode;
+
 		public Pair(String slackUsername, String slackCode) {
 			this.slackUsername = slackUsername;
 			this.slackCode = slackCode;

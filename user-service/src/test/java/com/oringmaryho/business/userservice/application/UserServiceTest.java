@@ -13,7 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.domain.User;
-import com.oringmaryho.business.userservice.infrastructure.UserRepository;
+import com.oringmaryho.business.userservice.domain.repository.UserRepository;
 
 public class UserServiceTest {
 

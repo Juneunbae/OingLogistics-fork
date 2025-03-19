@@ -17,7 +17,7 @@ import org.springframework.test.context.TestPropertySource;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.domain.User;
 import com.oringmaryho.business.userservice.domain.UserRoleType;
-import com.oringmaryho.business.userservice.infrastructure.UserRepository;
+import com.oringmaryho.business.userservice.domain.repository.UserRepository;
 
 @SpringBootTest
 @TestPropertySource(properties = "admin.key=admin-key123")
