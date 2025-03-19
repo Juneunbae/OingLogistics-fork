@@ -1,4 +1,6 @@
 package com.oingmaryho.business.delivery_service.presentation.dto.request;
 
-public record DeliveryUpdateStatusRequestDto(String status){
+import com.oingmaryho.business.delivery_service.domain.DeliveryStatus;
+
+public record DeliveryUpdateStatusRequestDto(DeliveryStatus status){
 }
