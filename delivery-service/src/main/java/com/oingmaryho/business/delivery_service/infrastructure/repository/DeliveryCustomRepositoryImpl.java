@@ -126,7 +126,7 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
         // 조회 쿼리
         List<DeliveryRoute> routes = queryFactory.selectDistinct(qDeliveryRoute)
                 .from(qDeliveryRoute)
-                .join(qDelivery).on(qDeliveryRoute.delivery.eq(qDelivery)).fetchJoin()
+                .leftJoin(qDelivery).on(qDeliveryRoute.delivery.eq(qDelivery)).fetchJoin()
                 .join(qDeliveryManager).on(qDelivery.manager.id.eq(qDeliveryManager.id)).fetchJoin()
                 .where(builder)
                 .orderBy(QueryDslUtils.getOrderSpecifiers(pageable.getSort(), DeliveryRoute.class))
@@ -138,7 +138,7 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
         // Count 쿼리
         Long total = queryFactory.select(qDeliveryRoute.id.count())
                 .from(qDeliveryRoute)
-                .join(qDelivery).on(qDeliveryRoute.delivery.eq(qDelivery)).fetchJoin()
+                .leftJoin(qDelivery).on(qDeliveryRoute.delivery.eq(qDelivery)).fetchJoin()
                 .join(qDeliveryManager).on(qDelivery.manager.id.eq(qDeliveryManager.id)).fetchJoin()
                 .where(builder)
                 .fetchOne();
