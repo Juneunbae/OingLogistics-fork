@@ -10,11 +10,13 @@ import com.oingmaryho.business.companyservice.application.dto.request.CompanyDel
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDetailsSearchRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanySearchRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyUpdateRequestServiceDto;
+import com.oingmaryho.business.companyservice.application.dto.response.CompanyCreateResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyDetailsSearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanySearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanyCreateRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanySearchRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanyUpdateRequestDto;
+import com.oingmaryho.business.companyservice.presentation.dto.response.CompanyCreateResponseDto;
 import com.oingmaryho.business.companyservice.presentation.dto.response.CompanyDetailsSearchResponseDto;
 import com.oingmaryho.business.companyservice.presentation.dto.response.CompanySearchResponseDto;
 
@@ -34,4 +36,6 @@ public interface CompanyPresentationMapper {
 	CompanyDetailsSearchResponseDto toDetailsSearchResponseDto(CompanyDetailsSearchResponseServiceDto responseServiceDto);
 
 	CompanySearchResponseDto toCompanySearchResponseDto(CompanySearchResponseServiceDto responseServiceDto);
+
+	CompanyCreateResponseDto toCreateDto(CompanyCreateResponseServiceDto responseServiceDto);
 }
