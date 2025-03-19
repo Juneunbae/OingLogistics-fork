@@ -23,6 +23,7 @@ import com.oingmaryho.business.companyservice.application.dto.request.CompanyDel
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDetailsSearchRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanySearchRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyUpdateRequestServiceDto;
+import com.oingmaryho.business.companyservice.application.dto.response.CompanyCreateResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyDetailsSearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanySearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.service.CompanyService;
@@ -49,11 +50,12 @@ public class CompanyController {
 	private final CompanyPresentationMapper companyPresentationMapper;
 
 	@Description("일반 - 업체 생성")
-	@PostMapping("/api/v1/companies")
+	@PostMapping
 	public ResponseEntity<CompanyCreateResponseDto> createCompany(@RequestBody CompanyCreateRequestDto companyCreateRequestDto) {
 		CompanyCreateRequestServiceDto requestServiceDto = companyPresentationMapper.toCreateServiceDto(companyCreateRequestDto);
-		// TODO : Service Method 활용 및 presentation dto 로 변환
-		return null;
+		CompanyCreateResponseServiceDto responseServiceDto = companyService.createCompany(requestServiceDto);
+		CompanyCreateResponseDto responseDto = companyPresentationMapper.toCreateDto(responseServiceDto);
+		return ResponseEntity.ok(responseDto);
 	}
 
 	@Description("일반 - 업체 전체 조회")

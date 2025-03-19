@@ -9,4 +9,5 @@ import com.oingmaryho.business.companyservice.domain.Company;
 
 public interface CompanyJpaRepository extends JpaRepository<Company, UUID> {
 	Optional<Company> findByIdAndIsDeletedFalse(UUID uuid);
+
 }

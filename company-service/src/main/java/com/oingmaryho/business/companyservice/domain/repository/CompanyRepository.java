@@ -15,4 +15,6 @@ public interface CompanyRepository {
 	Optional<Company> findByIdAndIsDeletedFalse(UUID id);
 
 	Page<Company> findDynamicQuery(CompanySearchCriteria searchCriteria, Pageable pageable);
+
+	Company save(Company company);
 }

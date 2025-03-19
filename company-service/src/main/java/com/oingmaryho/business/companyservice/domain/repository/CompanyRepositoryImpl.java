@@ -31,6 +31,11 @@ public class CompanyRepositoryImpl implements CompanyRepository {
 	public Page<Company> findDynamicQuery(CompanySearchCriteria searchCriteria, Pageable pageable){
 		return companyQueryDslRepository.findDynamicQuery(searchCriteria,pageable);
 	}
+
+	@Override
+	public Company save(Company company) { // ✅ save 구현
+		return companyJpaRepository.save(company);
+	}
 }
 
 

@@ -4,6 +4,7 @@ package com.oingmaryho.business.companyservice.application.dto.mapper;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 
+import com.oingmaryho.business.companyservice.application.dto.request.CompanyCreateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDetailsSearchRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyCreateResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyDetailsSearchResponseServiceDto;
@@ -25,4 +26,6 @@ public interface CompanyApplicationMapper {
 	CompanyUpdateResponseDto toUpdateResponseDto(CompanyUpdateResponseServiceDto companyUpdateResponseServiceDto);
 
 	Company toCompanyEntity(CompanyDetailsSearchRequestServiceDto companyDetailsSearchRequestServiceDto);
+
+	Company toCreateEntity(CompanyCreateRequestServiceDto companyCreateRequestServiceDto);
 }
