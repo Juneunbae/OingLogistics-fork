@@ -7,6 +7,8 @@ import com.oingmaryho.business.delivery_service.domain.Delivery;
 import com.oingmaryho.business.delivery_service.domain.DeliveryManagerType;
 import com.oingmaryho.business.delivery_service.domain.DeliveryRoute;
 import com.oingmaryho.business.delivery_service.domain.UserRoleType;
+import com.oingmaryho.business.delivery_service.exception.DeliveryException;
+import com.oingmaryho.business.delivery_service.exception.ErrorCode;
 import com.oingmaryho.business.delivery_service.infrastructure.DeliveryRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +28,7 @@ public class DeliveryService {
                                                            UserRoleType userRole,
                                                            DeliveryUpdateRequestServiceDto requestServiceDto) {
         Delivery delivery = deliveryRepository.findById(requestServiceDto.id())
-                .orElseThrow(() -> new EntityNotFoundException("delivery not found"));  // TODO 커스텀 예외 처리
+                .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
         // TODO 권한 확인
 
         delivery.update(requestServiceDto);
@@ -38,7 +40,7 @@ public class DeliveryService {
                                                                        UserRoleType userRole,
                                                                        DeliveryUpdateStatusRequestServiceDto requestServiceDto) {
         Delivery delivery = deliveryRepository.findById(requestServiceDto.id())
-                .orElseThrow(() -> new EntityNotFoundException("delivery not found"));  // TODO 커스텀 예외 처리
+                .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
         // TODO 권한 확인
         delivery.updateStatus(requestServiceDto);
         return DeliveryApplicationMapper.INSTANCE.toUpdateStatusResponseServiceDto(delivery.getId());
@@ -52,7 +54,7 @@ public class DeliveryService {
         // TODO 권한 확인
 
         Delivery delivery = deliveryRepository.findById(requestServiceDto.id())
-                .orElseThrow(() -> new EntityNotFoundException("delivery not found"));  // TODO 커스텀 예외 처리
+                .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
         deliveryRepository.delete(delivery);
 
@@ -64,7 +66,7 @@ public class DeliveryService {
                                                         DeliveryDetailRequestServiceDto requestServiceDto) {
 
         Delivery delivery = deliveryRepository.findById(requestServiceDto.id())
-                .orElseThrow(() -> new EntityNotFoundException("delivery not found"));  // TODO 커스텀 예외 처리
+                .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
         return DeliveryApplicationMapper.INSTANCE.toDeliveryResponseServiceDto(delivery);
     }
@@ -91,7 +93,7 @@ public class DeliveryService {
                                                                   UserRoleType userRole,
                                                                   DeliveryRouteDetailRequestServiceDto requestServiceDto) {
         DeliveryRoute route = deliveryRepository.findByRouteId(requestServiceDto.id())
-                .orElseThrow(() -> new EntityNotFoundException("delivery route not found"));   // TODO 커스텀 예외 처리
+                .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
         return DeliveryApplicationMapper.INSTANCE.toRouteResponseServiceDto(route);
     }
