@@ -6,7 +6,7 @@ import com.oingmaryho.business.delivery_service.application.dto.response.*;
 import com.oingmaryho.business.delivery_service.domain.*;
 import com.oingmaryho.business.delivery_service.exception.DeliveryException;
 import com.oingmaryho.business.delivery_service.exception.ErrorCode;
-import com.oingmaryho.business.delivery_service.infrastructure.DeliveryRepository;
+import com.oingmaryho.business.delivery_service.infrastructure.repository.DeliveryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
