@@ -12,9 +12,11 @@ import com.oringmaryho.business.userservice.application.UserService;
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserSlackCodeRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignInRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignUpRequestDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserSlackCodeRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSlackConfirmRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserSearchResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserSignInResponseDto;
@@ -56,6 +58,18 @@ public class UserController {
 		return ResponseEntity.ok().body(responseServiceDto);
 	}
 
+	//todo: 어드민 컨트롤러에도 만들기
+	//slack 인증을 위한 코드 전송 요청
+	@PostMapping("/slack/confirm-code")
+	public ResponseEntity<Void> slackCodeRequestUser(
+		@RequestBody UserSlackCodeRequestDto userSlackCodeRequestDto) {
+		UserSlackCodeRequestServiceDto requestServiceDto = userPresentationMapper.toUserSlackCodeRequestServiceDto(
+			userSlackCodeRequestDto);
+		userService.slackCodeRequestUser(requestServiceDto);
+		return ResponseEntity.ok().build();
+	}
+
+	//slack 인증 코드로 인증 확인
 	@PostMapping("/slack/confirm")
 	public ResponseEntity<Void> slackConfirmUser(
 		@RequestBody UserSlackConfirmRequestDto userSlackConfirmRequestDto) {
