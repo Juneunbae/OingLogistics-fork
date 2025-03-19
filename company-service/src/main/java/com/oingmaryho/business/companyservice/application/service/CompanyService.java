@@ -19,6 +19,8 @@ import com.oingmaryho.business.companyservice.domain.Company;
 import com.oingmaryho.business.companyservice.domain.CompanySearchCriteria;
 import com.oingmaryho.business.companyservice.domain.repository.CompanyRepository;
 import com.oingmaryho.business.companyservice.domain.repository.CustomCompanyRepository;
+import com.oingmaryho.business.companyservice.exception.CompanyException;
+import com.oingmaryho.business.companyservice.exception.ErrorCode;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +42,7 @@ public class CompanyService {
 
 	public CompanyDetailsSearchResponseServiceDto getCompanyById(CompanyDetailsSearchRequestServiceDto requestDto) {
 		Company company = companyRepository.findByIdAndIsDeletedFalse(requestDto.id())
-			.orElseThrow(() -> new RuntimeException("업체를 찾을 수 없습니다: " + requestDto.id()));
+			.orElseThrow(() -> new CompanyException(ErrorCode.NOT_FOUND));
 		return companyApplicationMapper.toResponseDto(company);
 	}
 
@@ -55,7 +57,7 @@ public class CompanyService {
 		// TODO: 권한 체크(수정 권한은 허브 담당자와 업체 담당자)
 		// TODO: 공통 예외처리 코드 작성 필요
 		Company company = companyRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
-			.orElseThrow(() -> new EntityNotFoundException("업체를 찾을 수 없습니다: " + requestServiceDto.id()));
+			.orElseThrow(() -> new CompanyException(ErrorCode.NOT_FOUND));
 
 		company.update(
 			requestServiceDto.name(),
@@ -70,7 +72,7 @@ public class CompanyService {
 	@Transactional
 	public void deleteCompany(Long userId, CompanyDeleteRequestServiceDto requestServiceDto) {
 		Company company = companyRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
-			.orElseThrow(() -> new EntityNotFoundException("업체를 찾을 수 업습니다: " + requestServiceDto.id()));
+			.orElseThrow(() -> new CompanyException(ErrorCode.NOT_FOUND));
 		company.softDelete(userId);
 	}
 
