@@ -45,4 +45,8 @@ public class Hub extends BaseEntity {
 		this.address = address;
 		this.managerId = managerId;
 	}
+
+	public void delete() {
+		this.isDeleted = true;
+	}
 }
