@@ -1,21 +1,17 @@
 package com.oingmaryho.business.delivery_service.domain;
 
-import com.oingmaryho.business.delivery_service.application.dto.request.DeliveryUpdateRequestServiceDto;
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
+
 
 import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Entity
-@SuperBuilder
-@DynamicInsert
-@DynamicUpdate
+@Builder
 @Table(name = "p_delivery")
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(force = true, access = AccessLevel.PROTECTED)
 public class Delivery extends BaseEntity {
     @Id
@@ -45,7 +41,7 @@ public class Delivery extends BaseEntity {
     @Column(nullable = false)
     private String receiverSlackId;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
     private DeliveryManager manager; // 업체 배송 담당자 userId
 

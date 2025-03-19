@@ -75,8 +75,8 @@ public class DeliveryAdminController {
     @GetMapping
     public ResponseEntity<Page<DeliveryResponseDto>> searchDelivery(
             @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
-            @RequestParam(value = "size", required = false) Integer size,
-            @RequestParam(value = "sortDirection", required = false) String sortDirection,
+            @RequestParam(value = "size", required = false, defaultValue = "10") Integer size,
+            @RequestParam(value = "sortDirection", required = false, defaultValue = "DESC") String sortDirection,
             @RequestParam(value = "by", required = false) String by,
             @RequestParam(value = "hubId", required = false) UUID hubId,
             @RequestParam(value = "companyId", required = false) UUID companyId,
@@ -106,8 +106,8 @@ public class DeliveryAdminController {
     public ResponseEntity<Page<DeliveryRouteResponseDto>> searchDeliveryRoute(
             @PathVariable UUID id,
             @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
-            @RequestParam(value = "size", required = false) Integer size,
-            @RequestParam(value = "sortDirection", required = false) String sortDirection,
+            @RequestParam(value = "size", required = false, defaultValue = "10") Integer size,
+            @RequestParam(value = "sortDirection", required = false, defaultValue = "DESC") String sortDirection,
             @RequestParam(value = "by", required = false) String by,
             @RequestParam(value = "hubId", required = false) UUID hubId,
             @RequestParam(value = "companyId", required = false) UUID companyId,

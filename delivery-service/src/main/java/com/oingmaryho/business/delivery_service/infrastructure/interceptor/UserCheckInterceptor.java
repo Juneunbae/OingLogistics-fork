@@ -1,13 +1,16 @@
 package com.oingmaryho.business.delivery_service.infrastructure.interceptor;
 
+import com.oingmaryho.business.delivery_service.domain.UserConfirmStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.util.Map;
 
+@Slf4j
 @RequiredArgsConstructor
 public class UserCheckInterceptor implements HandlerInterceptor {
 
@@ -16,26 +19,33 @@ public class UserCheckInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
+        log.info("user preHandle");
         Object userIdAttr = request.getAttribute("X-User-Id");
 
         if (userIdAttr == null) {
-            return false;
+            return true;
         }
 
         String userId = String.valueOf(userIdAttr);
 
         if (!redisTemplate.hasKey("user:info:" + userId)) {
-            return false;
+            return true;
         }
 
         Map<Object, Object> userInfo = redisTemplate.opsForHash().entries("user:info:" + userId);
 
         if (userInfo.isEmpty()) {
+            return true;
+        }
+
+        if (!userInfo.get("status").toString().equals(UserConfirmStatus.CONFIRMED.toString())) {
             return false;
         }
 
         // 사용자 정보를 request에 주입
-        request.setAttribute("userId", userInfo.get("userId"));
+        request.setAttribute("userId", userId);
+        request.setAttribute("username", userInfo.get("username"));
+        request.setAttribute("slackId", userInfo.get("slackId"));
         request.setAttribute("role", userInfo.get("role"));
 
         return true;

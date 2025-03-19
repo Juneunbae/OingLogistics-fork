@@ -11,7 +11,9 @@ import com.oingmaryho.business.delivery_service.presentation.dto.mapper.Delivery
 import com.oingmaryho.business.delivery_service.presentation.dto.response.*;
 import com.oingmaryho.business.delivery_service.presentation.dto.response.DeliveryRouteResponseDto;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/deliveries")
@@ -28,9 +31,11 @@ public class DeliveryController {
 
     @PutMapping("/{id}")
     public ResponseEntity<DeliveryUpdateResponseDto> updateDelivery(
+            HttpServletRequest request,
             @PathVariable UUID id,
             @RequestBody DeliveryUpdateRequestDto requestDto) {
 
+        log.info(">>>controller");
         // TODO change userId, userRole type from UserVO
         DeliveryUpdateRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateServiceDto(id, requestDto);
         DeliveryUpdateResponseServiceDto responseServiceDto = deliveryService.updateDelivery(1L, UserRoleType.HUB_DELIVERY_MANAGER,requestServiceDto);
@@ -73,11 +78,14 @@ public class DeliveryController {
     @GetMapping
     public ResponseEntity<Page<DeliveryResponseDto>> searchDelivery(
             @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
-            @RequestParam(value = "size", required = false) Integer size,
-            @RequestParam(value = "sortDirection", required = false) String sortDirection,
+            @RequestParam(value = "size", required = false, defaultValue = "10") Integer size,
+            @RequestParam(value = "sortDirection", required = false, defaultValue = "DESC") String sortDirection,
             @RequestParam(value = "by", required = false) String by,
-            @RequestBody DeliverySearchRequestDto requestDto) {
+            @RequestParam(value = "hubId", required = false) UUID hubId,
+            @RequestParam(value = "companyId", required = false) UUID companyId,
+            @RequestParam(value = "managerId", required = false) UUID managerId) {
 
+        DeliverySearchRequestDto requestDto = new DeliverySearchRequestDto(hubId, companyId, managerId);
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
 
         // TODO change userId, userRole type from UserVO
@@ -104,11 +112,14 @@ public class DeliveryController {
     public ResponseEntity<Page<DeliveryRouteResponseDto>> searchDeliveryRoute(
             @PathVariable UUID id,
             @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
-            @RequestParam(value = "size", required = false) Integer size,
-            @RequestParam(value = "sortDirection", required = false) String sortDirection,
+            @RequestParam(value = "size", required = false, defaultValue = "10") Integer size,
+            @RequestParam(value = "sortDirection", required = false, defaultValue = "DESC") String sortDirection,
             @RequestParam(value = "by", required = false) String by,
-            @RequestBody DeliveryRouteSearchRequestDto requestDto) {
+            @RequestParam(value = "hubId", required = false) UUID hubId,
+            @RequestParam(value = "companyId", required = false) UUID companyId,
+            @RequestParam(value = "managerId", required = false) UUID managerId) {
 
+        DeliveryRouteSearchRequestDto requestDto = new DeliveryRouteSearchRequestDto(hubId, companyId, managerId);
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
 
         // TODO change userId, userRole type from UserVO

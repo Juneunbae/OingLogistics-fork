@@ -23,6 +23,7 @@ public class DeliveryService {
     public DeliveryUpdateResponseServiceDto updateDelivery(Long userId,
                                                            UserRoleType userRole,
                                                            DeliveryUpdateRequestServiceDto requestServiceDto) {
+
         Delivery delivery = deliveryRepository.findById(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
         // TODO 권한 확인
@@ -82,6 +83,7 @@ public class DeliveryService {
                 requestServiceDto.managerId(),              // TODO 2. 배송 담당자 id
                 DeliveryManagerType.HUB_DELIVERY_MANAGER,   // TODO 1. 사용자 권한
                 requestServiceDto.customPageable());
+
         return deliveries.map(DeliveryApplicationMapper.INSTANCE::toDeliveryResponseServiceDto);
     }
 
