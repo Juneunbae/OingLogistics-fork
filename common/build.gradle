@@ -4,9 +4,21 @@ configurations {
     }
 }
 
+ext {
+    set('springCloudVersion', "2024.0.0")
+    set('querydslVersion', "5.0.0")
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // querydsl
+    implementation "com.querydsl:querydsl-jpa:${querydslVersion}:jakarta"
+    annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
