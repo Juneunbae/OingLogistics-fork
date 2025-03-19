@@ -23,19 +23,19 @@ public class AdminCheckInterceptor implements HandlerInterceptor {
         Object userIdAttr = request.getAttribute("X-User-Id");
 
         if (userIdAttr == null) {
-            return false;
+            return true;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE로 변경
         }
 
         String userId = String.valueOf(userIdAttr);
 
         if (!redisTemplate.hasKey("user:info:" + userId)) {
-            return false;
+            return true;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE로 변경
         }
 
         Map<Object, Object> userInfo = redisTemplate.opsForHash().entries("user:info:" + userId);
 
         if (userInfo.isEmpty()) {
-            return false;
+            return true;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE로 변경
         }
 
         if (!userInfo.get("status").toString().equals(UserConfirmStatus.CONFIRMED.toString())) {
