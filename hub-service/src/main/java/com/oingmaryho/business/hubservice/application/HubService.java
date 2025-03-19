@@ -26,7 +26,7 @@ public class HubService {
 	private final HubApplicationMapper mapper;
 
 	@Transactional(readOnly = true)
-	@Cacheable(cacheNames = "hub")
+	@Cacheable(cacheNames = "hub", key = "#requestDto.id()")
 	public HubSearchResponseServiceDto getHubById(HubSearchRequestServiceDto requestDto) {
 		Hub hub = customHubRepository.findActiveHubById(requestDto.id())
 			.orElseThrow(() -> new HubException(ErrorCode.NOT_FOUND));
