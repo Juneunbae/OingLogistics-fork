@@ -1,4 +1,4 @@
-package com.oringmaryho.business.userservice.application.utils;
+package com.oringmaryho.business.userservice.infrastructure;
 
 import org.springframework.stereotype.Component;
 
@@ -9,8 +9,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.oringmaryho.business.userservice.application.utils.CodeStorage;
+
 @Component
-public class SlackCodeStorage {
+public class SlackCodeStorageImpl implements CodeStorage {
 	private final ConcurrentHashMap<String, Pair> storage = new ConcurrentHashMap<>();
 	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
@@ -54,7 +56,7 @@ public class SlackCodeStorage {
 		}
 	}
 
-	class Pair{
+	class Pair {
 		String slackUsername;
 		String slackCode;
 		public Pair(String slackUsername, String slackCode) {

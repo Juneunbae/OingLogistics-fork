@@ -18,8 +18,8 @@ import com.oringmaryho.business.userservice.application.dto.request.UserSlackCod
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserSearchResponseServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserSignInResponseServiceDto;
-import com.oringmaryho.business.userservice.application.utils.SlackCodeStorage;
-import com.oringmaryho.business.userservice.application.utils.UserSlackService;
+import com.oringmaryho.business.userservice.application.utils.CodeStorage;
+import com.oringmaryho.business.userservice.application.utils.DirectMessageAuthService;
 import com.oringmaryho.business.userservice.config.security.jwt.JwtTokenProvider;
 import com.oringmaryho.business.userservice.domain.User;
 import com.oringmaryho.business.userservice.exception.ErrorCode;
@@ -39,11 +39,11 @@ public class UserService {
 	private final UserApplicationMapper userApplicationMapper;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
-	private final UserSlackService userSlackService;
+	private final DirectMessageAuthService directMessageAuthService;
 
 	private final RedisTemplate<String, Object> redisTemplate;
 
-	private final SlackCodeStorage slackCodeStorage;
+	private final CodeStorage codeStorage;
 
 	@Value("${slack.code.ttl}")
 	private Long SLACK_CODE_TTL;
@@ -147,17 +147,17 @@ public class UserService {
 		}
 
 		//슬랙 코드 생성 및 codestorage에 저장
-		String slackCode = userSlackService.generateCode();
+		String slackCode = directMessageAuthService.generateCode();
 
-		String slackServerId = userSlackService.getUserSlackId(requestServiceDto.slackId());
+		String slackServerId = directMessageAuthService.getUserSlackId(requestServiceDto.slackId());
 
-		userSlackService.sendDirectMessage(slackServerId, slackCode);
+		directMessageAuthService.sendDirectMessage(slackServerId, slackCode);
 
 		//이전에 요청한 적 있는 유저 id라면 스토리지에 있는 내용 삭제 후 다시 저장
-		if (slackCodeStorage.hasKey(requestServiceDto.username())) {
-			slackCodeStorage.removeCode(requestServiceDto.username());
+		if (codeStorage.hasKey(requestServiceDto.username())) {
+			codeStorage.removeCode(requestServiceDto.username());
 		}
-		slackCodeStorage.storeCode(requestServiceDto.username(), requestServiceDto.slackId(), slackCode,
+		codeStorage.storeCode(requestServiceDto.username(), requestServiceDto.slackId(), slackCode,
 			SLACK_CODE_TTL);
 
 		//todo: slack 코드 생성하고 ttl 만큼 살려두고 삭제하는 테스트 작성하기
@@ -167,10 +167,10 @@ public class UserService {
 		String username = requestServiceDto.username();
 		String slackId = requestServiceDto.slackId();
 
-		String slackCode = slackCodeStorage.getCode(requestServiceDto.username());
+		String slackCode = codeStorage.getCode(requestServiceDto.username());
 
 		if (slackCode != null
-			&& slackCodeStorage.getSlackUsername(username).equals(slackId)
+			&& codeStorage.getSlackUsername(username).equals(slackId)
 			&& slackCode.equals(requestServiceDto.confirmCode())
 		) {
 			//todo : 인증 성공 절차 실행

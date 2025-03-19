@@ -1,4 +1,4 @@
-package com.oringmaryho.business.userservice.application.utils;
+package com.oringmaryho.business.userservice.infrastructure;
 
 import java.security.SecureRandom;
 import java.util.Map;
@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import com.oringmaryho.business.userservice.application.utils.DirectMessageAuthService;
 import com.oringmaryho.business.userservice.exception.ErrorCode;
 import com.oringmaryho.business.userservice.exception.UserException;
 
@@ -20,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class UserSlackService {
+public class SlackServiceImpl implements DirectMessageAuthService {
 
 	@Value("${slack.bot.token}")
 	private String SLACK_TOKEN;
