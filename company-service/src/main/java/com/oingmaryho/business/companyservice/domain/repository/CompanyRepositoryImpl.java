@@ -33,7 +33,7 @@ public class CompanyRepositoryImpl implements CompanyRepository {
 	}
 
 	@Override
-	public Company save(Company company) { // ✅ save 구현
+	public Company save(Company company) {
 		return companyJpaRepository.save(company);
 	}
 }

@@ -26,6 +26,7 @@ import com.oingmaryho.business.companyservice.application.dto.request.CompanyUpd
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyCreateResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyDetailsSearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanySearchResponseServiceDto;
+import com.oingmaryho.business.companyservice.application.dto.response.CompanyUpdateResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.service.CompanyService;
 import com.oingmaryho.business.companyservice.config.pageable.PageableConfig;
 import com.oingmaryho.business.companyservice.presentation.dto.mapper.CompanyPresentationMapper;
@@ -88,11 +89,12 @@ public class CompanyController {
 	}
 
 	@Description("일반 - 업체 수정")
-	@PutMapping("/api/v1/companies/{id}")
+	@PutMapping("/{id}")
 	public ResponseEntity<CompanyUpdateResponseDto> updateCompany(@PathVariable UUID id, @RequestBody CompanyUpdateRequestDto companyUpdateRequestDto) {
 		CompanyUpdateRequestServiceDto requestServiceDto = companyPresentationMapper.toUpdateServiceDto(id,companyUpdateRequestDto);
-		// TODO : Service Method 활용 및 presentation dto 로 변환
-		return null;
+		CompanyUpdateResponseServiceDto responseServiceDto = companyService.updateCompany(requestServiceDto);
+		CompanyUpdateResponseDto responseDto = companyPresentationMapper.toUpdateResponseDto(responseServiceDto);
+		return ResponseEntity.ok(responseDto);
 	}
 
 	@Description("일반 - 업체 식제")

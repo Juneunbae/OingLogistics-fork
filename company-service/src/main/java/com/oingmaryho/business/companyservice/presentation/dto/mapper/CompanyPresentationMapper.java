@@ -13,12 +13,14 @@ import com.oingmaryho.business.companyservice.application.dto.request.CompanyUpd
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyCreateResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyDetailsSearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanySearchResponseServiceDto;
+import com.oingmaryho.business.companyservice.application.dto.response.CompanyUpdateResponseServiceDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanyCreateRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanySearchRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanyUpdateRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.response.CompanyCreateResponseDto;
 import com.oingmaryho.business.companyservice.presentation.dto.response.CompanyDetailsSearchResponseDto;
 import com.oingmaryho.business.companyservice.presentation.dto.response.CompanySearchResponseDto;
+import com.oingmaryho.business.companyservice.presentation.dto.response.CompanyUpdateResponseDto;
 
 @Mapper(componentModel = "spring")
 public interface CompanyPresentationMapper {
@@ -38,4 +40,6 @@ public interface CompanyPresentationMapper {
 	CompanySearchResponseDto toCompanySearchResponseDto(CompanySearchResponseServiceDto responseServiceDto);
 
 	CompanyCreateResponseDto toCreateDto(CompanyCreateResponseServiceDto responseServiceDto);
+
+	CompanyUpdateResponseDto toUpdateResponseDto(CompanyUpdateResponseServiceDto responseServiceDto);
 }

@@ -1,5 +1,6 @@
 package com.oingmaryho.business.companyservice.domain;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.hibernate.annotations.DynamicInsert;
@@ -47,4 +48,12 @@ public class Company extends BaseEntity {
 
 	@Column(nullable = false)
 	private Boolean isDeleted;
+
+	public void update(String name, String type, UUID manageHubId, String address) {
+		Optional.ofNullable(name).filter(n -> !n.isBlank()).ifPresent(value -> this.name = value);
+		Optional.ofNullable(type).filter(t -> !t.isBlank()).ifPresent(value -> this.type = value);
+		Optional.ofNullable(manageHubId).ifPresent(value -> this.manageHubId = value);
+		Optional.ofNullable(address).filter(a -> !a.isBlank()).ifPresent(value -> this.address = value);
+	}
+
 }
