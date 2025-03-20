@@ -1,6 +1,7 @@
 package com.oringmaryho.business.userservice.application;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,30 +41,41 @@ public class UserAdminService {
 	@Value("${admin.key}")
 	private String adminKey;
 
+	private static final String USERNAME_REGEX = "^[a-z0-9]{4,10}$";
+	private static final String PASSWORD_REGEX = "^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,15}$";
+
 	@Transactional
 	public void signUpUserAdmin(UserAdminSignUpRequestServiceDto requestServiceDto) {
 		//null처리
 		if (requestServiceDto.username() == null || requestServiceDto.username().isEmpty()) {
-			throw new IllegalArgumentException("사용자 이름은 비어 있을 수 없습니다.");
+			throw new UserException(ErrorCode.USERNAME_NULL);
 		}
 		if (requestServiceDto.password() == null || requestServiceDto.password().isEmpty()) {
-			throw new IllegalArgumentException("비밀번호는 비어 있을 수 없습니다.");
+			throw new UserException(ErrorCode.PASSWORD_NULL);
 		}
 		if (requestServiceDto.slackId() == null || requestServiceDto.slackId().isEmpty()) {
-			throw new IllegalArgumentException("slackId는 비어 있을 수 없습니다.");
+			throw new UserException(ErrorCode.SLACKID_NULL);
 		}
 		if (requestServiceDto.key() == null || requestServiceDto.key().isEmpty()) {
-			throw new IllegalArgumentException("key는 비어 있을 수 없습니다.");
+			throw new UserException(ErrorCode.ADMIN_REGISTER_KEY_IS_NULL);
+		}
+
+		// 사용
+		if (!Pattern.matches(USERNAME_REGEX, requestServiceDto.username())) {
+			throw new UserException(ErrorCode.USERNAME_REGEX_NOT_MATCH);
+		}
+		if (!Pattern.matches(PASSWORD_REGEX, requestServiceDto.password())) {
+			throw new UserException(ErrorCode.PASSWORD_REGEX_NOT_MATCH);
 		}
 
 		// username 중복 체크
 		if (userRepository.existsByUsername(requestServiceDto.username())) {
-			throw new IllegalArgumentException("이미 존재하는 사용자입니다.");
+			throw new UserException(ErrorCode.ALREADY_EXISTS);
 		}
 
 		//key 검증
 		if (!requestServiceDto.key().equals(adminKey)) {
-			throw new IllegalArgumentException("admin키가 일치하지 않습니다.");
+			throw new UserException(ErrorCode.ADMIN_REGISTER_KEY_NOT_MATCH);
 		}
 
 		// 비번 암호화
