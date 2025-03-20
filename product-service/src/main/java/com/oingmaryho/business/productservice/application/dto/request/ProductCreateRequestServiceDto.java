@@ -4,6 +4,7 @@ import java.util.UUID;
 
 public record ProductCreateRequestServiceDto(
 	UUID companyId,
+	String productCode,
 	String name,
 	UUID manageHubId,
 	Long stock,
