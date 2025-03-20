@@ -7,6 +7,8 @@ import com.oingmaryho.business.productservice.application.dto.response.ProductDe
 import com.oingmaryho.business.productservice.application.mapper.ProductApplicationMapper;
 import com.oingmaryho.business.productservice.domain.Product;
 import com.oingmaryho.business.productservice.domain.repository.ProductRepository;
+import com.oingmaryho.business.productservice.exception.ErrorCode;
+import com.oingmaryho.business.productservice.exception.ProductException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,8 +20,7 @@ public class ProductFeignClientService {
 
 	public ProductDetailsSearchResponseServiceDto getProductDetails(ProductDetailsSearchRequestServiceDto requestDto) {
 		Product product = productRepository.findByIdAndIsDeletedFalse(requestDto.id())
-			.orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + requestDto.id()));
-
+			.orElseThrow(() -> new ProductException(ErrorCode.NOT_FOUND));
 		return productApplicationMapper.toResponseDto(product);
 	}
 }
