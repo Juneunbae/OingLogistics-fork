@@ -1,13 +1,9 @@
 package com.oringmaryho.business.userservice.application.service;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +19,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminSig
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
-import com.oringmaryho.business.userservice.config.security.jwt.JwtTokenProvider;
+import com.oringmaryho.business.userservice.application.utils.RedisUtil;
 import com.oringmaryho.business.userservice.domain.User;
 import com.oringmaryho.business.userservice.domain.UserRoleType;
 import com.oringmaryho.business.userservice.domain.repository.UserRepository;
@@ -43,8 +39,7 @@ public class UserAdminService {
 	private final UserRepository userRepository;
 	private final UserApplicationMapper userApplicationMapper;
 	private final PasswordEncoder passwordEncoder;
-	private final JwtTokenProvider jwtTokenProvider;
-	private final RedisTemplate<String, Object> redisTemplate;
+	private final RedisUtil redisUtil;
 
 	@Value("${admin.key}")
 	private String adminKey;
@@ -161,7 +156,7 @@ public class UserAdminService {
 			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
 
 		//redis에 업데이트
-		updateRedisCache(updatedUser);
+		redisUtil.updateUserInfo(updatedUser);
 
 		return userApplicationMapper.toUserAdminUpdateResponseDto(user.getId());
 	}
@@ -180,6 +175,12 @@ public class UserAdminService {
 			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
 
 		user.updateRoleType(requestServiceDto.role());
+
+		User updatedUser = userRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		//redis에 업데이트
+		redisUtil.updateUserInfo(updatedUser);
 
 		return userApplicationMapper.toUserAdminGrantRoleResponseDto(
 			requestServiceDto.id());
@@ -206,6 +207,11 @@ public class UserAdminService {
 		user.updateRoleType(newRole);
 
 		//todo: redis에 업데이트
+		User updatedUser = userRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		//redis에 업데이트
+		redisUtil.updateUserInfo(updatedUser);
 
 		UserAdminUpdateRoleResponseDto responseDto = userApplicationMapper.toUserAdminUpdateRoleResponseDto(
 			curUserId, role, newRole);
@@ -225,6 +231,12 @@ public class UserAdminService {
 		}
 
 		user.deleteRoleType();
+
+		User updatedUser = userRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		//redis에 업데이트
+		redisUtil.updateUserInfo(updatedUser);
 	}
 
 	@Transactional
@@ -234,21 +246,6 @@ public class UserAdminService {
 			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
 
 		user.delete(user.getId());
-	}
-
-	//레디스 캐시 업데이트 메서드
-	private void updateRedisCache(User user) {
-		String userInfoKey = "user:info:" + user.getId();
-		Map<String, Object> userInfoMap = new ConcurrentHashMap<>();
-
-		userInfoMap.put("username", user.getUsername());
-		userInfoMap.put("slackId", user.getSlackId());
-		userInfoMap.put("role", user.getRole());
-		userInfoMap.put("status", user.getStatus());
-
-		long expirationTime = jwtTokenProvider.getRefreshTokenExpiration();
-		redisTemplate.opsForValue().set(userInfoKey, userInfoMap);
-		redisTemplate.expire(userInfoKey, expirationTime, TimeUnit.MILLISECONDS);
 	}
 
 	//username 형식에 맞는지 체크

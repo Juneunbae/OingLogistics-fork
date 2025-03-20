@@ -4,17 +4,17 @@ import jakarta.annotation.PreDestroy;
 
 public interface CodeStorage {
 
-	public void storeCode(String key, String serviceUsername, String code, long ttl);
+	void storeCode(String key, String serviceUsername, String code, long ttl);
 
-	public String getCode(String key);
+	String getCode(String key);
 
-	public String getSlackUsername(String key);
+	String getSlackUsername(String key);
 
-	public boolean removeCode(String key);
+	boolean removeCode(String key);
 
-	public boolean hasKey(String key);
+	boolean hasKey(String key);
 
 	@PreDestroy
-	public void shutdown();
+	void shutdown();
 
 }
