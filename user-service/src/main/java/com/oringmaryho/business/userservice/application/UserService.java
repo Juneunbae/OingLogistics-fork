@@ -174,6 +174,7 @@ public class UserService {
 		//todo: slack 코드 생성하고 ttl 만큼 살려두고 삭제하는 테스트 작성하기
 	}
 
+	@Transactional
 	public void slackConfirmUser(UserSlackConfirmRequestServiceDto requestServiceDto) {
 		String username = requestServiceDto.username();
 		String slackId = requestServiceDto.slackId();
@@ -186,15 +187,8 @@ public class UserService {
 		) {
 			User user = userRepository.findByUsername(username)
 				.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
-			User verifiedUser = User.builder()
-				.id(user.getId())
-				.username(user.getUsername())
-				.password(user.getPassword())
-				.slackId(user.getSlackId())
-				.role(user.getRole())
-				.status(UserConfirmStatus.CONFIRMED)
-				.build();
-			userRepository.save(verifiedUser);
+			user.changeStatus(UserConfirmStatus.CONFIRMED);
+
 			codeStorage.removeCode(requestServiceDto.username());
 		} else {
 			throw new UserException(ErrorCode.SLACK_AUTH_FAIL);
