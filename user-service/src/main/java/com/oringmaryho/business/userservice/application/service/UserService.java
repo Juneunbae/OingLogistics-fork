@@ -1,6 +1,7 @@
 package com.oringmaryho.business.userservice.application.service;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -12,15 +13,15 @@ import org.springframework.transaction.annotation.Transactional;
 import com.oringmaryho.business.userservice.application.dto.mapper.UserApplicationMapper;
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserSignOutRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackCodeRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
-import com.oringmaryho.business.userservice.application.dto.response.UserSearchResponseServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserSignInResponseServiceDto;
 import com.oringmaryho.business.userservice.application.utils.CodeStorage;
 import com.oringmaryho.business.userservice.application.utils.DirectMessageAuthService;
 import com.oringmaryho.business.userservice.application.utils.RedisUtil;
-import com.oringmaryho.business.userservice.config.security.jwt.JwtTokenProvider;
+import com.oringmaryho.business.userservice.application.utils.jwt.JwtTokenProvider;
 import com.oringmaryho.business.userservice.domain.User;
 import com.oringmaryho.business.userservice.domain.UserConfirmStatus;
 import com.oringmaryho.business.userservice.domain.repository.UserRepository;
@@ -29,9 +30,12 @@ import com.oringmaryho.business.userservice.exception.UserException;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserSearchResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserSignInResponseDto;
 
+import io.jsonwebtoken.Claims;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -95,7 +99,7 @@ public class UserService {
 		);
 
 		redisUtil.updateUserInfo(user);
-		Map<String, String> tokenMap = redisUtil.updateUserJwtToken(user);
+		Map<String, String> tokenMap = redisUtil.updateUserJwtToken(user.getId());
 
 		// 응답 DTO 생성
 		UserSignInResponseServiceDto serviceDto = new UserSignInResponseServiceDto(
@@ -106,9 +110,56 @@ public class UserService {
 		return userApplicationMapper.toSignInResponseDto(serviceDto);
 	}
 
+	public void signOutUser(UserSignOutRequestServiceDto requestServiceDto) {
+		Long userId = requestServiceDto.id();
+		String tokenKey = "user:token:" + userId;
+		if(!redisTemplate.hasKey(tokenKey)) {
+			throw new UserException(ErrorCode.NOT_FOUND);
+		}
+		Map<Object, Object> token = redisTemplate.opsForHash().entries(tokenKey);
+		String accessToken = (String) token.get("accessToken");
+
+
+		if (token == null || token.isEmpty()) {
+			throw new UserException(ErrorCode.JWT_REQUIRED);
+		}
+
+		// JWT에서 만료 시간 추출
+		Claims claims = jwtTokenProvider.parseJwtToken(accessToken);
+		long ttlMillis = jwtTokenProvider.calculateTtlMillis(claims.getExpiration());
+
+		// 블랙리스트에 토큰 추가
+		String blacklistKey = "blacklist:" + accessToken;
+		redisTemplate.opsForValue().set(blacklistKey, "blacklisted");
+
+		// JWT 만료 시간에 맞춰 TTL 설정
+		if (ttlMillis > 0) {
+			redisTemplate.expire(blacklistKey, ttlMillis, TimeUnit.MILLISECONDS);
+			log.info("블랙리스트에 추가된 토큰 : {} TTL: {} ms", token, ttlMillis);
+		} else {
+			// 만료 시간이 이미 지난 경우, 최소 TTL 설정
+			redisTemplate.expire(blacklistKey, 1, TimeUnit.SECONDS);
+			log.warn("토큰 {} 은 이미 만료되어 최소 TTL로 설정", token);
+		}
+
+		// 사용자 토큰 정보 정리
+		if (userId != null) {
+			String userInfoKey = "user:token:" + userId;
+			redisTemplate.delete(userInfoKey);
+		}
+	}
+
 	public UserSearchResponseDto searchUser(UserSearchRequestServiceDto requestServiceDto) {
-		UserSearchResponseServiceDto userSearchResponseServiceDto = null;
-		return userApplicationMapper.toSearchResponseDto(userSearchResponseServiceDto);
+		//본인이 맞는지 체크
+		//헤더에서 받아온 유저 id와 일치하는지 확인
+		if(!requestServiceDto.id().equals(requestServiceDto.userId())){
+			throw new UserException(ErrorCode.USER_NOT_MATCH);
+		}
+
+		User user = userRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		return userApplicationMapper.toUserSearchResponseDto(user);
 	}
 
 	public void slackCodeRequestUser(UserSlackCodeRequestServiceDto requestServiceDto) {
@@ -120,14 +171,14 @@ public class UserService {
 		}
 
 		User user = userRepository.findByUsername(requestServiceDto.username())
-			.orElseThrow(()-> new UserException(ErrorCode.NOT_FOUND));
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
 
-		if(!requestServiceDto.slackId().equals(user.getSlackId())
-		|| !requestServiceDto.username().equals(user.getUsername())) {
+		if (!requestServiceDto.slackId().equals(user.getSlackId())
+			|| !requestServiceDto.username().equals(user.getUsername())) {
 			throw new UserException(ErrorCode.USER_NOT_MATCH);
 		}
 
-		if(user.getStatus().equals(UserConfirmStatus.CONFIRMED)){
+		if (user.getStatus().equals(UserConfirmStatus.CONFIRMED)) {
 			throw new UserException(ErrorCode.SLACK_ALREADY_AUTH);
 		}
 

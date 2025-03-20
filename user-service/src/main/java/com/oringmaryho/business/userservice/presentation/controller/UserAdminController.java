@@ -10,11 +10,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.oringmaryho.business.userservice.application.dto.request.UserSignOutRequestServiceDto;
 import com.oringmaryho.business.userservice.application.service.UserAdminService;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminCreateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRequestServiceDto;
@@ -56,6 +58,15 @@ public class UserAdminController {
 		UserAdminSignUpRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminSignUpServiceDto(
 			userAdminSignUpRequestDto);
 		userAdminService.signUpUserAdmin(requestServiceDto);
+		return ResponseEntity.ok().build();
+	}
+
+	@PostMapping("/sign-out")
+	public ResponseEntity<?> signOutUser(
+		@RequestAttribute("userId") Long userId
+	){
+		UserSignOutRequestServiceDto requestServiceDto = userPresentationMapper.toUserSignOutRequestServiceDto(userId);
+		userAdminService.signOutUser(requestServiceDto);
 		return ResponseEntity.ok().build();
 	}
 

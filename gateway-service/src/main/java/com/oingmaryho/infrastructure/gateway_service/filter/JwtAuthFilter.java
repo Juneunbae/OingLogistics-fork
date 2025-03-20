@@ -57,6 +57,7 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
 		String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
+		//todo: 토큰 반환 및 저장 시 베어러 붙이기
 		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
 			log.warn("JWT 토큰이 없습니다.");
 			return onError(exchange, "JWT 토큰이 필요합니다.", HttpStatus.UNAUTHORIZED);

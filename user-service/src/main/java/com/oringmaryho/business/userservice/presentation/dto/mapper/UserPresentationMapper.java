@@ -13,6 +13,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpd
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserSignOutRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackCodeRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
@@ -37,7 +38,8 @@ public interface UserPresentationMapper {
 	UserSignInRequestServiceDto toUserSignInServiceDto(UserSignInRequestDto requestDto);
 
 	@Mapping(target = "id", source = "id")
-	UserSearchRequestServiceDto toUserSearchRequestServiceDto(Long id);
+	@Mapping(target = "userId", source = "userId")
+	UserSearchRequestServiceDto toUserSearchRequestServiceDto(Long id, Long userId);
 
 	UserSlackConfirmRequestServiceDto toUserSlackConfirmRequestServiceDto(
 		UserSlackConfirmRequestDto requestDto);
@@ -75,4 +77,7 @@ public interface UserPresentationMapper {
 	UserAdminDeleteRequestServiceDto toUserAdminDeleteRequestServiceDto(Long id);
 
 	UserSlackCodeRequestServiceDto toUserSlackCodeRequestServiceDto(UserSlackCodeRequestDto requestDto);
+
+	@Mapping(target = "id", source = "userId")
+	UserSignOutRequestServiceDto toUserSignOutRequestServiceDto(Long userId);
 }

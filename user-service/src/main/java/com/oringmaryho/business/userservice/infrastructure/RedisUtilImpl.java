@@ -9,7 +9,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import com.oringmaryho.business.userservice.application.utils.RedisUtil;
-import com.oringmaryho.business.userservice.config.security.jwt.JwtTokenProvider;
+import com.oringmaryho.business.userservice.application.utils.jwt.JwtTokenProvider;
 import com.oringmaryho.business.userservice.domain.User;
 
 import lombok.RequiredArgsConstructor;
@@ -31,23 +31,25 @@ public class RedisUtilImpl implements RedisUtil {
 		userInfoMap.put("status", user.getStatus());
 
 		long expirationTime = jwtTokenProvider.getRefreshTokenExpiration();
-		redisTemplate.opsForValue().set(userInfoKey, userInfoMap);
+		redisTemplate.delete(userInfoKey);
+		redisTemplate.opsForHash().putAll(userInfoKey, userInfoMap);
 		redisTemplate.expire(userInfoKey, expirationTime, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
-	public Map<String, String> updateUserJwtToken(User user) {
+	public Map<String, String> updateUserJwtToken(Long id) {
 		// JWT 토큰 생성
-		String accessToken = jwtTokenProvider.generateAccessToken(user.getId());
-		String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
+		String accessToken = jwtTokenProvider.generateAccessToken(id);
+		String refreshToken = jwtTokenProvider.generateRefreshToken(id);
 
 		// 토큰 정보 키
-		String tokenKey = "user:token:" + user.getId();
+		String tokenKey = "user:token:" + id;
 
 		// 토큰 정보 저장
 		Map<String, String> tokenMap = new HashMap<>();
 		tokenMap.put("accessToken", accessToken);
 		tokenMap.put("refreshToken", refreshToken);
+		redisTemplate.delete(tokenKey);
 		redisTemplate.opsForHash().putAll(tokenKey, tokenMap);
 
 		long expirationTime = jwtTokenProvider.getRefreshTokenExpiration();
