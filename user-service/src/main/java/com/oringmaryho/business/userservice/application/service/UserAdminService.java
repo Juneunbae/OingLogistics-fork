@@ -55,18 +55,10 @@ public class UserAdminService {
 	@Transactional
 	public void signUpUserAdmin(UserAdminSignUpRequestServiceDto requestServiceDto) {
 		//null처리
-		if (requestServiceDto.username() == null || requestServiceDto.username().isEmpty()) {
-			throw new UserException(ErrorCode.USERNAME_NULL);
-		}
-		if (requestServiceDto.password() == null || requestServiceDto.password().isEmpty()) {
-			throw new UserException(ErrorCode.PASSWORD_NULL);
-		}
-		if (requestServiceDto.slackId() == null || requestServiceDto.slackId().isEmpty()) {
-			throw new UserException(ErrorCode.SLACKID_NULL);
-		}
-		if (requestServiceDto.key() == null || requestServiceDto.key().isEmpty()) {
-			throw new UserException(ErrorCode.ADMIN_REGISTER_KEY_IS_NULL);
-		}
+		validateRequiredField(requestServiceDto.username(), ErrorCode.USERNAME_NULL);
+		validateRequiredField(requestServiceDto.password(), ErrorCode.PASSWORD_NULL);
+		validateRequiredField(requestServiceDto.slackId(), ErrorCode.SLACKID_NULL);
+		validateRequiredField(requestServiceDto.key(), ErrorCode.ADMIN_REGISTER_KEY_IS_NULL);
 
 		//형식에 맞는지 체크
 		usernameVerify(requestServiceDto.username());
@@ -99,15 +91,9 @@ public class UserAdminService {
 	@Transactional
 	public void createUser(UserAdminCreateRequestServiceDto requestServiceDto) {
 		//null처리
-		if (requestServiceDto.username() == null || requestServiceDto.username().isEmpty()) {
-			throw new UserException(ErrorCode.USERNAME_NULL);
-		}
-		if (requestServiceDto.password() == null || requestServiceDto.password().isEmpty()) {
-			throw new UserException(ErrorCode.PASSWORD_NULL);
-		}
-		if (requestServiceDto.slackId() == null || requestServiceDto.slackId().isEmpty()) {
-			throw new UserException(ErrorCode.SLACKID_NULL);
-		}
+		validateRequiredField(requestServiceDto.username(), ErrorCode.USERNAME_NULL);
+		validateRequiredField(requestServiceDto.password(), ErrorCode.PASSWORD_NULL);
+		validateRequiredField(requestServiceDto.slackId(), ErrorCode.SLACKID_NULL);
 
 		//형식에 맞는지 체크
 		usernameVerify(requestServiceDto.username());
@@ -276,6 +262,13 @@ public class UserAdminService {
 	public void passwordVerify(String password) {
 		if (!Pattern.matches(PASSWORD_REGEX, password)) {
 			throw new UserException(ErrorCode.PASSWORD_REGEX_NOT_MATCH);
+		}
+	}
+
+	//null 체크
+	private void validateRequiredField(String value, ErrorCode errorCode) {
+		if (value == null || value.isEmpty()) {
+			throw new UserException(errorCode);
 		}
 	}
 }

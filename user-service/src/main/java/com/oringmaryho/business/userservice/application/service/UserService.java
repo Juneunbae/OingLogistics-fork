@@ -58,15 +58,9 @@ public class UserService {
 	public void signUpUser(UserSignUpRequestServiceDto requestServiceDto) {
 
 		//null처리
-		if (requestServiceDto.username() == null || requestServiceDto.username().isEmpty()) {
-			throw new UserException(ErrorCode.USERNAME_NULL);
-		}
-		if (requestServiceDto.password() == null || requestServiceDto.password().isEmpty()) {
-			throw new UserException(ErrorCode.PASSWORD_NULL);
-		}
-		if (requestServiceDto.slackId() == null || requestServiceDto.slackId().isEmpty()) {
-			throw new UserException(ErrorCode.SLACKID_NULL);
-		}
+		validateRequiredField(requestServiceDto.username(), ErrorCode.USERNAME_NULL);
+		validateRequiredField(requestServiceDto.password(), ErrorCode.PASSWORD_NULL);
+		validateRequiredField(requestServiceDto.slackId(), ErrorCode.SLACKID_NULL);
 
 		//형식에 맞는지 체크
 		usernameVerify(requestServiceDto.username());
@@ -146,12 +140,9 @@ public class UserService {
 	}
 
 	public void slackCodeRequestUser(UserSlackCodeRequestServiceDto requestServiceDto) {
-		if (requestServiceDto.username() == null || requestServiceDto.username().isEmpty()) {
-			throw new UserException(ErrorCode.USERNAME_NULL);
-		}
-		if (requestServiceDto.slackId() == null || requestServiceDto.slackId().isEmpty()) {
-			throw new UserException(ErrorCode.SLACKID_NULL);
-		}
+		validateRequiredField(requestServiceDto.username(), ErrorCode.USERNAME_NULL);
+		validateRequiredField(requestServiceDto.slackId(), ErrorCode.SLACKID_NULL);
+		
 		if (!userRepository.existsByUsername(requestServiceDto.username())) {
 			throw new UserException(ErrorCode.NOT_FOUND);
 		}
@@ -216,6 +207,13 @@ public class UserService {
 	public void passwordVerify(String password) {
 		if (!Pattern.matches(PASSWORD_REGEX, password)) {
 			throw new UserException(ErrorCode.PASSWORD_REGEX_NOT_MATCH);
+		}
+	}
+
+	//null 체크
+	private void validateRequiredField(String value, ErrorCode errorCode) {
+		if (value == null || value.isEmpty()) {
+			throw new UserException(errorCode);
 		}
 	}
 
