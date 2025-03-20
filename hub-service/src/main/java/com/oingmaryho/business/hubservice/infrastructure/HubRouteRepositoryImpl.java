@@ -3,9 +3,12 @@ package com.oingmaryho.business.hubservice.infrastructure;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import com.oingmaryho.business.hubservice.domain.HubRoute;
+import com.oingmaryho.business.hubservice.domain.HubRouteSearchCriteria;
 import com.oingmaryho.business.hubservice.domain.repository.HubRouteRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -15,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class HubRouteRepositoryImpl implements HubRouteRepository {
 
 	private final HubRouteJpaRepository hubRouteJpaRepository;
+	private final HubRouteQueryRepository hubRouteQueryRepository;
 
 	@Override
 	public HubRoute save(HubRoute hubRoute) {
@@ -24,5 +28,10 @@ public class HubRouteRepositoryImpl implements HubRouteRepository {
 	@Override
 	public Optional<HubRoute> findById(UUID id) {
 		return hubRouteJpaRepository.findById(id);
+	}
+
+	@Override
+	public Page<HubRoute> findDynamicQuery(HubRouteSearchCriteria criteria, Pageable pageable) {
+		return hubRouteQueryRepository.findDynamicQuery(criteria, pageable);
 	}
 }
