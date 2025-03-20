@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminCreateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminFindRequestServiceDto;
@@ -18,6 +19,8 @@ import com.oringmaryho.business.userservice.application.dto.response.UserAdminUp
 import com.oringmaryho.business.userservice.domain.User;
 import com.oringmaryho.business.userservice.domain.UserRoleType;
 import com.oringmaryho.business.userservice.domain.repository.UserRepository;
+import com.oringmaryho.business.userservice.exception.ErrorCode;
+import com.oringmaryho.business.userservice.exception.UserException;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminDeleteRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminDeleteRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminGrantRoleResponseDto;
@@ -104,12 +107,23 @@ public class UserAdminService {
 		return responseDto;
 	}
 
+	@Transactional
 	public UserAdminGrantRoleResponseDto grantRoleUser(
 		UserAdminGrantRoleRequestServiceDto requestServiceDto) {
-		Long userId = null;
-		UserAdminGrantRoleResponseDto responseDto = userApplicationMapper.toUserAdminGrantRoleResponseDto(
-			userId);
-		return responseDto;
+		//todo: null 처리 통일하기 어노테이션으로
+		//todo: null 처리 추가
+
+		if(requestServiceDto.role().equals(UserRoleType.MASTER)) {
+			throw new UserException(ErrorCode.CANNOT_GRANT_MASTER_ROLE);
+		}
+
+		User user = userRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		user.updateRoleType(requestServiceDto.role());
+
+		return userApplicationMapper.toUserAdminGrantRoleResponseDto(
+			requestServiceDto.id());
 	}
 
 	public UserAdminUpdateRoleResponseDto updateRoleUser(
