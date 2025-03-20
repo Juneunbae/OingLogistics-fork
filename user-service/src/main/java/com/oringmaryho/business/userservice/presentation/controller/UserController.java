@@ -4,16 +4,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.oringmaryho.business.userservice.application.service.UserService;
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserSignOutRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackCodeRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
+import com.oringmaryho.business.userservice.application.service.UserService;
 import com.oringmaryho.business.userservice.presentation.dto.mapper.UserPresentationMapper;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignInRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignUpRequestDto;
@@ -23,7 +26,9 @@ import com.oringmaryho.business.userservice.presentation.dto.response.UserSearch
 import com.oringmaryho.business.userservice.presentation.dto.response.UserSignInResponseDto;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
@@ -51,12 +56,26 @@ public class UserController {
 		return ResponseEntity.ok().body(responseDto);
 	}
 
+	@PostMapping("/sign-out")
+	public ResponseEntity<?> signOutUser(
+		@RequestAttribute("userId") Long userId
+	){
+		UserSignOutRequestServiceDto requestServiceDto = userPresentationMapper.toUserSignOutRequestServiceDto(userId);
+		userService.signOutUser(requestServiceDto);
+		return ResponseEntity.ok().build();
+	}
+
 	@GetMapping("/{id}")
-	public ResponseEntity<UserSearchResponseDto> searchUser(@PathVariable Long id) {
+	public ResponseEntity<UserSearchResponseDto> searchUser(
+		@PathVariable Long id,
+		@RequestAttribute("userId") Long userId
+		) {
+		log.info("search user id:{} userId:{}", id, userId);
 		UserSearchRequestServiceDto requestServiceDto = userPresentationMapper.toUserSearchRequestServiceDto(
-			id);
-		UserSearchResponseDto responseServiceDto = userService.searchUser(requestServiceDto);
-		return ResponseEntity.ok().body(responseServiceDto);
+			id, userId);
+		UserSearchResponseDto responseDto = userService.searchUser(requestServiceDto);
+		log.info(responseDto.toString());
+		return ResponseEntity.ok(responseDto);
 	}
 
 	//todo: 어드민 컨트롤러에도 만들기

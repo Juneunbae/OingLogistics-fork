@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.oringmaryho.business.userservice.config.security.jwt.JwtTokenProvider;
+import com.oringmaryho.business.userservice.application.utils.jwt.JwtTokenProvider;
 
 @Configuration
 public class SecurityConfig {

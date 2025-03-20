@@ -38,4 +38,12 @@ public interface UserApplicationMapper {
 	UserAdminFindResponseDto toUserAdminFindResponseDto(User user);
 
 	UserAdminSearchResponseDto toUserAdminSearchResponseDto(User user);
+
+	@Mapping(target = "id", source = "id")
+	@Mapping(target = "username", source = "username")
+	@Mapping(target = "password", source = "password")
+	@Mapping(target = "slackId", source = "slackId")
+	@Mapping(target = "role", source = "role")
+	@Mapping(target = "status", source = "status")
+	UserSearchResponseDto toUserSearchResponseDto(User user);
 }
