@@ -48,7 +48,7 @@ public class UserAdminController {
 	private final PageableConfig pageableConfig;
 
 	@PostMapping("/sign-up")
-	public ResponseEntity<?> signUpMasterUser(
+	public ResponseEntity<Void> signUpMasterUser(
 		@RequestBody UserAdminSignUpRequestDto userAdminSignUpRequestDto) {
 		System.out.println("admin signup requested: " + userAdminSignUpRequestDto.toString());
 		UserAdminSignUpRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminSignUpServiceDto(
@@ -58,7 +58,7 @@ public class UserAdminController {
 	}
 
 	@PostMapping()
-	public ResponseEntity<?> createUser(
+	public ResponseEntity<Void> createUser(
 		@RequestBody UserAdminCreateRequestDto userAdminCreateRequestDto) {
 		UserAdminCreateRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminCreateRequestServiceDto(
 			userAdminCreateRequestDto);
@@ -96,7 +96,7 @@ public class UserAdminController {
 			userAdminUpdateRequestDto, id);
 		UserAdminUpdateResponseDto responseDto = userAdminService.updateUser(requestServiceDto);
 		//todo: responsedto 반환하기
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok(responseDto);
 	}
 
 	@PutMapping("/{id}/grant")

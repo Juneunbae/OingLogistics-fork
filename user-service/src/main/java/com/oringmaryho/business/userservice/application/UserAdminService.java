@@ -124,7 +124,6 @@ public class UserAdminService {
 			.username(requestServiceDto.username())
 			.password(encodedPassword)
 			.slackId(requestServiceDto.slackId())
-			.role(UserRoleType.MASTER)
 			.build();
 
 		userRepository.save(user);
@@ -147,13 +146,27 @@ public class UserAdminService {
 	}
 
 	@Transactional
-	public UserAdminUpdateResponseDto updateUser(
-		UserAdminUpdateRequestServiceDto requestServiceDto) {
-		//todo: responseDto 반환
-		Long userId = null;
-		UserAdminUpdateResponseDto responseDto = userApplicationMapper.toUserAdminUpdateResponseDto(
-			userId);
-		return responseDto;
+	public UserAdminUpdateResponseDto updateUser(UserAdminUpdateRequestServiceDto requestServiceDto) {
+		if (requestServiceDto.id() == null && requestServiceDto.id() < 1) {
+			throw new UserException(ErrorCode.USERNAME_NULL);
+		}
+
+		//비밀번호나 유저네임 바꿀 때 정규식 추가하기
+		User user = userRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		if (requestServiceDto.username() != null && !requestServiceDto.username().isEmpty()) {
+			user.updateUsername(requestServiceDto.username());
+		}
+		if (requestServiceDto.password() != null && !requestServiceDto.password().isEmpty()) {
+			String encodedPassword = passwordEncoder.encode(requestServiceDto.password());
+			user.updatePassword(encodedPassword);
+		}
+		if (requestServiceDto.slackId() != null && !requestServiceDto.slackId().isEmpty()) {
+			user.updateSlackId(requestServiceDto.slackId());
+		}
+
+		return userApplicationMapper.toUserAdminUpdateResponseDto(user.getId());
 	}
 
 	@Transactional
