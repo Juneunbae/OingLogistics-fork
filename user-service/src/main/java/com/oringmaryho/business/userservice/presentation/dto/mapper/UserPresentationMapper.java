@@ -1,4 +1,4 @@
-package com.oringmaryho.business.userservice.presentation.mapper;
+package com.oringmaryho.business.userservice.presentation.dto.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -50,6 +50,7 @@ public interface UserPresentationMapper {
 
 	@Mapping(target = "id", source = "id")
 	UserAdminFindRequestServiceDto toUserAdminFindRequestServiceDto(Long id);
+
 
 	UserAdminSearchRequestServiceDto toUserAdminSearchRequestServiceDto(
 		UserAdminSearchRequestDto requestDto, Pageable pageable);

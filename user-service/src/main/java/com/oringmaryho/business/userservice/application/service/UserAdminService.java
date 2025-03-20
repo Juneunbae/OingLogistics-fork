@@ -1,13 +1,16 @@
 package com.oringmaryho.business.userservice.application.service;
 
-import java.util.List;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.oringmaryho.business.userservice.application.dto.mapper.UserApplicationMapper;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminCreateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRoleRequestServiceDto;
@@ -19,10 +22,11 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpd
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserAdminFindResponseDto;
-import com.oringmaryho.business.userservice.application.mapper.UserApplicationMapper;
 import com.oringmaryho.business.userservice.application.utils.RedisUtil;
 import com.oringmaryho.business.userservice.domain.User;
 import com.oringmaryho.business.userservice.domain.UserRoleType;
+import com.oringmaryho.business.userservice.domain.UserSearchCriteria;
+import com.oringmaryho.business.userservice.domain.repository.CustomUserRepository;
 import com.oringmaryho.business.userservice.domain.repository.UserRepository;
 import com.oringmaryho.business.userservice.exception.ErrorCode;
 import com.oringmaryho.business.userservice.exception.UserException;
@@ -38,6 +42,7 @@ import lombok.RequiredArgsConstructor;
 public class UserAdminService {
 
 	private final UserRepository userRepository;
+	private final CustomUserRepository customUserRepository;
 	private final UserApplicationMapper userApplicationMapper;
 	private final PasswordEncoder passwordEncoder;
 	private final RedisUtil redisUtil;
@@ -120,17 +125,25 @@ public class UserAdminService {
 	}
 
 	//유저 단일 조회 메서드
+	@Transactional(readOnly = true)
+	@Cacheable(cacheNames = "user", key = "#requestServiceDto.id()")
 	public UserAdminFindResponseDto findUserAdmin(UserAdminFindRequestServiceDto requestServiceDto) {
-
 		User user = userRepository.findById(requestServiceDto.id())
 			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
 
 		return userApplicationMapper.toUserAdminFindResponseDto(user);
 	}
 
-	public List<UserAdminSearchResponseDto> searchUsers(
-		UserAdminSearchRequestServiceDto requestServiceDto) {
-		return null;
+	@Transactional(readOnly = true)
+	@Cacheable(cacheNames = "users")
+	public Page<UserAdminSearchResponseDto> searchUsers(
+		UserAdminSearchRequestServiceDto requestServiceDto, Pageable pageable) {
+
+		//쿼리 dsl로 유저 조회
+		Page<User> users = customUserRepository.findDynamicQuery(createHubSearchCriteria(requestServiceDto),
+			pageable);
+
+		return users.map(userApplicationMapper::toUserAdminSearchResponseDto);
 	}
 
 	@Transactional
@@ -212,7 +225,6 @@ public class UserAdminService {
 		//db에 업데이트
 		user.updateRoleType(newRole);
 
-		//todo: redis에 업데이트
 		User updatedUser = userRepository.findById(requestServiceDto.id())
 			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
 
@@ -273,5 +285,16 @@ public class UserAdminService {
 		if (value == null || value.isEmpty()) {
 			throw new UserException(errorCode);
 		}
+	}
+
+	public UserSearchCriteria createHubSearchCriteria(UserAdminSearchRequestServiceDto requestDto) {
+		return UserSearchCriteria.builder()
+			.id(requestDto.id())
+			.username(requestDto.username())
+			.slackId(requestDto.slackId())
+			.role(requestDto.role())
+			.status(requestDto.status())
+			.isDeleted(requestDto.isDeleted())
+			.build();
 	}
 }

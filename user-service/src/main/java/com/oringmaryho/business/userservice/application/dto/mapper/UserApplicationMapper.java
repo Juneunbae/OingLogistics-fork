@@ -1,7 +1,8 @@
-package com.oringmaryho.business.userservice.application.mapper;
+package com.oringmaryho.business.userservice.application.dto.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.springframework.data.domain.Page;
 
 import com.oringmaryho.business.userservice.application.dto.response.UserAdminFindResponseDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserSearchResponseServiceDto;
@@ -9,6 +10,7 @@ import com.oringmaryho.business.userservice.application.dto.response.UserSignInR
 import com.oringmaryho.business.userservice.domain.User;
 import com.oringmaryho.business.userservice.domain.UserRoleType;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminGrantRoleResponseDto;
+import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminSearchResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminUpdateResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminUpdateRoleResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserSearchResponseDto;
@@ -34,4 +36,6 @@ public interface UserApplicationMapper {
 		Long id, UserRoleType role, UserRoleType newRole);
 
 	UserAdminFindResponseDto toUserAdminFindResponseDto(User user);
+
+	UserAdminSearchResponseDto toUserAdminSearchResponseDto(User user);
 }

@@ -1,5 +1,15 @@
 package com.oringmaryho.business.userservice.application.dto.request;
 
-public record UserAdminSearchRequestServiceDto(String username, String slackId, String role) {
+import com.oringmaryho.business.userservice.domain.UserConfirmStatus;
+import com.oringmaryho.business.userservice.domain.UserRoleType;
+
+public record UserAdminSearchRequestServiceDto(
+	Long id,
+	String username,
+	String slackId,
+	UserRoleType role,
+	UserConfirmStatus status,
+	Boolean isDeleted
+) {
 
 }

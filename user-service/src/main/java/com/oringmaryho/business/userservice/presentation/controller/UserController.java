@@ -14,7 +14,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserSignInRe
 import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackCodeRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
-import com.oringmaryho.business.userservice.presentation.mapper.UserPresentationMapper;
+import com.oringmaryho.business.userservice.presentation.dto.mapper.UserPresentationMapper;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignInRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignUpRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSlackCodeRequestDto;

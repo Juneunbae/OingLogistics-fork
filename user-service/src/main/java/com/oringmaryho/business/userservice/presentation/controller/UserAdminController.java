@@ -2,6 +2,7 @@ package com.oringmaryho.business.userservice.presentation.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,7 +26,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminSig
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.config.pageable.PageableConfig;
-import com.oringmaryho.business.userservice.presentation.mapper.UserPresentationMapper;
+import com.oringmaryho.business.userservice.presentation.dto.mapper.UserPresentationMapper;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminCreateRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminGrantRoleRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSearchRequestDto;
@@ -71,13 +72,11 @@ public class UserAdminController {
 	public ResponseEntity<?> findUserMaster(@PathVariable Long id) {
 		UserAdminFindRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminFindRequestServiceDto(
 			id);
-		//todo: responsedto로 변환
-		userAdminService.findUserAdmin(requestServiceDto);
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok(userAdminService.findUserAdmin(requestServiceDto));
 	}
 
 	@GetMapping()
-	public ResponseEntity<List<UserAdminSearchResponseDto>> searchUsers(
+	public ResponseEntity<Page<UserAdminSearchResponseDto>> searchUsers(
 		@RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
 		@RequestParam(value = "size", required = false) Integer size,
 		@RequestParam(value = "sortDirection", required = false) String sortDirection,
@@ -85,9 +84,9 @@ public class UserAdminController {
 		Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
 		UserAdminSearchRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminSearchRequestServiceDto(
 			userAdminSearchRequestDto, customPageable);
-		List<UserAdminSearchResponseDto> responseDtos = userAdminService.searchUsers(
-			requestServiceDto);
-		return null;
+		Page<UserAdminSearchResponseDto> responseDtos = userAdminService.searchUsers(
+			requestServiceDto, customPageable);
+		return ResponseEntity.ok(responseDtos);
 	}
 
 	@PutMapping("/{id}")
