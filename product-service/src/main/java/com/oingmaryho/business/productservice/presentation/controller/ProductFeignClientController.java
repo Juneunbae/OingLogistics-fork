@@ -1,4 +1,4 @@
-package com.oingmaryho.business.productservice.presentation;
+package com.oingmaryho.business.productservice.presentation.controller;
 
 import java.util.UUID;
 
@@ -9,26 +9,27 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.oingmaryho.business.productservice.application.ProductService;
+import com.oingmaryho.business.productservice.application.service.ProductFeignClientService;
 import com.oingmaryho.business.productservice.application.dto.request.ProductDetailsSearchRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.response.ProductDetailsSearchResponseServiceDto;
 import com.oingmaryho.business.productservice.presentation.dto.response.ProductDetailsSearchResponseDto;
+import com.oingmaryho.business.productservice.presentation.mapper.ProductPresentationMapper;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping
+@RequestMapping("/product-service/products")
 public class ProductFeignClientController {
-	private final ProductService productService;
+	private final ProductFeignClientService productService;
 	private final ProductPresentationMapper productPresentationMapper;
 
 	@Description("FeignClient - 상품 상세 조회")
-	@GetMapping("/product-service/products/{id}")
+	@GetMapping("/{id}")
 	public ResponseEntity<ProductDetailsSearchResponseDto> getProductById(@PathVariable UUID id) {
-		ProductDetailsSearchRequestServiceDto requestServiceDto = productPresentationMapper.toProductServiceDto(id);
+		ProductDetailsSearchRequestServiceDto requestServiceDto = productPresentationMapper.toDetailsSearchServiceDto(id);
 		ProductDetailsSearchResponseServiceDto responseServiceDto = productService.getProductDetails(requestServiceDto);
-		ProductDetailsSearchResponseDto response = productPresentationMapper.toProductDto(responseServiceDto);
+		ProductDetailsSearchResponseDto response = productPresentationMapper.toDetailsSearchDto(responseServiceDto);
 		return ResponseEntity.ok(response);
 	}
 }

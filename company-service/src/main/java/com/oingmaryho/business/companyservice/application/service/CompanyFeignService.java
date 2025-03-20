@@ -7,6 +7,8 @@ import com.oingmaryho.business.companyservice.application.dto.request.CompanyDet
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyDetailsSearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.domain.Company;
 import com.oingmaryho.business.companyservice.domain.repository.CompanyRepository;
+import com.oingmaryho.business.companyservice.exception.CompanyException;
+import com.oingmaryho.business.companyservice.exception.ErrorCode;
 import com.oingmaryho.business.companyservice.presentation.dto.response.CompanyDetailsSearchResponseDto;
 
 import lombok.RequiredArgsConstructor;
@@ -19,7 +21,7 @@ public class CompanyFeignService {
 
 	public CompanyDetailsSearchResponseServiceDto getCompanyById(CompanyDetailsSearchRequestServiceDto requestDto) {
 		Company company = companyRepository.findByIdAndIsDeletedFalse(requestDto.id())
-			.orElseThrow(() -> new RuntimeException("업체를 찾을 수 없습니다: " + requestDto.id()));
+			.orElseThrow(() -> new CompanyException(ErrorCode.NOT_FOUND));
 		return companyApplicationMapper.toResponseDto(company);
 	}
 }

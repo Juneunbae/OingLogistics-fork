@@ -29,6 +29,9 @@ public class Product extends BaseEntity {
 	private UUID id;
 
 	@Column(nullable = false)
+	private String productCode;
+
+	@Column(nullable = false)
 	private UUID companyId;
 
 	@Column(nullable = false)
@@ -42,7 +45,4 @@ public class Product extends BaseEntity {
 
 	@Column(nullable = false)
 	private Long price;
-
-	@Column(nullable = false)
-	private Boolean isDeleted;
 }

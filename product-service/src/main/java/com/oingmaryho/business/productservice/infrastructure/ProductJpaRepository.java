@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.oingmaryho.business.productservice.domain.Product;
+import com.oingmaryho.business.productservice.domain.repository.ProductRepository;
 
-public interface ProductJpaRepository extends JpaRepository<Product, UUID> {
-	Optional<Product> findByIdAndIsDeletedFalse(UUID id);
+public interface ProductJpaRepository extends JpaRepository<Product, UUID>, ProductRepository {
 }
