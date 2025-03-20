@@ -9,22 +9,27 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.oingmaryho.business.productservice.application.dto.request.ProductDetailsSearchRequestServiceDto;
+import com.oingmaryho.business.productservice.application.dto.request.ProductUpdateRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.response.ProductDetailsSearchResponseServiceDto;
 import com.oingmaryho.business.productservice.application.dto.response.ProductSearchResponseServiceDto;
+import com.oingmaryho.business.productservice.application.dto.response.ProductUpdateResponseServiceDto;
 import com.oingmaryho.business.productservice.application.service.ProductService;
 import com.oingmaryho.business.productservice.application.dto.request.ProductCreateRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.response.ProductCreateResponseServiceDto;
 import com.oingmaryho.business.productservice.presentation.dto.request.ProductCreateRequestDto;
 import com.oingmaryho.business.productservice.presentation.dto.request.ProductSearchRequestDto;
+import com.oingmaryho.business.productservice.presentation.dto.request.ProductUpdateRequestDto;
 import com.oingmaryho.business.productservice.presentation.dto.response.ProductCreateResponseDto;
 import com.oingmaryho.business.productservice.presentation.dto.response.ProductDetailsSearchResponseDto;
 import com.oingmaryho.business.productservice.presentation.dto.response.ProductSearchResponseDto;
+import com.oingmaryho.business.productservice.presentation.dto.response.ProductUpdateResponseDto;
 import com.oingmaryho.business.productservice.presentation.mapper.ProductPresentationMapper;
 import com.oingmaryho.business.productservice.utils.PageableUtils;
 
@@ -81,5 +86,14 @@ public class ProductController {
 		ProductDetailsSearchResponseServiceDto responseServiceDto = productService.getProductDetails(requestServiceDto);
 		ProductDetailsSearchResponseDto response = productPresentationMapper.toDetailsSearchDto(responseServiceDto);
 		return ResponseEntity.ok(response);
+	}
+
+	@Description("일반 - 상품 수정")
+	@PutMapping("/{id}")
+	public ResponseEntity<ProductUpdateResponseDto> updateProduct(@PathVariable UUID id, @RequestBody ProductUpdateRequestDto productUpdateRequestDto){
+		ProductUpdateRequestServiceDto requestServiceDto = productPresentationMapper.toUpdateServiceDto(id, productUpdateRequestDto);
+		ProductUpdateResponseServiceDto responseServiceDto = productService.updateProduct(requestServiceDto);
+		ProductUpdateResponseDto responseDto = productPresentationMapper.toUpdateResponseDto(responseServiceDto);
+		return ResponseEntity.ok(responseDto);
 	}
 }
