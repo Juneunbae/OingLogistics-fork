@@ -82,7 +82,8 @@ public class UserAdminService {
 	}
 
 	public void slackConfirmUser(UserSlackConfirmRequestServiceDto requestServiceDto) {
-
+		//todo: 일반 사용자 service에서 기능 가져와서 추가하기
+		//todo: 슬랙인증 요청과 승인 요청
 	}
 
 	public void findUserAdmin(UserAdminFindRequestServiceDto requestServiceDto) {
