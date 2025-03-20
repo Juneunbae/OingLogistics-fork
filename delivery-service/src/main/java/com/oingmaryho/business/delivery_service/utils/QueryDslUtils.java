@@ -6,7 +6,6 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import org.springframework.data.domain.Sort;
 
 public class QueryDslUtils {
-
     public static OrderSpecifier<?>[] getOrderSpecifiers(Sort sort, Class<?> entityClass) {
         String str = entityClass.getSimpleName();
         PathBuilder<?> entityPath = new PathBuilder<>(entityClass, Character.toLowerCase(str.charAt(0)) + str.substring(1) );

@@ -12,6 +12,7 @@ public record DeliveryRouteResponseServiceDto(UUID id,
                                               Integer estimatedTime,
                                               Double actualDistance,
                                               Integer actualTime,
-                                              UUID managerId){
+                                              UUID managerId,
+                                              Boolean isDeleted){
 
 }

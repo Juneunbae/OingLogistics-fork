@@ -59,6 +59,18 @@ public interface DeliveryPresentationMapper {
     // 배송 경로 검색
     DeliveryRouteResponseDto toRouteSearchResponseDto(DeliveryRouteResponseServiceDto responseServiceDto);
 
+    // 배송 조회 (admin)
+    DeliveryAdminResponseDto toDetailAdminResponseDto(DeliveryResponseServiceDto responseServiceDto);
+
+    // 배송 검색 (admin)
+    DeliveryAdminResponseDto toSearchAdminResponseDto(DeliveryResponseServiceDto responseServiceDto);
+
+    // 배송 경로 조회 (admin)
+    DeliveryRouteAdminResponseDto toRouteDetailAdminResponseDto(DeliveryRouteResponseServiceDto responseServiceDto);
+
+    // 배송 경로 검색 (admin)
+    DeliveryRouteAdminResponseDto toRouteSearchAdminResponseDto(DeliveryRouteResponseServiceDto responseServiceDto);
+
     DeliveryRouteUpdateStatusResponseDto toUpdateRouteStatusResponseDto(DeliveryRouteUpdateStatusResponseServiceDto responseServiceDto);
 
 }

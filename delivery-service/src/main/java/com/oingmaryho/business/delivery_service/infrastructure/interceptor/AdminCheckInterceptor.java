@@ -1,7 +1,7 @@
 package com.oingmaryho.business.delivery_service.infrastructure.interceptor;
 
-import com.oingmaryho.business.delivery_service.domain.UserConfirmStatus;
-import com.oingmaryho.business.delivery_service.domain.UserRoleType;
+import com.oingmaryho.business.delivery_service.domain.type.UserConfirmStatus;
+import com.oingmaryho.business.delivery_service.domain.type.UserRoleType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

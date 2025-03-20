@@ -1,5 +1,7 @@
 package com.oingmaryho.business.delivery_service.infrastructure.repository;
 
+import com.oingmaryho.business.delivery_service.domain.entity.*;
+import com.oingmaryho.business.delivery_service.domain.type.DeliveryManagerType;
 import com.oingmaryho.business.delivery_service.utils.QueryDslUtils;
 import com.oingmaryho.business.delivery_service.domain.*;
 import com.querydsl.core.BooleanBuilder;
@@ -23,24 +25,23 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
     QDelivery qDelivery = QDelivery.delivery;
     QDeliveryRoute qDeliveryRoute = QDeliveryRoute.deliveryRoute;
     QDeliveryManager qDeliveryManager = QDeliveryManager.deliveryManager;
+    BooleanBuilder builder = new BooleanBuilder();
 
     /**
      * 배송 검색
-     * @param hubId 허브 id
-     * @param companyId 업체 id
-     * @param managerId 배송 담당자 id
-     * @param managerType   배송 담당자 타입
+     * @param criteria 검색 조건
      * @param pageable customPageable
      * @return 배송
      */
     @Override
-    public Page<Delivery> searchDelivery(UUID hubId,
-                                         UUID companyId,
-                                         UUID managerId,
-                                         DeliveryManagerType managerType,
+    public Page<Delivery> searchDelivery(DeliverySearchCriteria criteria,
                                          Pageable pageable) {
 
-        BooleanBuilder builder = new BooleanBuilder();
+        UUID hubId = criteria.getHubId();
+        UUID companyId = criteria.getCompanyId();
+        UUID managerId = criteria.getManagerId();
+        DeliveryManagerType managerType = criteria.getManagerType();
+        Boolean isDeleted = criteria.getIsDeleted();
 
         if (hubId != null) {        // 허브 관리자가 허브 id로 조회
             builder.and(qDelivery.departureHubId.eq(hubId));
@@ -57,6 +58,10 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
             if (managerType.equals(DeliveryManagerType.COMPANY_DELIVERY_MANAGER)) {     // 업체 배송 담당자인 경우
                 builder.and(qDelivery.manager.id.eq(managerId));
             }
+        }
+
+        if (isDeleted != null) {
+            builder.and(qDelivery.isDeleted.eq(isDeleted));
         }
 
         // 조회 쿼리
@@ -88,21 +93,19 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
 
     /**
      * 배송 경로 검색
-     * @param hubId 허브 id
-     * @param companyId 업체 id
-     * @param managerId 배송 담당자 id
-     * @param managerType   배송 담당자 타입
+     * @param criteria 검색 조건
      * @param pageable customPageable
      * @return 배송 경로
      */
     @Override
-    public Page<DeliveryRoute> searchRoute(UUID hubId,
-                                           UUID companyId,
-                                           UUID managerId,
-                                           DeliveryManagerType managerType,
+    public Page<DeliveryRoute> searchRoute(DeliveryRouteSearchCriteria criteria,
                                            Pageable pageable) {
 
-        BooleanBuilder builder = new BooleanBuilder();
+        UUID hubId = criteria.getHubId();
+        UUID companyId = criteria.getCompanyId();
+        UUID managerId = criteria.getManagerId();
+        DeliveryManagerType managerType = criteria.getManagerType();
+        Boolean isDeleted = criteria.getIsDeleted();
 
         if (hubId != null) {        // 허브 관리자가 허브 id로 조회
             builder.and(qDeliveryRoute.departureHubId.eq(hubId));
@@ -121,6 +124,10 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
                 builder.and(qDeliveryRoute.delivery.manager.id.eq(managerId));
             }
 
+        }
+
+        if (isDeleted != null) {
+            builder.and(qDelivery.isDeleted.eq(isDeleted));
         }
 
         // 조회 쿼리
@@ -150,15 +157,52 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
 
     }
 
+
     /**
-     * 배송 경로 조회
+     * 배송 경로 조회 (admin)
      * @param routeId 배송 경로 id
      */
     @Override
     public Optional<DeliveryRoute> findRouteById(UUID routeId) {
         return Optional.ofNullable(
-                queryFactory.selectFrom(qDeliveryRoute)
-                        .where(qDeliveryRoute.id.eq(routeId))
+                queryFactory
+                        .selectFrom(qDeliveryRoute)
+                        .where(
+                                qDeliveryRoute.id.eq(routeId)
+                        )
+                        .fetchOne()
+        );
+    }
+
+    /**
+     * 배송 경로 조회
+     * @param routeId 배송 경로 id
+     */
+    @Override
+    public Optional<DeliveryRoute> findRouteByIdAndIsDeleted(UUID routeId) {
+        return Optional.ofNullable(
+                queryFactory
+                        .selectFrom(qDeliveryRoute)
+                        .where(
+                                qDeliveryRoute.id.eq(routeId),
+                                qDeliveryRoute.isDeleted.eq(false)
+                        )
+                        .fetchOne()
+        );
+    }
+
+    /**
+     * 배송 담당자 조회 (admin)
+     * @param managerId 배송 담당자 id
+     */
+    @Override
+    public Optional<DeliveryManager> findManagerById(UUID managerId) {
+        return Optional.ofNullable(
+                queryFactory
+                        .selectFrom(qDeliveryManager)
+                        .where(
+                                qDeliveryManager.id.eq(managerId)
+                        )
                         .fetchOne()
         );
     }
@@ -168,10 +212,14 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
      * @param managerId 배송 담당자 id
      */
     @Override
-    public Optional<DeliveryManager> findManagerById(UUID managerId) {
+    public Optional<DeliveryManager> findManagerByIdAndIsDeleted(UUID managerId) {
         return Optional.ofNullable(
-                queryFactory.selectFrom(qDeliveryManager)
-                        .where(qDeliveryManager.id.eq(managerId))
+                queryFactory
+                        .selectFrom(qDeliveryManager)
+                        .where(
+                                qDeliveryManager.id.eq(managerId),
+                                qDeliveryRoute.isDeleted.eq(false)
+                        )
                         .fetchOne()
         );
 
