@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.oingmaryho.business.productservice.application.dto.request.ProductDeleteRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.request.ProductDetailsSearchRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.request.ProductSearchRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.request.ProductUpdateRequestServiceDto;
@@ -63,6 +64,13 @@ public class ProductService {
 		return productApplicationMapper.toUpdateResponseDto(product.getId());
 	}
 
+	@Transactional
+	public void deleteProduct(long userId, ProductDeleteRequestServiceDto requestServiceDto) {
+		Product product = productRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
+			.orElseThrow(() -> new ProductException(ErrorCode.NOT_FOUND));
+		product.softDelete(userId);
+	}
+
 	private ProductSearchCriteria createProductSearchCriteria(ProductSearchRequestServiceDto requestDto){
 		return ProductSearchCriteria.builder()
 			.id(requestDto.id())
@@ -89,5 +97,6 @@ public class ProductService {
 			}
 		}
 	}
+
 
 }

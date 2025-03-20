@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.mapstruct.Mapper;
 
+import com.oingmaryho.business.productservice.application.dto.request.ProductDeleteRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.request.ProductCreateRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.request.ProductDetailsSearchRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.request.ProductSearchRequestServiceDto;
@@ -25,14 +26,15 @@ public interface ProductPresentationMapper {
 	// in : presentation request -> service request
 	ProductDetailsSearchRequestServiceDto toDetailsSearchServiceDto(UUID id);
 	ProductCreateRequestServiceDto toCreateServiceDto(ProductCreateRequestDto productCreateRequestDto);
-
 	ProductSearchRequestServiceDto toProductSearchResponseServiceDto(ProductSearchRequestDto productSearchRequestDto);
 	ProductUpdateRequestServiceDto toUpdateServiceDto(UUID id, ProductUpdateRequestDto productUpdateRequestDto);
-
+	ProductDeleteRequestServiceDto toDeleteServiceDto(UUID id);
 
 	// out : service response -> presentation response
 	ProductDetailsSearchResponseDto toDetailsSearchDto(ProductDetailsSearchResponseServiceDto productServiceDto);
 	ProductCreateResponseDto toCreateDto(ProductCreateResponseServiceDto responseServiceDto);
 	ProductSearchResponseDto toProductSearchResponseDto(ProductSearchResponseServiceDto responseServiceDto);
 	ProductUpdateResponseDto toUpdateResponseDto(ProductUpdateResponseServiceDto responseServiceDto);
+
+
 }

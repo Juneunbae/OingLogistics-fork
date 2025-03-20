@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Description;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +28,7 @@ import com.oingmaryho.business.productservice.presentation.dto.request.ProductCr
 import com.oingmaryho.business.productservice.presentation.dto.request.ProductSearchRequestDto;
 import com.oingmaryho.business.productservice.presentation.dto.request.ProductUpdateRequestDto;
 import com.oingmaryho.business.productservice.presentation.dto.response.ProductCreateResponseDto;
+import com.oingmaryho.business.productservice.application.dto.request.ProductDeleteRequestServiceDto;
 import com.oingmaryho.business.productservice.presentation.dto.response.ProductDetailsSearchResponseDto;
 import com.oingmaryho.business.productservice.presentation.dto.response.ProductSearchResponseDto;
 import com.oingmaryho.business.productservice.presentation.dto.response.ProductUpdateResponseDto;
@@ -95,5 +97,13 @@ public class ProductController {
 		ProductUpdateResponseServiceDto responseServiceDto = productService.updateProduct(requestServiceDto);
 		ProductUpdateResponseDto responseDto = productPresentationMapper.toUpdateResponseDto(responseServiceDto);
 		return ResponseEntity.ok(responseDto);
+	}
+
+	@Description("일반 상품 삭제")
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> deleteProduct(@PathVariable UUID id){
+		ProductDeleteRequestServiceDto requestServiceDto = productPresentationMapper.toDeleteServiceDto(id);
+		productService.deleteProduct(1L, requestServiceDto);
+		return ResponseEntity.noContent().build();
 	}
 }
