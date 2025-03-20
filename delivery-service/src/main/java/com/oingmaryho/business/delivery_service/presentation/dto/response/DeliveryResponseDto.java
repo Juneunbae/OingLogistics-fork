@@ -1,9 +1,11 @@
 package com.oingmaryho.business.delivery_service.presentation.dto.response;
 
+import com.oingmaryho.business.delivery_service.domain.type.DeliveryStatus;
+
 import java.util.UUID;
 
 public record DeliveryResponseDto(UUID id,
-                                  String status,
+                                  DeliveryStatus status,
                                   UUID departureHubId,
                                   UUID destinationHubId,
                                   String address,

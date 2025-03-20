@@ -1,5 +1,7 @@
 package com.oingmaryho.business.delivery_service.presentation.dto.response;
 
+import com.oingmaryho.business.delivery_service.domain.type.DeliveryRouteStatus;
+
 import java.util.UUID;
 
 public record DeliveryRouteResponseDto(UUID id,
@@ -7,7 +9,7 @@ public record DeliveryRouteResponseDto(UUID id,
                                        Integer sequence,
                                        UUID departureHubId,
                                        UUID destinationHubId,
-                                       String status,
+                                       DeliveryRouteStatus status,
                                        Double estimatedDistance,
                                        Integer estimatedTime,
                                        Double actualDistance,
