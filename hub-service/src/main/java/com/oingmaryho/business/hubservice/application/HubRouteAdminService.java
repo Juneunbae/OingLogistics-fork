@@ -8,8 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.oingmaryho.business.hubservice.application.dto.mapper.HubRouteApplicationMapper;
 import com.oingmaryho.business.hubservice.application.dto.request.HubRouteCreateRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubRouteDeleteRequestServiceDto;
+import com.oingmaryho.business.hubservice.application.dto.request.HubRouteSearchAdminRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubRouteUpdateRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteCreateResponseServiceDto;
+import com.oingmaryho.business.hubservice.application.dto.response.HubRouteSearchAdminResponseServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteUpdateResponseServiceDto;
 import com.oingmaryho.business.hubservice.domain.HubRoute;
 import com.oingmaryho.business.hubservice.domain.RouteInfo;
@@ -39,6 +41,12 @@ public class HubRouteAdminService {
 
 		HubRoute savedHubRoute = hubRouteRepository.save(hubRoute);
 		return mapper.toHubRouteCreateResponseServiceDto(savedHubRoute);
+	}
+
+	@Transactional(readOnly = true)
+	public HubRouteSearchAdminResponseServiceDto getHubRouteById(HubRouteSearchAdminRequestServiceDto requestDto) {
+		HubRoute hubRoute = findHubRouteById(requestDto.id());
+		return mapper.toHubRouteSearchAdminResponseServiceDto(hubRoute);
 	}
 
 	// TODO : Auditing 설정 추가

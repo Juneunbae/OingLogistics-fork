@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.oingmaryho.business.hubservice.application.HubRouteAdminService;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteCreateResponseServiceDto;
+import com.oingmaryho.business.hubservice.application.dto.response.HubRouteSearchAdminResponseServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteUpdateResponseServiceDto;
 import com.oingmaryho.business.hubservice.presentation.dto.mapper.HubRoutePresentationMapper;
 import com.oingmaryho.business.hubservice.presentation.dto.request.HubRouteCreateRequestDto;
@@ -37,6 +39,14 @@ public class HubRouteAdminController {
 		return ResponseEntity
 			.status(HttpStatus.CREATED)
 			.body(mapper.toHubRouteCreateResponseDto(responseDto));
+	}
+
+	@GetMapping("/{id}")
+	public ResponseEntity<?> getHubRouteById(@PathVariable UUID id) {
+		HubRouteSearchAdminResponseServiceDto responseDto = hubRouteAdminService
+			.getHubRouteById(mapper.toHubRouteSearchAdminRequestServiceDto(id));
+
+		return ResponseEntity.ok(mapper.toHubRouteSearchAdminResponseDto(responseDto));
 	}
 
 	@PutMapping("/{id}")

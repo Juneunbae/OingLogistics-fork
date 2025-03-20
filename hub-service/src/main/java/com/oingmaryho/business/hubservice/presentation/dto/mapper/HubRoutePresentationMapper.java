@@ -6,12 +6,15 @@ import org.mapstruct.Mapper;
 
 import com.oingmaryho.business.hubservice.application.dto.request.HubRouteCreateRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubRouteDeleteRequestServiceDto;
+import com.oingmaryho.business.hubservice.application.dto.request.HubRouteSearchAdminRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubRouteUpdateRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteCreateResponseServiceDto;
+import com.oingmaryho.business.hubservice.application.dto.response.HubRouteSearchAdminResponseServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteUpdateResponseServiceDto;
 import com.oingmaryho.business.hubservice.presentation.dto.request.HubRouteCreateRequestDto;
 import com.oingmaryho.business.hubservice.presentation.dto.request.HubRouteUpdateRequestDto;
 import com.oingmaryho.business.hubservice.presentation.dto.response.HubRouteCreateResponseDto;
+import com.oingmaryho.business.hubservice.presentation.dto.response.HubRouteSearchAdminResponseDto;
 import com.oingmaryho.business.hubservice.presentation.dto.response.HubRouteUpdateResponseDto;
 
 @Mapper(componentModel = "spring")
@@ -26,4 +29,8 @@ public interface HubRoutePresentationMapper {
 	HubRouteUpdateResponseDto toHubRouteUpdateResponseDto(HubRouteUpdateResponseServiceDto dto);
 
 	HubRouteDeleteRequestServiceDto toHubRouteDeleteRequestServiceDto(UUID id);
+
+	HubRouteSearchAdminRequestServiceDto toHubRouteSearchAdminRequestServiceDto(UUID id);
+
+	HubRouteSearchAdminResponseDto toHubRouteSearchAdminResponseDto(HubRouteSearchAdminResponseServiceDto dto);
 }
