@@ -1,4 +1,4 @@
-package com.oingmaryho.business.delivery_service.infrastructure;
+package com.oingmaryho.business.delivery_service.infrastructure.repository;
 
 import com.oingmaryho.business.delivery_service.domain.Delivery;
 import org.springframework.data.jpa.repository.JpaRepository;

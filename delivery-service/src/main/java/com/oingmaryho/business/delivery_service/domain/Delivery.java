@@ -1,24 +1,19 @@
 package com.oingmaryho.business.delivery_service.domain;
 
-import com.oingmaryho.business.delivery_service.application.dto.request.DeliveryUpdateRequestServiceDto;
-import com.oingmaryho.business.delivery_service.application.dto.request.DeliveryUpdateStatusRequestServiceDto;
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
+
 
 import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Entity
-@SuperBuilder
-@DynamicInsert
-@DynamicUpdate
+@Builder
 @Table(name = "p_delivery")
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(force = true, access = AccessLevel.PROTECTED)
-public class Delivery extends BaseEntity{
+public class Delivery extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -46,29 +41,30 @@ public class Delivery extends BaseEntity{
     @Column(nullable = false)
     private String receiverSlackId;
 
-    @Column(nullable = false)
-    private UUID managerId; // 업체 배송 담당자 userId
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id")
+    private DeliveryManager manager; // 업체 배송 담당자 userId
 
     @OneToMany(mappedBy = "delivery", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DeliveryRoute> routes;
 
-    public void update(DeliveryUpdateRequestServiceDto requestServiceDto) {
+    public void update(String receiver, String receiverSlackId, String address, DeliveryManager manager) {
         if (receiver != null) {
-            this.receiver = requestServiceDto.receiver();
+            this.receiver = receiver;
         }
         if (receiverSlackId != null) {
-            this.receiverSlackId = requestServiceDto.receiverSlackId();
+            this.receiverSlackId = receiverSlackId;
         }
         if (address != null) {
-            this.address = requestServiceDto.address();
+            this.address = address;
         }
-        if (managerId != null) {
-            this.managerId = requestServiceDto.managerId();
+        if (manager != null) {
+            this.manager = manager;
         }
     }
 
-    public void updateStatus(DeliveryUpdateStatusRequestServiceDto requestServiceDto) {
-        this.status = requestServiceDto.status();
+    public void updateStatus(DeliveryStatus newStatus) {
+        this.status = newStatus;
     }
 
 }

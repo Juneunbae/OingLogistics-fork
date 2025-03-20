@@ -75,8 +75,8 @@ public class DeliveryAdminController {
     @GetMapping
     public ResponseEntity<Page<DeliveryResponseDto>> searchDelivery(
             @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
-            @RequestParam(value = "size", required = false) Integer size,
-            @RequestParam(value = "sortDirection", required = false) String sortDirection,
+            @RequestParam(value = "size", required = false, defaultValue = "10") Integer size,
+            @RequestParam(value = "sortDirection", required = false, defaultValue = "DESC") String sortDirection,
             @RequestParam(value = "by", required = false) String by,
             @RequestParam(value = "hubId", required = false) UUID hubId,
             @RequestParam(value = "companyId", required = false) UUID companyId,
@@ -106,8 +106,8 @@ public class DeliveryAdminController {
     public ResponseEntity<Page<DeliveryRouteResponseDto>> searchDeliveryRoute(
             @PathVariable UUID id,
             @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
-            @RequestParam(value = "size", required = false) Integer size,
-            @RequestParam(value = "sortDirection", required = false) String sortDirection,
+            @RequestParam(value = "size", required = false, defaultValue = "10") Integer size,
+            @RequestParam(value = "sortDirection", required = false, defaultValue = "DESC") String sortDirection,
             @RequestParam(value = "by", required = false) String by,
             @RequestParam(value = "hubId", required = false) UUID hubId,
             @RequestParam(value = "companyId", required = false) UUID companyId,
@@ -120,6 +120,17 @@ public class DeliveryAdminController {
         Page<DeliveryRouteResponseServiceDto> responseServiceDtos = deliveryAdminService.GetDeliveryRoutesBySearch(1L, UserRoleType.HUB_DELIVERY_MANAGER,requestServiceDto);
 
         return ResponseEntity.ok(responseServiceDtos.map(DeliveryPresentationMapper.INSTANCE::toRouteSearchResponseDto));
+    }
+
+    @PutMapping("/routes/{id}/status")
+    public ResponseEntity<DeliveryRouteUpdateStatusResponseDto> updateDeliveryRouteStatus(
+            @PathVariable UUID id,
+            @RequestBody DeliveryRouteUpdateStatusRequestDto requestDto) {
+
+        // TODO change userId, userRole type from UserVO
+        DeliveryRouteUpdateStatusRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateRouteStatusServiceDto(id, requestDto);
+        DeliveryRouteUpdateStatusResponseServiceDto responseServiceDto = deliveryAdminService.updateRouteStatusDelivery(1L, UserRoleType.HUB_DELIVERY_MANAGER, requestServiceDto);
+        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateRouteStatusResponseDto(responseServiceDto));
     }
 
 

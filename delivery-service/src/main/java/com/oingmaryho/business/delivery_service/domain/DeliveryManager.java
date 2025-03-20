@@ -2,21 +2,16 @@ package com.oingmaryho.business.delivery_service.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
 
 import java.util.UUID;
 
-
 @Getter
 @Entity
-@SuperBuilder
-@DynamicInsert
-@DynamicUpdate
+@Builder
 @Table(name = "p_delivery_manager")
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-class DeliveryManager extends BaseEntity{
+public class DeliveryManager extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

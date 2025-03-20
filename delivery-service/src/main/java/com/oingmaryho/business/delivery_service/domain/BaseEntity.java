@@ -1,10 +1,6 @@
 package com.oingmaryho.business.delivery_service.domain;
 
-
-import jakarta.persistence.Column;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.TemporalType;
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,45 +19,50 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
-    @CreatedDate
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
+	@Column(updatable = false)
+	private Long deletedBy;
 
-    @CreatedBy
-    @Column(updatable = false)
-    private Long createdBy;
+	@Column(updatable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	private LocalDateTime deletedAt;
 
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
+	@CreatedDate
+	@Column(updatable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	private LocalDateTime createdAt;
 
-    @LastModifiedBy
-    private Long updatedBy;
+	@CreatedBy
+	@Column(updatable = false)
+	private Long createdBy;
 
-    private LocalDateTime deletedAt;
+	@LastModifiedDate
+	@Column
+	@Temporal(TemporalType.TIMESTAMP)
+	private LocalDateTime updatedAt;
 
-    private Long deletedBy;
+	@LastModifiedBy
+	private Long updatedBy;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Boolean isDeleted = false;
+	@Column(nullable = false)
+	@Builder.Default
+	private Boolean isDeleted = false;
 
-    /**
-     * 엔티티 soft delete
-     * @param deleteUserId 삭제자 id
-     */
-    public void softDelete(Long deleteUserId) {
-        this.deletedAt = LocalDateTime.now();
-        this.deletedBy = deleteUserId;
-        this.isDeleted = true;
-    }
+	/**
+	 * 엔티티 soft delete
+	 * @param deleteUserId 삭제자 id
+	 */
+	public void softDelete(Long deleteUserId) {
+		this.deletedAt = LocalDateTime.now();
+		this.deletedBy = deleteUserId;
+		this.isDeleted = true;
+	}
 
-    /**
-     * 엔티티 soft delete 취소
-     */
-    public void restore() {
-        this.deletedAt = null;
-        this.deletedBy = null;
-        this.isDeleted = false;
-    }
-
+	/**
+	 * 엔티티 soft delete 취소
+	 */
+	public void restore() {
+		this.deletedAt = null;
+		this.deletedBy = null;
+		this.isDeleted = false;
+	}
 }

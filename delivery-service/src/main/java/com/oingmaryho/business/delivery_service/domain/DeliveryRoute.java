@@ -1,24 +1,17 @@
 package com.oingmaryho.business.delivery_service.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
+import lombok.*;
 
 import java.util.UUID;
 
 @Getter
 @Entity
-@SuperBuilder
-@DynamicInsert
-@DynamicUpdate
+@Builder
 @Table(name = "p_delivery_route")
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(force = true, access = AccessLevel.PROTECTED)
-public class DeliveryRoute extends BaseEntity{
+public class DeliveryRoute extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -50,8 +43,9 @@ public class DeliveryRoute extends BaseEntity{
     private Double actualDistance;
     private Integer actualTime;
 
-    @Column(nullable = false)
-    private UUID managerId; // 허브 배송 담당자 id
+    @OneToOne
+    @JoinColumn(name = "manager_id")
+    private DeliveryManager manager; // 허브 배송 담당자 id
 
     /**
      * 배송 상태 변경

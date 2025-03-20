@@ -6,7 +6,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum CacheType {
-    DELIVERIES("deliveries", 300, 500);
+    DELIVERIES("deliveries", 300, 500),
+    ROUTES("routes", 300, 500);
 
     private final String cacheName;
     private final int expiredAfterWrite;
