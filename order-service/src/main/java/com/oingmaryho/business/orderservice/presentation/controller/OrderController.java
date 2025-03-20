@@ -1,5 +1,7 @@
 package com.oingmaryho.business.orderservice.presentation.controller;
 
+import com.oingmaryho.business.orderservice.application.dto.request.OrderDeleteServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.request.OrderDetailDeleteRequestServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.request.OrderUpdateServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.request.OrdersRequestServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
@@ -52,13 +54,35 @@ public class OrderController {
         "허브 관리자 - 주문 수정"
     )
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updateOrders(@PathVariable UUID id, @RequestBody OrderUpdateRequestDto update) {
+    public ResponseEntity<Void> updateOrder(@PathVariable UUID id, @RequestBody OrderUpdateRequestDto update) {
         OrderUpdateServiceDto orderUpdateServiceDto = orderPresentationMapper.toOrderUpdateServiceDto(
             id, update, update.requestOrderDetails().stream().map(
                 orderPresentationMapper::toOrderDetailUpdateServiceDto
             ).toList()
         );
         orderService.updateOrder(orderUpdateServiceDto);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @Description(
+        "허브 관리자 - 주문 삭제"
+    )
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteOrder(@PathVariable UUID id) {
+        OrderDeleteServiceDto orderDeleteServiceDto = orderPresentationMapper.toOrderDeleteDto(id);
+        orderService.deleteOrder(orderDeleteServiceDto);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @Description(
+        "허브 관리자 - 상세 주문 삭제"
+    )
+    @DeleteMapping("/{id}/details/{orderDetailId}")
+    public ResponseEntity<Void> deleteOrderDetail(@PathVariable UUID id, @PathVariable UUID orderDetailId) {
+        OrderDetailDeleteRequestServiceDto request = orderPresentationMapper.toOrderDetailDeleteRequestServiceDto(id, orderDetailId);
+        orderService.deleteOrderDetail(request);
 
         return ResponseEntity.ok().build();
     }
