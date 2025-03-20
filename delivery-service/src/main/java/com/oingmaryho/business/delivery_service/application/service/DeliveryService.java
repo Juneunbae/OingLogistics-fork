@@ -36,9 +36,14 @@ public class DeliveryService {
 
         Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
+
+
         // TODO 권한 확인
-        DeliveryManager newManager = deliveryRepository.findManagerByIdAndIsDeleted(requestServiceDto.managerId())
-                .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_MANGER_NOT_FOUND));
+        DeliveryManager newManager = null;
+        if (requestServiceDto.managerId() != null) {
+            newManager = deliveryRepository.findManagerByIdAndIsDeleted(requestServiceDto.managerId())
+                    .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_MANGER_NOT_FOUND));
+        }
 
         delivery.update(requestServiceDto.receiver(), requestServiceDto.receiverSlackId(), requestServiceDto.address(), newManager);
         return deliveryApplicationMapper.toUpdateResponseServiceDto(delivery.getId());
