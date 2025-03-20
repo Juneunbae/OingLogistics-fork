@@ -14,6 +14,8 @@ public interface HubRepository {
 
 	Optional<Hub> findById(UUID id);
 
+	boolean existsById(UUID id);
+
 	Page<Hub> findDynamicQuery(HubSearchCriteria criteria, Pageable pageable);
 
 	Optional<Hub> findActiveHubById(UUID id);

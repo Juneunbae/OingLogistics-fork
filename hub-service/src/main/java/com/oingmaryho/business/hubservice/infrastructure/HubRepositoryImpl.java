@@ -31,6 +31,11 @@ public class HubRepositoryImpl implements HubRepository {
 	}
 
 	@Override
+	public boolean existsById(UUID id) {
+		return hubJpaRepository.existsById(id);
+	}
+
+	@Override
 	public Page<Hub> findDynamicQuery(HubSearchCriteria criteria, Pageable pageable) {
 		return hubQueryRepository.findDynamicQuery(criteria, pageable);
 	}

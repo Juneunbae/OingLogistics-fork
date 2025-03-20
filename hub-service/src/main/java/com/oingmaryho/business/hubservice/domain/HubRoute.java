@@ -9,8 +9,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,6 +19,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "p_hub_route")
 @Getter
+@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class HubRoute extends BaseEntity{
@@ -29,13 +28,12 @@ public class HubRoute extends BaseEntity{
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "departure_hub_id", nullable = false)
-	private Hub departureHub;
+	// TODO : 관계 매핑 질문하기
+	@Column(nullable = false)
+	private UUID departureHubId;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "arrive_hub_id", nullable = false)
-	private Hub arriveHub;
+	@Column(nullable = false)
+	private UUID arriveHubId;
 
 	@Embedded
 	private RouteInfo routeInfo;
