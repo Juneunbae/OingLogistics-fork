@@ -1,10 +1,7 @@
 package com.oingmaryho.business.orderservice.application.service;
 
 import com.oingmaryho.business.orderservice.application.dto.mapper.OrderApplicationMapper;
-import com.oingmaryho.business.orderservice.application.dto.request.OrderDetailUpdateRequestServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.request.OrderUpdateRequestServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.request.OrderUpdateServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.request.OrdersRequestServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.request.*;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.domain.Order;
@@ -86,6 +83,45 @@ public class OrderService {
         log.info("주문 수정 완료");
 
         refreshCache(order);
+    }
+
+    @Transactional
+    public void deleteOrder(OrderDeleteServiceDto delete) {
+        // TODO: 허브 관리자 권한 확인
+
+        UUID orderId = delete.orderId();
+
+        Order order = getByOrderId(orderId);
+
+        for (OrderDetail orderDetail : order.getOrderDetails()) {
+            orderDetail.delete();
+            log.info("상세 주문 삭제 완료");
+        }
+
+        order.delete();
+        log.info("주문 삭제 완료");
+
+        evictCache(order);
+    }
+
+
+    public void deleteOrderDetail(OrderDetailDeleteRequestServiceDto request) {
+        // TODO: 허브 관리자 권한 확인하기
+
+        UUID orderId = request.orderId();
+
+        Order order = getByOrderId(orderId);
+        OrderDetail orderDetail = getByOrderDetailId(order, request.orderDetailId());
+
+        orderDetail.delete();
+        log.info("주문: {}, 상세 주문: {}, 삭제 완료", order.getId(), orderDetail.getId());
+
+        Integer orderDetailPrice = (orderDetail.getQuantity() * orderDetail.getPrice());
+        OrderTotalPriceUpdateRequestServiceDto updateDto = orderApplicationMapper.toOrderTotalPriceUpdateRequestDto(orderDetailPrice);
+
+        order.updateTotalPrice(updateDto);
+
+        evictCache(order);
     }
 
     private Order getByOrderId(UUID orderId) {

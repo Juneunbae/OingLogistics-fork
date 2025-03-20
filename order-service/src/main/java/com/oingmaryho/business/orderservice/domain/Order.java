@@ -75,6 +75,6 @@ public class Order extends BaseEntity {
     }
 
     public void updateTotalPrice(OrderTotalPriceUpdateRequestServiceDto update) {
-        this.totalPrice = update.totalPrice();
+        this.totalPrice -= update.totalPrice();
     }
 }
