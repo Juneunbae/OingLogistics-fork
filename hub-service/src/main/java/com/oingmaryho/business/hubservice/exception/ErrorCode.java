@@ -10,6 +10,9 @@ import lombok.RequiredArgsConstructor;
 public enum ErrorCode {
 
 	NOT_FOUND("H-001", "해당 허브를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+	NOT_VALID_TIME("H-002", "시간은 0보다 커야 합니다.", HttpStatus.BAD_REQUEST),
+	NOT_VALID_DISTANCE("H-003", "거리는 0보다 커야 합니다.", HttpStatus.BAD_REQUEST),
+	INVALID_HUB_ROUTE("H-004", "출발 허브와 도착 허브는 같을 수 없습니다.", HttpStatus.BAD_REQUEST)
 	;
 
 	private final String errorCode;

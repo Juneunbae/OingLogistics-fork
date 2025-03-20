@@ -16,14 +16,12 @@ import com.oingmaryho.business.hubservice.application.dto.request.HubDeleteReque
 import com.oingmaryho.business.hubservice.application.dto.request.HubSearchRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubUpdateRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubsSearchAdminRequestServiceDto;
-import com.oingmaryho.business.hubservice.application.dto.request.HubsSearchRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubCreateResponseServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubSearchAdminResponseServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubUpdateResponseServiceDto;
 import com.oingmaryho.business.hubservice.domain.Address;
 import com.oingmaryho.business.hubservice.domain.Hub;
 import com.oingmaryho.business.hubservice.domain.HubSearchCriteria;
-import com.oingmaryho.business.hubservice.domain.repository.CustomHubRepository;
 import com.oingmaryho.business.hubservice.domain.repository.HubRepository;
 import com.oingmaryho.business.hubservice.exception.ErrorCode;
 import com.oingmaryho.business.hubservice.exception.HubException;
@@ -35,7 +33,6 @@ import lombok.RequiredArgsConstructor;
 public class HubAdminService {
 
 	private final HubRepository hubRepository;
-	private final CustomHubRepository customHubRepository;
 	private final HubApplicationMapper mapper;
 
 	// TODO : Auditing 추가하기
@@ -57,7 +54,7 @@ public class HubAdminService {
 	@Transactional(readOnly = true)
 	@Cacheable(cacheNames = "hubs")
 	public Page<HubSearchAdminResponseServiceDto> searchHubs(HubsSearchAdminRequestServiceDto requestDto, Pageable pageable) {
-		Page<Hub> hubs = customHubRepository.findDynamicQuery(createHubSearchAdminCriteria(requestDto), pageable);
+		Page<Hub> hubs = hubRepository.findDynamicQuery(createHubSearchAdminCriteria(requestDto), pageable);
 
 		return hubs.map(mapper::toHubSearchAdminResponseServiceDto);
 	}

@@ -23,7 +23,7 @@ import com.oingmaryho.business.hubservice.application.dto.request.HubsSearchRequ
 import com.oingmaryho.business.hubservice.application.dto.response.HubSearchResponseServiceDto;
 import com.oingmaryho.business.hubservice.domain.Address;
 import com.oingmaryho.business.hubservice.domain.Hub;
-import com.oingmaryho.business.hubservice.domain.repository.CustomHubRepository;
+import com.oingmaryho.business.hubservice.domain.repository.HubRepository;
 import com.oingmaryho.business.hubservice.exception.ErrorCode;
 import com.oingmaryho.business.hubservice.exception.HubException;
 import com.oingmaryho.business.hubservice.utils.PageableUtils;
@@ -38,7 +38,7 @@ class HubServiceTest {
 	private HubApplicationMapper mapper;
 
 	@Mock
-	private CustomHubRepository customHubRepository;
+	private HubRepository hubRepository;
 
 	@DisplayName("허브 관리자는 허브 ID를 통해 허브 정보를 조회할 수 있다.")
 	@Test
@@ -58,7 +58,7 @@ class HubServiceTest {
 		);
 
 		when(mapper.toHubSearchResponseServiceDto(any(Hub.class))).thenReturn(responseDto);
-		when(customHubRepository.findActiveHubById(hubId)).thenReturn(Optional.of(hub));
+		when(hubRepository.findActiveHubById(hubId)).thenReturn(Optional.of(hub));
 
 		// When
 		HubSearchResponseServiceDto result = hubService.getHubById(requestDto);
@@ -74,7 +74,7 @@ class HubServiceTest {
 				HubSearchResponseServiceDto::managerId
 			)
 			.containsExactlyInAnyOrder(hubId, "허브 이름", "허브 주소", 1.0, 2.0, 1L);
-		verify(customHubRepository, times(1)).findActiveHubById(any());
+		verify(hubRepository, times(1)).findActiveHubById(any());
 	}
 
 	@DisplayName("허브 검색을 통해 허브 정보들을 조회할 수 있다.")
@@ -112,7 +112,7 @@ class HubServiceTest {
 			hub2Id, "허브2 이름", "허브2 주소", 3.0, 4.0, 2L
 		);
 
-		when(customHubRepository.findDynamicQuery(any(), eq(pageable))).thenReturn(hubPage);
+		when(hubRepository.findDynamicQuery(any(), eq(pageable))).thenReturn(hubPage);
 		when(mapper.toHubSearchResponseServiceDto(hub1)).thenReturn(responseDto1);
 		when(mapper.toHubSearchResponseServiceDto(hub2)).thenReturn(responseDto2);
 
@@ -123,7 +123,7 @@ class HubServiceTest {
 		assertThat(result.getContent()).hasSize(2)
 			.containsExactly(responseDto1, responseDto2);
 		assertThat(result.getTotalElements()).isEqualTo(2);
-		verify(customHubRepository, times(1)).findDynamicQuery(any(), any());
+		verify(hubRepository, times(1)).findDynamicQuery(any(), any());
 	}
 
 	@DisplayName("허브 조건 검색을 통해 허브 정보들을 조회할 수 있다.")
@@ -158,7 +158,7 @@ class HubServiceTest {
 			hub1Id, "허브1 이름", "허브1 주소", 1.0, 2.0, 1L
 		);
 
-		when(customHubRepository.findDynamicQuery(any(), eq(pageable))).thenReturn(hubPage);
+		when(hubRepository.findDynamicQuery(any(), eq(pageable))).thenReturn(hubPage);
 		when(mapper.toHubSearchResponseServiceDto(hub1)).thenReturn(responseDto1);
 
 		// When
@@ -168,7 +168,7 @@ class HubServiceTest {
 		assertThat(result.getContent()).hasSize(1)
 			.containsExactly(responseDto1);
 		assertThat(result.getTotalElements()).isEqualTo(1);
-		verify(customHubRepository, times(1)).findDynamicQuery(any(), any());
+		verify(hubRepository, times(1)).findDynamicQuery(any(), any());
 	}
 
 	@DisplayName("허브 ID에 해당하는 허브가 존재하지 않는 경우, 예외가 발생한다.")
