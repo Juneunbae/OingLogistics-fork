@@ -1,4 +1,4 @@
-package com.oingmaryho.business.productservice.presentation;
+package com.oingmaryho.business.productservice.presentation.mapper;
 
 import java.util.UUID;
 
