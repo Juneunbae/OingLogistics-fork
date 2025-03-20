@@ -100,13 +100,12 @@ public class UserAdminController {
 	}
 
 	@PutMapping("/{id}/grant")
-	public ResponseEntity<?> grantRoleUserMaster(@PathVariable Long id,
+	public ResponseEntity<UserAdminGrantRoleResponseDto> grantRoleUserMaster(@PathVariable Long id,
 		@RequestBody UserAdminGrantRoleRequestDto userAdminGrantRoleRequestDto) {
 		UserAdminGrantRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminGrantRoleRequestServiceDto(
 			userAdminGrantRoleRequestDto, id);
 		UserAdminGrantRoleResponseDto responseDto = userAdminService.grantRoleUser(requestServiceDto);
-		//todo: responsedto 반환하기
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok(responseDto);
 	}
 
 	@PutMapping("/roles/{id}")

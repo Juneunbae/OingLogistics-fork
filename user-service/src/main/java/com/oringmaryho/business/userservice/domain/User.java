@@ -52,4 +52,12 @@ public class User extends BaseEntity implements Serializable {
 	@Builder.Default
 	private UserConfirmStatus status = UserConfirmStatus.PENDING;
 
+	public void changeStatus(UserConfirmStatus status) {
+		this.status = status;
+	}
+
+	public void updateRoleType(UserRoleType role) {
+		this.role = role;
+	}
+
 }

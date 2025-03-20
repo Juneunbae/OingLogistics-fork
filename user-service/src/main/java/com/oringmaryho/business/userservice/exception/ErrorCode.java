@@ -22,6 +22,8 @@ public enum ErrorCode {
 	SLACK_ALREADY_AUTH("U-010", "이미 인증된 SLACK 계정입니다.", HttpStatus.BAD_REQUEST),
 
 	STORAGE_NEGATIVE_ERROR("U-011", "TTL이 음수일 수 없습니다.", HttpStatus.BAD_REQUEST),
+
+	CANNOT_GRANT_MASTER_ROLE("U-012", "MASTER 권한은 부여할 수 없습니다.", HttpStatus.BAD_REQUEST),
 	;
 
 	private final String errorCode;
