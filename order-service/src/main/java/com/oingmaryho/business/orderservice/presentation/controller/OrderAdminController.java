@@ -3,9 +3,9 @@ package com.oingmaryho.business.orderservice.presentation.controller;
 import com.oingmaryho.business.orderservice.application.dto.request.*;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.service.OrderAdminService;
-import com.oingmaryho.business.orderservice.config.pageable.PageableConfig;
 import com.oingmaryho.business.orderservice.presentation.dto.mapper.OrderPresentationMapper;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderUpdateRequestDto;
+import com.oingmaryho.business.orderservice.utils.PageableUtils;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Description;
@@ -20,7 +20,6 @@ import java.util.UUID;
 @RequestMapping("/admin/v1/orders")
 @RequiredArgsConstructor
 public class OrderAdminController {
-    private final PageableConfig pageableConfig;
     private final OrderAdminService orderAdminService;
     private final OrderPresentationMapper orderPresentationMapper;
 
@@ -37,9 +36,9 @@ public class OrderAdminController {
         @RequestParam(value = "productName", required = false) String productName,
         @RequestParam(value = "recipientName", required = false) String recipientName,
         @RequestParam(value = "requesterName", required = false) String requesterName,
-        @RequestParam(value = "isDeleted", required = false) Boolean isDeleted
+        @RequestParam(value = "isDeleted", required = false, defaultValue = "false") Boolean isDeleted
     ) {
-        Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
+        Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
         OrdersRequestServiceDto ordersRequestServiceDto = orderPresentationMapper.toOrdersServiceDto(
             productName,
             recipientName,

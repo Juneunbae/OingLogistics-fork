@@ -6,9 +6,11 @@ import com.oingmaryho.business.orderservice.application.dto.response.OrderDetail
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
+import com.oingmaryho.business.orderservice.domain.OrderSearchCriteria;
 import com.oingmaryho.business.orderservice.exception.ErrorCode;
 import com.oingmaryho.business.orderservice.exception.OrderException;
-import com.oingmaryho.business.orderservice.infrastructure.OrderRepository;
+import com.oingmaryho.business.orderservice.infrastructure.OrderJPARepository;
+import com.oingmaryho.business.orderservice.infrastructure.OrderQueryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
@@ -27,8 +29,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderAdminService {
     private final CacheManager cacheManager;
-    private final OrderRepository orderRepository;
+    private final OrderJPARepository orderJPARepository;
     private final OrderApplicationMapper orderApplicationMapper;
+    private final OrderQueryRepository orderQueryRepository;
 
     @Transactional
     public Page<OrderResponseServiceDto> getOrders(OrdersRequestServiceDto ordersRequestServiceDto) {
@@ -42,9 +45,14 @@ public class OrderAdminService {
             return cachedOrders;
         }
 
+        log.info("OrderRequestDto : {}", ordersRequestServiceDto);
+
         Pageable customPageable = ordersRequestServiceDto.customPageable();
-        Page<Order> orders = orderRepository.findAll(customPageable);
-        // TODO: QueryDSL 반영하여 LIKE 문 수정하기
+
+        Page<Order> orders = orderQueryRepository.findDynamicQuery(
+            createOrderSearchCriteria(ordersRequestServiceDto),
+            customPageable
+        );
 
         List<OrderResponseServiceDto> ordersDto = orders.stream().map(
             order -> orderApplicationMapper.toOrderResponseServiceDto(
@@ -104,7 +112,6 @@ public class OrderAdminService {
         OrderUpdateRequestServiceDto orderUpdateRequestServiceDto = orderApplicationMapper.toOrderUpdateDto(update.requests(), totalPrice);
 
         order.update(orderUpdateRequestServiceDto);
-        orderRepository.save(order);
         log.info("주문 수정 완료");
 
         refreshCache(order);
@@ -145,7 +152,6 @@ public class OrderAdminService {
         OrderTotalPriceUpdateRequestServiceDto updateDto = orderApplicationMapper.toOrderTotalPriceUpdateRequestDto(orderDetailPrice);
 
         order.updateTotalPrice(updateDto);
-        orderRepository.save(order);
 
         evictCache(order);
     }
@@ -159,7 +165,7 @@ public class OrderAdminService {
             return cachedOrder;
         }
 
-        Order order = orderRepository.findById(orderId)
+        Order order = orderJPARepository.findById(orderId)
             .orElseThrow(() -> new OrderException(ErrorCode.NOT_FOUND));
 
         cache.put(orderId, order);
@@ -170,7 +176,7 @@ public class OrderAdminService {
 
     public OrderDetail getByOrderDetailId(Order order, UUID orderDetailId) {
         return order.getOrderDetails().stream().filter(
-            orderDetail -> orderDetail.getId().equals(orderDetailId)
+            orderDetail -> orderDetail.getId().equals(orderDetailId) && !orderDetail.getIsDeleted()
         ).findFirst().orElseThrow(() -> new OrderException(ErrorCode.ORDER_DETAIL_NOT_FOUND));
     }
 
@@ -233,5 +239,14 @@ public class OrderAdminService {
         }
 
         OrdersCache.clear();
+    }
+
+    private OrderSearchCriteria createOrderSearchCriteria(OrdersRequestServiceDto requestDto) {
+        return OrderSearchCriteria.builder()
+            .productName(requestDto.productName())
+            .recipientName(requestDto.recipientName())
+            .requesterName(requestDto.requesterName())
+            .isDeleted(requestDto.isDeleted())
+            .build();
     }
 }
