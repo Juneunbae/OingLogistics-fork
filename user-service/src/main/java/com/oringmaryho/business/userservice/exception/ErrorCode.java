@@ -24,6 +24,11 @@ public enum ErrorCode {
 	STORAGE_NEGATIVE_ERROR("U-011", "TTL이 음수일 수 없습니다.", HttpStatus.BAD_REQUEST),
 
 	CANNOT_GRANT_MASTER_ROLE("U-012", "MASTER 권한은 부여할 수 없습니다.", HttpStatus.BAD_REQUEST),
+	LESS_ROLE("U-013", "사용자의 권한이 부족합니다.", HttpStatus.BAD_REQUEST),
+	ADMIN_REGISTER_KEY_IS_NULL("U-014", "MASTER 인증을 위한 key값이 비어 있습니다.", HttpStatus.BAD_REQUEST),
+	USERNAME_REGEX_NOT_MATCH("U-015", "사용자 이름은 4~10자이며, 소문자(a-z)와 숫자(0-9)만 사용할 수 있습니다.", HttpStatus.BAD_REQUEST),
+	PASSWORD_REGEX_NOT_MATCH("U-016", "비밀번호는 8~15자이며, 대소문자(A-Z, a-z), 숫자(0-9), 특수문자(!@#$%^&*)를 포함해야 합니다.", HttpStatus.BAD_REQUEST),
+	ADMIN_REGISTER_KEY_NOT_MATCH("U-017", "MASTER 인증을 위한 key값이 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
 	;
 
 	private final String errorCode;

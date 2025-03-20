@@ -17,10 +17,10 @@ import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRe
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackCodeRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminCreateRequestDto;
-import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminDeleteRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSignUpRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminUpdateRoleRequestDto;
-import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminDeleteRoleRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminGrantRoleRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSearchRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminUpdateRequestDto;

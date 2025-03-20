@@ -60,4 +60,7 @@ public class User extends BaseEntity implements Serializable {
 		this.role = role;
 	}
 
+	public void deleteRoleType() {
+		this.role = UserRoleType.DEFAULT;
+	}
 }
