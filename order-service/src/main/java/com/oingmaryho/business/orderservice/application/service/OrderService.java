@@ -1,7 +1,11 @@
 package com.oingmaryho.business.orderservice.application.service;
 
 import com.oingmaryho.business.orderservice.application.dto.mapper.OrderApplicationMapper;
+import com.oingmaryho.business.orderservice.application.dto.request.OrderDetailUpdateRequestServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.request.OrderUpdateRequestServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.request.OrderUpdateServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.request.OrdersRequestServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
@@ -51,12 +55,45 @@ public class OrderService {
         return new PageImpl<>(ordersDto, customPageable, orders.getTotalElements());
     }
 
-    public Order getByOrderId(UUID orderId) {
+    @Transactional
+    public void updateOrder(OrderUpdateServiceDto update) {
+        // TODO: 허브 관리자 검증하기
+
+        int totalPrice = 0;
+        UUID orderId = update.id();
+
+        Order order = getByOrderId(orderId);
+
+        if (update.orderDetails() != null) {
+            for (OrderDetailUpdateResponseServiceDto orderDetailDto : update.orderDetails()) {
+                OrderDetail orderDetail = getByOrderDetailId(order, orderDetailDto.orderDetailId());
+                OrderDetailUpdateRequestServiceDto orderDetailUpdateRequestServiceDto = orderApplicationMapper.toOrderDetailUpdateDto(
+                    orderDetailDto.price(), orderDetailDto.quantity()
+                );
+                orderDetail.update(orderDetailUpdateRequestServiceDto);
+
+                log.info("상세 주문: {}, 수정 완료", orderDetail.getId());
+            }
+
+            totalPrice = order.getOrderDetails().stream().mapToInt(
+                orderDetail -> orderDetail.getPrice() * orderDetail.getQuantity()
+            ).sum();
+        }
+
+        OrderUpdateRequestServiceDto orderUpdateRequestServiceDto = orderApplicationMapper.toOrderUpdateDto(update.requests(), totalPrice);
+
+        order.update(orderUpdateRequestServiceDto);
+        log.info("주문 수정 완료");
+
+        refreshCache(order);
+    }
+
+    private Order getByOrderId(UUID orderId) {
         return orderJPARepository.findById(orderId)
             .orElseThrow(() -> new OrderException(ErrorCode.NOT_FOUND));
     }
 
-    public OrderDetail getByOrderDetailId(Order order, UUID orderDetailId) {
+    private OrderDetail getByOrderDetailId(Order order, UUID orderDetailId) {
         return order.getOrderDetails().stream().filter(
             orderDetail -> orderDetail.getId().equals(orderDetailId)
         ).findFirst().orElseThrow(() -> new OrderException(ErrorCode.ORDER_DETAIL_NOT_FOUND));
@@ -71,5 +108,31 @@ public class OrderService {
         Cache cache = cacheManager.getCache("orders");
         cache.put(cacheKey, results);
         log.info("캐시 저장 성공: {}", cacheKey);
+    }
+
+    private void refreshCache(Order order) {
+        Cache cache = cacheManager.getCache("order");
+
+        if (cache != null) {
+            cache.evict(order.getId());
+            log.info("Refresh - 캐시 삭제");
+
+            cache.put(order.getId(), order);
+            log.info("Refresh - 캐시 할당");
+        }
+
+        log.info("캐시 재할당 완료: {}", order.getId());
+    }
+
+    private void evictCache(Order order) {
+        Cache OrdersCache = cacheManager.getCache("orders");
+        Cache OrderCache = cacheManager.getCache("order");
+
+        if (OrderCache != null) {
+            OrderCache.evict(order.getId());
+            log.info("Order - 캐시 삭제");
+        }
+
+        OrdersCache.clear();
     }
 }
