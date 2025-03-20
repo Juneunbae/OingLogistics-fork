@@ -1,12 +1,8 @@
 package com.oingmaryho.business.delivery_service.application;
 
 import com.oingmaryho.business.delivery_service.application.dto.mapper.DeliveryApplicationMapper;
-import com.oingmaryho.business.delivery_service.application.dto.request.DeliveryDetailRequestServiceDto;
-import com.oingmaryho.business.delivery_service.application.dto.request.DeliveryRouteDetailRequestServiceDto;
-import com.oingmaryho.business.delivery_service.application.dto.request.DeliveryRouteSearchRequestServiceDto;
-import com.oingmaryho.business.delivery_service.application.dto.request.DeliverySearchRequestServiceDto;
-import com.oingmaryho.business.delivery_service.application.dto.response.DeliveryResponseServiceDto;
-import com.oingmaryho.business.delivery_service.application.dto.response.DeliveryRouteResponseServiceDto;
+import com.oingmaryho.business.delivery_service.application.dto.request.*;
+import com.oingmaryho.business.delivery_service.application.dto.response.*;
 import com.oingmaryho.business.delivery_service.application.service.DeliveryService;
 import com.oingmaryho.business.delivery_service.domain.entity.Delivery;
 import com.oingmaryho.business.delivery_service.domain.entity.DeliveryManager;
@@ -34,7 +30,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.oingmaryho.business.delivery_service.domain.entity.QDelivery.delivery;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -103,11 +98,13 @@ public class DeliveryServiceTest {
     private Long userId2;
     private Long userId3;
     private Long userId4;
+    private Long userId5;
 
     private UserRoleType role1;
     private UserRoleType role2;
     private UserRoleType role3;
     private UserRoleType role4;
+    private UserRoleType role5;
 
     private DeliveryManagerType managerType1;
     private DeliveryManagerType managerType2;
@@ -174,6 +171,7 @@ public class DeliveryServiceTest {
         role2 = UserRoleType.HUB_DELIVERY_MANAGER;
         role3 = UserRoleType.COMPANY_DELIVERY_MANAGER;
         role4 = UserRoleType.COMPANY_MANAGER;
+        role5 = UserRoleType.MASTER;
 
         managerType1 = DeliveryManagerType.HUB_DELIVERY_MANAGER;
         managerType2 = DeliveryManagerType.COMPANY_DELIVERY_MANAGER;
@@ -992,25 +990,255 @@ public class DeliveryServiceTest {
 
     @Test
     @DisplayName("배송 수정 - 배송 정보를 수정한다.")
-    public void 배송수정() {
+    public void 배송수정_마스터() {
+        //given
+        // 업체 배송 담당자
+        DeliveryManager manager1 = DeliveryManager.builder()
+                .id(companyDeliveryManagerId1)
+                .slackId(companyDeliveryManagerSlackId1)
+                .hubId(hubId1)
+                .companyId(companyId1)
+                .managerId(userId1)
+                .type(managerType2)
+                .sequence(1)
+                .build();
+
+        Delivery delivery = Delivery.builder()
+                .id(deliveryId1)
+                .status(deliveryStatus1)
+                .orderId(orderId1)
+                .departureHubId(hubId1)
+                .destinationHubId(hubId3)
+                .address(address1)
+                .receiver(receiver1)
+                .receiverSlackId(receiverSlackId1)
+                .manager(manager1)
+                .build();
+
+        DeliveryUpdateRequestServiceDto requestDto = new DeliveryUpdateRequestServiceDto(
+                deliveryId1,
+                receiver2,
+                receiverSlackId2,
+                null,
+                null
+        );
+        DeliveryUpdateResponseServiceDto responseDto = new DeliveryUpdateResponseServiceDto(
+                deliveryId1
+        );
+
+        when(mapper.toUpdateResponseServiceDto(any(UUID.class)))
+                .thenReturn(responseDto);
+
+        when(deliveryRepository.findByIdAndIsDeletedFalse(deliveryId1))
+                .thenReturn(Optional.of(delivery));
+
+        //when
+        DeliveryUpdateResponseServiceDto result = deliveryService.updateDelivery(   // 마스터 시도
+                userId5,
+                role5,
+                requestDto
+        );
+
+        //then
+        assertThat(result).isNotNull()
+                .extracting(DeliveryUpdateResponseServiceDto::id)
+                .isEqualTo(deliveryId1);
+
+        verify(deliveryRepository, times(1))
+                .findByIdAndIsDeletedFalse(deliveryId1);
 
     }
 
     @Test
     @DisplayName("배송 상태 수정 - 배송 상태를 변경한다.")
-    public void 배송상태수정() {
+    public void 배송상태수정_마스터() {
+        //given
+        // 업체 배송 담당자
+        DeliveryManager manager1 = DeliveryManager.builder()
+                .id(companyDeliveryManagerId1)
+                .slackId(companyDeliveryManagerSlackId1)
+                .hubId(hubId1)
+                .companyId(companyId1)
+                .managerId(userId1)
+                .type(managerType2)
+                .sequence(1)
+                .build();
 
+        Delivery delivery = Delivery.builder()
+                .id(deliveryId1)
+                .status(deliveryStatus1)
+                .orderId(orderId1)
+                .departureHubId(hubId1)
+                .destinationHubId(hubId3)
+                .address(address1)
+                .receiver(receiver1)
+                .receiverSlackId(receiverSlackId1)
+                .manager(manager1)
+                .build();
+
+        DeliveryUpdateStatusRequestServiceDto requestDto = new DeliveryUpdateStatusRequestServiceDto(
+                deliveryId1,
+                deliveryStatus2
+
+        );
+        DeliveryUpdateStatusResponseServiceDto responseDto = new DeliveryUpdateStatusResponseServiceDto(
+                deliveryId1
+        );
+
+        when(mapper.toUpdateStatusResponseServiceDto(any(UUID.class)))
+                .thenReturn(responseDto);
+
+        when(deliveryRepository.findByIdAndIsDeletedFalse(deliveryId1))
+                .thenReturn(Optional.of(delivery));
+
+        //when
+        DeliveryUpdateStatusResponseServiceDto result = deliveryService.updateStatusDelivery(   // 마스터 시도
+                userId5,
+                role5,
+                requestDto
+        );
+
+        //then
+        assertThat(result).isNotNull()
+                .extracting(DeliveryUpdateStatusResponseServiceDto::id)
+                .isEqualTo(deliveryId1);
+
+        verify(deliveryRepository, times(1))
+                .findByIdAndIsDeletedFalse(deliveryId1);
     }
 
     @Test
     @DisplayName("배송 삭제 - 배송을 삭제한다.")
-    public void 배송삭제() {
+    public void 배송삭제_마스터() {
+        //given
+        // 업체 배송 담당자
+        DeliveryManager manager1 = DeliveryManager.builder()
+                .id(companyDeliveryManagerId1)
+                .slackId(companyDeliveryManagerSlackId1)
+                .hubId(hubId1)
+                .companyId(companyId1)
+                .managerId(userId1)
+                .type(managerType2)
+                .sequence(1)
+                .build();
 
+        Delivery delivery = Delivery.builder()
+                .id(deliveryId1)
+                .status(deliveryStatus1)
+                .orderId(orderId1)
+                .departureHubId(hubId1)
+                .destinationHubId(hubId3)
+                .address(address1)
+                .receiver(receiver1)
+                .receiverSlackId(receiverSlackId1)
+                .manager(manager1)
+                .build();
+
+        DeliveryDeletionRequestServiceDto requestDto = new DeliveryDeletionRequestServiceDto(
+                deliveryId1
+        );
+
+        when(deliveryRepository.findByIdAndIsDeletedFalse(deliveryId1))
+                .thenReturn(Optional.of(delivery));
+
+        //when
+        deliveryService.deleteDelivery(   // 마스터 시도
+                userId5,
+                role5,
+                requestDto
+        );
+
+        //then
+        verify(deliveryRepository, times(1))
+                .delete(any(Delivery.class));
     }
 
     @Test
     @DisplayName("배송 경로 상태 수정 - 배송 경로 상태가 목적지 허브 도착 상태로 수정될 때, 배송 상태도 수정된다.")
-    public void 배송경로상태수정() {
+    public void 배송경로상태수정_마스터() {
+        //given
+        // 업체 배송 담당자
+        DeliveryManager manager1 = DeliveryManager.builder()
+                .id(companyDeliveryManagerId1)
+                .slackId(companyDeliveryManagerSlackId1)
+                .hubId(hubId2)
+                .companyId(companyId1)
+                .managerId(userId1)
+                .type(managerType2)
+                .sequence(1)
+                .build();
+
+        // 허브 배송 담당자
+        DeliveryManager manager2 = DeliveryManager.builder()
+                .id(hubDeliveryManagerId1)
+                .slackId(hubDeliveryManagerSlackId1)
+                .hubId(hubId1)
+                .companyId(null)
+                .managerId(userId2)
+                .type(managerType1)
+                .sequence(1)
+                .build();
+
+        Delivery delivery = Delivery.builder()
+                .id(deliveryId1)
+                .status(deliveryStatus1)
+                .orderId(orderId1)
+                .departureHubId(hubId1)
+                .destinationHubId(hubId2)
+                .address(address1)
+                .receiver(receiver1)
+                .receiverSlackId(receiverSlackId1)
+                .manager(manager1)
+                .build();
+
+        // 배송 경로
+        DeliveryRoute route = DeliveryRoute.builder()
+                .id(routeId1)
+                .delivery(delivery)
+                .sequence(1)
+                .departureHubId(hubId1)
+                .destinationHubId(hubId2)
+                .status(routeStatus2)
+                .estimatedDistance(12.1234)
+                .estimatedTime(1)
+                .manager(manager2)
+                .build();
+
+        DeliveryRouteUpdateStatusRequestServiceDto requestDto = new DeliveryRouteUpdateStatusRequestServiceDto(
+                routeId1,
+                routeStatus3
+
+        );
+        DeliveryRouteUpdateStatusResponseServiceDto responseDto = new DeliveryRouteUpdateStatusResponseServiceDto(
+                routeId1
+        );
+
+        when(mapper.toUpdateRouteStatusResponseServiceDto(any(UUID.class)))
+                .thenReturn(responseDto);
+
+        when(deliveryRepository.findRouteByIdAndIsDeleted(routeId1))
+                .thenReturn(Optional.of(route));
+
+        when(deliveryRepository.findByIdAndIsDeletedFalse(deliveryId1))
+                .thenReturn(Optional.of(delivery));
+
+        //when
+        DeliveryRouteUpdateStatusResponseServiceDto result = deliveryService.updateRouteStatusDelivery(   // 마스터 시도
+                userId5,
+                role5,
+                requestDto
+        );
+
+        //then
+        assertThat(result).isNotNull()
+                .extracting(DeliveryRouteUpdateStatusResponseServiceDto::id)
+                .isEqualTo(routeId1);
+
+        verify(deliveryRepository, times(1))
+                .findRouteByIdAndIsDeleted(routeId1);
+
+        verify(deliveryRepository, times(1))
+                .findByIdAndIsDeletedFalse(deliveryId1);
 
     }
 
