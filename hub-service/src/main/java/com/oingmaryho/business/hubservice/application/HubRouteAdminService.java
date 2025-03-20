@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.oingmaryho.business.hubservice.application.dto.mapper.HubRouteApplicationMapper;
 import com.oingmaryho.business.hubservice.application.dto.request.HubRouteCreateRequestServiceDto;
+import com.oingmaryho.business.hubservice.application.dto.request.HubRouteDeleteRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubRouteUpdateRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteCreateResponseServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteUpdateResponseServiceDto;
@@ -40,6 +41,7 @@ public class HubRouteAdminService {
 		return mapper.toHubRouteCreateResponseServiceDto(savedHubRoute);
 	}
 
+	// TODO : Auditing 설정 추가
 	@Transactional
 	public HubRouteUpdateResponseServiceDto updateHubRoute(UUID id, HubRouteUpdateRequestServiceDto requestDto) {
 		HubRoute hubRoute = findHubRouteById(id);
@@ -51,6 +53,13 @@ public class HubRouteAdminService {
 			newRouteInfo
 		);
 		return new HubRouteUpdateResponseServiceDto(id);
+	}
+
+	// TODO : Auditing 설정 추가
+	@Transactional
+	public void deleteHubRoute(UUID id, HubRouteDeleteRequestServiceDto hubRouteDeleteRequestServiceDto) {
+		HubRoute hubRoute = findHubRouteById(id);
+		hubRoute.delete();
 	}
 
 	private HubRoute findHubRouteById(UUID id) {

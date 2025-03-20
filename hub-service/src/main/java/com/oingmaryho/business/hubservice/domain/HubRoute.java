@@ -47,4 +47,8 @@ public class HubRoute extends BaseEntity{
 		this.arriveHubId = arriveHubId;
 		this.routeInfo = routeInfo;
 	}
+
+	public void delete() {
+		this.isDeleted = true;
+	}
 }

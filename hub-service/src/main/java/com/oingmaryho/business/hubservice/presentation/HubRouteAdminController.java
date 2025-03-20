@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -47,5 +48,11 @@ public class HubRouteAdminController {
 			.updateHubRoute(id, mapper.toHubRouteUpdateRequestServiceDto(requestDto));
 
 		return ResponseEntity.ok(mapper.toHubRouteUpdateResponseDto(responseDto));
+	}
+
+	@DeleteMapping("/{id}")
+	public ResponseEntity<?> deleteHubRoute(@PathVariable UUID id) {
+		hubRouteAdminService.deleteHubRoute(id, mapper.toHubRouteDeleteRequestServiceDto(id));
+		return ResponseEntity.ok().build();
 	}
 }
