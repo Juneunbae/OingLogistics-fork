@@ -1,4 +1,4 @@
-package com.oringmaryho.business.userservice.presentation;
+package com.oringmaryho.business.userservice.presentation.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,12 +8,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.oringmaryho.business.userservice.application.UserService;
+import com.oringmaryho.business.userservice.application.service.UserService;
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackCodeRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
+import com.oringmaryho.business.userservice.presentation.mapper.UserPresentationMapper;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignInRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignUpRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSlackCodeRequestDto;

@@ -1,4 +1,4 @@
-package com.oringmaryho.business.userservice.presentation;
+package com.oringmaryho.business.userservice.presentation.controller;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.oringmaryho.business.userservice.application.UserAdminService;
+import com.oringmaryho.business.userservice.application.service.UserAdminService;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminCreateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRoleRequestServiceDto;
@@ -25,6 +25,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminSig
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.config.pageable.PageableConfig;
+import com.oringmaryho.business.userservice.presentation.mapper.UserPresentationMapper;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminCreateRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminGrantRoleRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSearchRequestDto;

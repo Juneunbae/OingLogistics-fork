@@ -1,4 +1,4 @@
-package com.oringmaryho.business.userservice.presentation;
+package com.oringmaryho.business.userservice.presentation.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

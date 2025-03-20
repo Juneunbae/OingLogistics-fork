@@ -1,9 +1,8 @@
-package com.oringmaryho.business.userservice.application;
+package com.oringmaryho.business.userservice.application.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import com.oringmaryho.business.userservice.application.dto.response.UserAdminUpdateRoleResponseServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserSearchResponseServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserSignInResponseServiceDto;
 import com.oringmaryho.business.userservice.domain.UserRoleType;

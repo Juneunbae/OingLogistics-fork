@@ -5,21 +5,15 @@ import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.TestPropertySource;
 
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminCreateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSignUpRequestServiceDto;
+import com.oringmaryho.business.userservice.application.service.UserAdminService;
 import com.oringmaryho.business.userservice.domain.User;
-import com.oringmaryho.business.userservice.domain.UserRoleType;
 import com.oringmaryho.business.userservice.domain.repository.UserRepository;
 import com.oringmaryho.business.userservice.exception.ErrorCode;
 import com.oringmaryho.business.userservice.exception.UserException;

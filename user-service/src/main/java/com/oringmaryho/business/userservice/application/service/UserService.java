@@ -1,4 +1,4 @@
-package com.oringmaryho.business.userservice.application;
+package com.oringmaryho.business.userservice.application.service;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.oringmaryho.business.userservice.application.mapper.UserApplicationMapper;
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;
@@ -67,12 +68,9 @@ public class UserService {
 			throw new UserException(ErrorCode.SLACKID_NULL);
 		}
 
-		if (!Pattern.matches(USERNAME_REGEX, requestServiceDto.username())) {
-			throw new UserException(ErrorCode.USERNAME_REGEX_NOT_MATCH);
-		}
-		if (!Pattern.matches(PASSWORD_REGEX, requestServiceDto.password())) {
-			throw new UserException(ErrorCode.PASSWORD_REGEX_NOT_MATCH);
-		}
+		//형식에 맞는지 체크
+		usernameVerify(requestServiceDto.username());
+		passwordVerify(requestServiceDto.password());
 
 		// username 중복 체크
 		if (userRepository.existsByUsername(requestServiceDto.username())) {
@@ -205,6 +203,20 @@ public class UserService {
 			throw new UserException(ErrorCode.SLACK_AUTH_FAIL);
 		}
 
+	}
+
+	//username 형식에 맞는지 체크
+	public void usernameVerify(String username) {
+		if (!Pattern.matches(USERNAME_REGEX, username)) {
+			throw new UserException(ErrorCode.USERNAME_REGEX_NOT_MATCH);
+		}
+	}
+
+	//password 형식에 맞는지 체크
+	public void passwordVerify(String password) {
+		if (!Pattern.matches(PASSWORD_REGEX, password)) {
+			throw new UserException(ErrorCode.PASSWORD_REGEX_NOT_MATCH);
+		}
 	}
 
 }

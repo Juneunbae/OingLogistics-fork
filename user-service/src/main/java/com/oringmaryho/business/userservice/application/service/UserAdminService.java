@@ -1,4 +1,4 @@
-package com.oringmaryho.business.userservice.application;
+package com.oringmaryho.business.userservice.application.service;
 
 import java.util.List;
 import java.util.Map;
@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.oringmaryho.business.userservice.application.mapper.UserApplicationMapper;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminCreateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRoleRequestServiceDto;
@@ -67,12 +68,9 @@ public class UserAdminService {
 			throw new UserException(ErrorCode.ADMIN_REGISTER_KEY_IS_NULL);
 		}
 
-		if (!Pattern.matches(USERNAME_REGEX, requestServiceDto.username())) {
-			throw new UserException(ErrorCode.USERNAME_REGEX_NOT_MATCH);
-		}
-		if (!Pattern.matches(PASSWORD_REGEX, requestServiceDto.password())) {
-			throw new UserException(ErrorCode.PASSWORD_REGEX_NOT_MATCH);
-		}
+		//형식에 맞는지 체크
+		usernameVerify(requestServiceDto.username());
+		passwordVerify(requestServiceDto.password());
 
 		// username 중복 체크
 		if (userRepository.existsByUsername(requestServiceDto.username())) {
@@ -111,12 +109,9 @@ public class UserAdminService {
 			throw new UserException(ErrorCode.SLACKID_NULL);
 		}
 
-		if (!Pattern.matches(USERNAME_REGEX, requestServiceDto.username())) {
-			throw new UserException(ErrorCode.USERNAME_REGEX_NOT_MATCH);
-		}
-		if (!Pattern.matches(PASSWORD_REGEX, requestServiceDto.password())) {
-			throw new UserException(ErrorCode.PASSWORD_REGEX_NOT_MATCH);
-		}
+		//형식에 맞는지 체크
+		usernameVerify(requestServiceDto.username());
+		passwordVerify(requestServiceDto.password());
 
 		// username 중복 체크
 		if (userRepository.existsByUsername(requestServiceDto.username())) {
@@ -162,15 +157,13 @@ public class UserAdminService {
 
 		//db에 업데이트
 		if (requestServiceDto.username() != null && !requestServiceDto.username().isEmpty()) {
-			if (!Pattern.matches(USERNAME_REGEX, requestServiceDto.username())) {
-				throw new UserException(ErrorCode.USERNAME_REGEX_NOT_MATCH);
-			}
+			//username 형식에 맞는지 체크
+			usernameVerify(requestServiceDto.username());
 			user.updateUsername(requestServiceDto.username());
 		}
 		if (requestServiceDto.password() != null && !requestServiceDto.password().isEmpty()) {
-			if (!Pattern.matches(PASSWORD_REGEX, requestServiceDto.password())) {
-				throw new UserException(ErrorCode.PASSWORD_REGEX_NOT_MATCH);
-			}
+			//비밀번호 형식에 맞는지 체크
+			passwordVerify(requestServiceDto.password());
 			String encodedPassword = passwordEncoder.encode(requestServiceDto.password());
 			user.updatePassword(encodedPassword);
 		}
@@ -270,5 +263,19 @@ public class UserAdminService {
 		long expirationTime = jwtTokenProvider.getRefreshTokenExpiration();
 		redisTemplate.opsForValue().set(userInfoKey, userInfoMap);
 		redisTemplate.expire(userInfoKey, expirationTime, TimeUnit.MILLISECONDS);
+	}
+
+	//username 형식에 맞는지 체크
+	public void usernameVerify(String username) {
+		if (!Pattern.matches(USERNAME_REGEX, username)) {
+			throw new UserException(ErrorCode.USERNAME_REGEX_NOT_MATCH);
+		}
+	}
+
+	//password 형식에 맞는지 체크
+	public void passwordVerify(String password) {
+		if (!Pattern.matches(PASSWORD_REGEX, password)) {
+			throw new UserException(ErrorCode.PASSWORD_REGEX_NOT_MATCH);
+		}
 	}
 }
