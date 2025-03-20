@@ -27,9 +27,9 @@ public class ProductFeignClientController {
 	@Description("FeignClient - 상품 상세 조회")
 	@GetMapping("/{id}")
 	public ResponseEntity<ProductDetailsSearchResponseDto> getProductById(@PathVariable UUID id) {
-		ProductDetailsSearchRequestServiceDto requestServiceDto = productPresentationMapper.toProductServiceDto(id);
+		ProductDetailsSearchRequestServiceDto requestServiceDto = productPresentationMapper.toDetailsSearchServiceDto(id);
 		ProductDetailsSearchResponseServiceDto responseServiceDto = productService.getProductDetails(requestServiceDto);
-		ProductDetailsSearchResponseDto response = productPresentationMapper.toProductDto(responseServiceDto);
+		ProductDetailsSearchResponseDto response = productPresentationMapper.toDetailsSearchDto(responseServiceDto);
 		return ResponseEntity.ok(response);
 	}
 }
