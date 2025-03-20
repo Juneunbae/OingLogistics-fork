@@ -40,6 +40,7 @@ public class UserAdminService {
 	@Value("${admin.key}")
 	private String adminKey;
 
+	@Transactional
 	public void signUpUserAdmin(UserAdminSignUpRequestServiceDto requestServiceDto) {
 		//null처리
 		if (requestServiceDto.username() == null || requestServiceDto.username().isEmpty()) {
@@ -79,10 +80,12 @@ public class UserAdminService {
 		userRepository.save(user);
 	}
 
+	@Transactional
 	public void createUser(UserAdminCreateRequestServiceDto requestServiceDto) {
 
 	}
 
+	@Transactional
 	public void slackConfirmUser(UserSlackConfirmRequestServiceDto requestServiceDto) {
 		//todo: 일반 사용자 service에서 기능 가져와서 추가하기
 		//todo: 슬랙인증 요청과 승인 요청
@@ -92,11 +95,13 @@ public class UserAdminService {
 
 	}
 
+
 	public List<UserAdminSearchResponseDto> searchUsers(
 		UserAdminSearchRequestServiceDto requestServiceDto) {
 		return null;
 	}
 
+	@Transactional
 	public UserAdminUpdateResponseDto updateUser(
 		UserAdminUpdateRequestServiceDto requestServiceDto) {
 		//todo: responseDto 반환
@@ -125,6 +130,7 @@ public class UserAdminService {
 			requestServiceDto.id());
 	}
 
+	@Transactional
 	public UserAdminUpdateRoleResponseDto updateRoleUser(
 		UserAdminUpdateRoleRequestServiceDto requestServiceDto) {
 
@@ -148,6 +154,7 @@ public class UserAdminService {
 		return responseDto;
 	}
 
+	@Transactional
 	public void deleteRoleUser(UserAdminDeleteRoleRequestServiceDto requestServiceDto) {
 
 		Long userId = requestServiceDto.id();
@@ -158,10 +165,12 @@ public class UserAdminService {
 		if(!user.getRole().equals(UserRoleType.MASTER)) {
 			throw new UserException(ErrorCode.LESS_ROLE);
 		}
-		
+
+
 
 	}
 
+	@Transactional
 	public void deleteUser(UserAdminDeleteRequestServiceDto requestServiceDto) {
 
 	}
