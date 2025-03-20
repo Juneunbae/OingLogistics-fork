@@ -29,7 +29,7 @@ public class HubService {
 	@Cacheable(cacheNames = "hub", key = "#requestDto.id()")
 	public HubSearchResponseServiceDto getHubById(HubSearchRequestServiceDto requestDto) {
 		Hub hub = hubRepository.findActiveHubById(requestDto.id())
-			.orElseThrow(() -> new HubException(ErrorCode.NOT_FOUND));
+			.orElseThrow(() -> new HubException(ErrorCode.NOT_FOUND_HUB));
 
 		return mapper.toHubSearchResponseServiceDto(hub);
 	}

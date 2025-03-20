@@ -1,14 +1,21 @@
 package com.oingmaryho.business.hubservice.application;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.oingmaryho.business.hubservice.application.dto.mapper.HubRouteApplicationMapper;
 import com.oingmaryho.business.hubservice.application.dto.request.HubRouteCreateRequestServiceDto;
+import com.oingmaryho.business.hubservice.application.dto.request.HubRouteUpdateRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteCreateResponseServiceDto;
+import com.oingmaryho.business.hubservice.application.dto.response.HubRouteUpdateResponseServiceDto;
 import com.oingmaryho.business.hubservice.domain.HubRoute;
+import com.oingmaryho.business.hubservice.domain.RouteInfo;
 import com.oingmaryho.business.hubservice.domain.repository.HubRouteRepository;
 import com.oingmaryho.business.hubservice.domain.service.HubRouteCreateService;
+import com.oingmaryho.business.hubservice.exception.ErrorCode;
+import com.oingmaryho.business.hubservice.exception.HubException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,5 +38,23 @@ public class HubRouteAdminService {
 
 		HubRoute savedHubRoute = hubRouteRepository.save(hubRoute);
 		return mapper.toHubRouteCreateResponseServiceDto(savedHubRoute);
+	}
+
+	@Transactional
+	public HubRouteUpdateResponseServiceDto updateHubRoute(UUID id, HubRouteUpdateRequestServiceDto requestDto) {
+		HubRoute hubRoute = findHubRouteById(id);
+
+		RouteInfo newRouteInfo = new RouteInfo(requestDto.hubToHubTime(), requestDto.distance());
+		hubRoute.update(
+			requestDto.departureHubId(),
+			requestDto.arriveHubId(),
+			newRouteInfo
+		);
+		return new HubRouteUpdateResponseServiceDto(id);
+	}
+
+	private HubRoute findHubRouteById(UUID id) {
+		return hubRouteRepository.findById(id)
+			.orElseThrow(() -> new HubException(ErrorCode.NOT_FOUND_HUB_ROUTE));
 	}
 }

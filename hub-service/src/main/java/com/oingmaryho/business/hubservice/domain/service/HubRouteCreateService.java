@@ -40,7 +40,7 @@ public class HubRouteCreateService {
 
 	private void validateHub(UUID hubId) {
 		if(!hubRepository.existsById(hubId)) {
-			throw new HubException(ErrorCode.NOT_FOUND);
+			throw new HubException(ErrorCode.NOT_FOUND_HUB);
 		}
 	}
 }
