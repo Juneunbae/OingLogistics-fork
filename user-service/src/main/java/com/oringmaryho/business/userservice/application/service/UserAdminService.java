@@ -1,11 +1,14 @@
 package com.oringmaryho.business.userservice.application.service;
 
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,9 +23,11 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminSea
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRoleRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserSignOutRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserAdminFindResponseDto;
 import com.oringmaryho.business.userservice.application.utils.RedisUtil;
+import com.oringmaryho.business.userservice.application.utils.jwt.JwtTokenProvider;
 import com.oringmaryho.business.userservice.domain.User;
 import com.oringmaryho.business.userservice.domain.UserRoleType;
 import com.oringmaryho.business.userservice.domain.UserSearchCriteria;
@@ -35,8 +40,11 @@ import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminS
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminUpdateResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminUpdateRoleResponseDto;
 
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserAdminService {
@@ -45,6 +53,8 @@ public class UserAdminService {
 	private final CustomUserRepository customUserRepository;
 	private final UserApplicationMapper userApplicationMapper;
 	private final PasswordEncoder passwordEncoder;
+	private final RedisTemplate<String, Object> redisTemplate;
+	private final JwtTokenProvider jwtTokenProvider;
 	private final RedisUtil redisUtil;
 
 	@Value("${admin.key}")
@@ -297,4 +307,44 @@ public class UserAdminService {
 			.isDeleted(requestDto.isDeleted())
 			.build();
 	}
+
+	public void signOutUser(UserSignOutRequestServiceDto requestServiceDto) {
+		Long userId = requestServiceDto.id();
+		String tokenKey = "user:token:" + userId;
+		if(!redisTemplate.hasKey(tokenKey)) {
+			throw new UserException(ErrorCode.NOT_FOUND);
+		}
+		Map<Object, Object> token = redisTemplate.opsForHash().entries(tokenKey);
+		String accessToken = (String) token.get("accessToken");
+
+
+		if (token == null || token.isEmpty()) {
+			throw new UserException(ErrorCode.JWT_REQUIRED);
+		}
+
+		// JWT에서 만료 시간 추출
+		Claims claims = jwtTokenProvider.parseJwtToken(accessToken);
+		long ttlMillis = jwtTokenProvider.calculateTtlMillis(claims.getExpiration());
+
+		// 블랙리스트에 토큰 추가
+		String blacklistKey = "blacklist:" + accessToken;
+		redisTemplate.opsForValue().set(blacklistKey, "blacklisted");
+
+		// JWT 만료 시간에 맞춰 TTL 설정
+		if (ttlMillis > 0) {
+			redisTemplate.expire(blacklistKey, ttlMillis, TimeUnit.MILLISECONDS);
+			log.info("블랙리스트에 추가된 토큰 : {} TTL: {} ms", token, ttlMillis);
+		} else {
+			// 만료 시간이 이미 지난 경우, 최소 TTL 설정
+			redisTemplate.expire(blacklistKey, 1, TimeUnit.SECONDS);
+			log.warn("토큰 {} 은 이미 만료되어 최소 TTL로 설정", token);
+		}
+
+		// 사용자 토큰 정보 정리
+		if (userId != null) {
+			String userInfoKey = "user:token:" + userId;
+			redisTemplate.delete(userInfoKey);
+		}
+	}
+
 }
