@@ -2,13 +2,12 @@ package com.oingmaryho.business.orderservice.application.service;
 
 import com.oingmaryho.business.orderservice.application.dto.mapper.OrderApplicationMapper;
 import com.oingmaryho.business.orderservice.application.dto.request.OrdersRequestServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
 import com.oingmaryho.business.orderservice.exception.ErrorCode;
 import com.oingmaryho.business.orderservice.exception.OrderException;
-import com.oingmaryho.business.orderservice.infrastructure.OrderRepository;
-import com.oingmaryho.business.orderservice.presentation.dto.mapper.OrderPresentationMapper;
-import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
+import com.oingmaryho.business.orderservice.infrastructure.OrderJPARepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
@@ -28,7 +27,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderService {
     private final CacheManager cacheManager;
-    private final OrderRepository orderRepository;
+    private final OrderJPARepository orderJPARepository;
     private final OrderApplicationMapper orderApplicationMapper;
 
     @Transactional(readOnly = true)
@@ -37,7 +36,7 @@ public class OrderService {
         // TODO: Role - HubManager, HubDeliveryManager, CompanyDeliveryManager, CompanyManager 설정하기
 
         Pageable customPageable = ordersRequestServiceDto.customPageable();
-        Page<Order> orders = orderRepository.findAll(customPageable);
+        Page<Order> orders = orderJPARepository.findAll(customPageable);
         // TODO: QueryDSL 반영하여 LIKE 문 수정하기
 
         List<OrderResponseServiceDto> ordersDto = orders.stream().map(
@@ -53,7 +52,7 @@ public class OrderService {
     }
 
     public Order getByOrderId(UUID orderId) {
-        return orderRepository.findById(orderId)
+        return orderJPARepository.findById(orderId)
             .orElseThrow(() -> new OrderException(ErrorCode.NOT_FOUND));
     }
 
