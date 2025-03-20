@@ -8,7 +8,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.oringmaryho.business.userservice.application.mapper.UserApplicationMapper;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminCreateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRoleRequestServiceDto;
@@ -19,6 +18,8 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminSig
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.response.UserAdminFindResponseDto;
+import com.oringmaryho.business.userservice.application.mapper.UserApplicationMapper;
 import com.oringmaryho.business.userservice.application.utils.RedisUtil;
 import com.oringmaryho.business.userservice.domain.User;
 import com.oringmaryho.business.userservice.domain.UserRoleType;
@@ -118,8 +119,13 @@ public class UserAdminService {
 		//todo: 슬랙인증 요청과 승인 요청
 	}
 
-	public void findUserAdmin(UserAdminFindRequestServiceDto requestServiceDto) {
+	//유저 단일 조회 메서드
+	public UserAdminFindResponseDto findUserAdmin(UserAdminFindRequestServiceDto requestServiceDto) {
 
+		User user = userRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		return userApplicationMapper.toUserAdminFindResponseDto(user);
 	}
 
 	public List<UserAdminSearchResponseDto> searchUsers(
