@@ -1,9 +1,6 @@
-package com.oringmaryho.business.userservice.application;
+package com.oringmaryho.business.userservice.application.service;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.oringmaryho.business.userservice.application.dto.mapper.UserApplicationMapper;
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;
@@ -21,6 +19,7 @@ import com.oringmaryho.business.userservice.application.dto.response.UserSearchR
 import com.oringmaryho.business.userservice.application.dto.response.UserSignInResponseServiceDto;
 import com.oringmaryho.business.userservice.application.utils.CodeStorage;
 import com.oringmaryho.business.userservice.application.utils.DirectMessageAuthService;
+import com.oringmaryho.business.userservice.application.utils.RedisUtil;
 import com.oringmaryho.business.userservice.config.security.jwt.JwtTokenProvider;
 import com.oringmaryho.business.userservice.domain.User;
 import com.oringmaryho.business.userservice.domain.UserConfirmStatus;
@@ -43,6 +42,7 @@ public class UserService {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final DirectMessageAuthService directMessageAuthService;
 
+	private final RedisUtil redisUtil;
 	private final RedisTemplate<String, Object> redisTemplate;
 
 	private final CodeStorage codeStorage;
@@ -57,22 +57,13 @@ public class UserService {
 	public void signUpUser(UserSignUpRequestServiceDto requestServiceDto) {
 
 		//null처리
-		if (requestServiceDto.username() == null || requestServiceDto.username().isEmpty()) {
-			throw new UserException(ErrorCode.USERNAME_NULL);
-		}
-		if (requestServiceDto.password() == null || requestServiceDto.password().isEmpty()) {
-			throw new UserException(ErrorCode.PASSWORD_NULL);
-		}
-		if (requestServiceDto.slackId() == null || requestServiceDto.slackId().isEmpty()) {
-			throw new UserException(ErrorCode.SLACKID_NULL);
-		}
+		validateRequiredField(requestServiceDto.username(), ErrorCode.USERNAME_NULL);
+		validateRequiredField(requestServiceDto.password(), ErrorCode.PASSWORD_NULL);
+		validateRequiredField(requestServiceDto.slackId(), ErrorCode.SLACKID_NULL);
 
-		if (!Pattern.matches(USERNAME_REGEX, requestServiceDto.username())) {
-			throw new UserException(ErrorCode.USERNAME_REGEX_NOT_MATCH);
-		}
-		if (!Pattern.matches(PASSWORD_REGEX, requestServiceDto.password())) {
-			throw new UserException(ErrorCode.PASSWORD_REGEX_NOT_MATCH);
-		}
+		//형식에 맞는지 체크
+		usernameVerify(requestServiceDto.username());
+		passwordVerify(requestServiceDto.password());
 
 		// username 중복 체크
 		if (userRepository.existsByUsername(requestServiceDto.username())) {
@@ -103,40 +94,13 @@ public class UserService {
 			() -> new EntityNotFoundException("User not found with username: " + requestServiceDto.username())
 		);
 
-		Map<String, Object> userInfoMap = new ConcurrentHashMap<>();
-		userInfoMap.put("username", user.getUsername());
-		userInfoMap.put("slackId", user.getSlackId());
-		userInfoMap.put("role", user.getRole());
-		userInfoMap.put("status", user.getStatus());
-
-		// JWT 토큰 생성
-		String accessToken = jwtTokenProvider.generateAccessToken(user.getId());
-		String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
-
-		// Redis에 사용자 정보 + 토큰 저장
-		// 유저 정보 키
-		String userInfoKey = "user:info:" + user.getId();
-		// 토큰 정보 키
-		String tokenKey = "user:token:" + user.getId();
-
-		// 유저 정보 저장
-		redisTemplate.opsForValue().set(userInfoKey, userInfoMap);
-
-		// 토큰 정보 저장
-		Map<String, String> tokenMap = new HashMap<>();
-		tokenMap.put("accessToken", accessToken);
-		tokenMap.put("refreshToken", refreshToken);
-		redisTemplate.opsForHash().putAll(tokenKey, tokenMap);
-
-		// 만료 시간 설정 (둘 다 동일한 만료 시간 사용)
-		long expirationTime = jwtTokenProvider.getRefreshTokenExpiration();
-		redisTemplate.expire(userInfoKey, expirationTime, TimeUnit.MILLISECONDS);
-		redisTemplate.expire(tokenKey, expirationTime, TimeUnit.MILLISECONDS);
+		redisUtil.updateUserInfo(user);
+		Map<String, String> tokenMap = redisUtil.updateUserJwtToken(user);
 
 		// 응답 DTO 생성
 		UserSignInResponseServiceDto serviceDto = new UserSignInResponseServiceDto(
-			accessToken,
-			refreshToken
+			tokenMap.get("accessToken"),
+			tokenMap.get("refreshToken")
 		);
 
 		return userApplicationMapper.toSignInResponseDto(serviceDto);
@@ -148,12 +112,9 @@ public class UserService {
 	}
 
 	public void slackCodeRequestUser(UserSlackCodeRequestServiceDto requestServiceDto) {
-		if (requestServiceDto.username() == null || requestServiceDto.username().isEmpty()) {
-			throw new UserException(ErrorCode.USERNAME_NULL);
-		}
-		if (requestServiceDto.slackId() == null || requestServiceDto.slackId().isEmpty()) {
-			throw new UserException(ErrorCode.SLACKID_NULL);
-		}
+		validateRequiredField(requestServiceDto.username(), ErrorCode.USERNAME_NULL);
+		validateRequiredField(requestServiceDto.slackId(), ErrorCode.SLACKID_NULL);
+
 		if (!userRepository.existsByUsername(requestServiceDto.username())) {
 			throw new UserException(ErrorCode.NOT_FOUND);
 		}
@@ -205,6 +166,31 @@ public class UserService {
 			throw new UserException(ErrorCode.SLACK_AUTH_FAIL);
 		}
 
+		User updatedUser = userRepository.findByUsername(requestServiceDto.username())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		redisUtil.updateUserInfo(updatedUser);
+	}
+
+	//username 형식에 맞는지 체크
+	public void usernameVerify(String username) {
+		if (!Pattern.matches(USERNAME_REGEX, username)) {
+			throw new UserException(ErrorCode.USERNAME_REGEX_NOT_MATCH);
+		}
+	}
+
+	//password 형식에 맞는지 체크
+	public void passwordVerify(String password) {
+		if (!Pattern.matches(PASSWORD_REGEX, password)) {
+			throw new UserException(ErrorCode.PASSWORD_REGEX_NOT_MATCH);
+		}
+	}
+
+	//null 체크
+	private void validateRequiredField(String value, ErrorCode errorCode) {
+		if (value == null || value.isEmpty()) {
+			throw new UserException(errorCode);
+		}
 	}
 
 }

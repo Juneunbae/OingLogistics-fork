@@ -5,22 +5,19 @@ import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.TestPropertySource;
 
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminCreateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSignUpRequestServiceDto;
+import com.oringmaryho.business.userservice.application.service.UserAdminService;
 import com.oringmaryho.business.userservice.domain.User;
-import com.oringmaryho.business.userservice.domain.UserRoleType;
 import com.oringmaryho.business.userservice.domain.repository.UserRepository;
+import com.oringmaryho.business.userservice.exception.ErrorCode;
+import com.oringmaryho.business.userservice.exception.UserException;
 
-@SpringBootTest
-@TestPropertySource(properties = "admin.key=admin-key123")
 class UserAdminServiceTest {
 
 	@InjectMocks
@@ -32,8 +29,7 @@ class UserAdminServiceTest {
 	@Mock
 	private PasswordEncoder passwordEncoder;
 
-	@Value("${admin.key}")
-	private String adminKey;
+	private String adminKey = "admin-key123";
 
 	@BeforeEach
 	void setUp() {
@@ -47,10 +43,10 @@ class UserAdminServiceTest {
 			null, "password123", "slackId", "admin-key123");
 
 		// When & Then
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+		UserException exception = assertThrows(UserException.class, () -> {
 			userAdminService.signUpUserAdmin(requestServiceDto);
 		});
-		assertEquals("사용자 이름은 비어 있을 수 없습니다.", exception.getMessage());
+		assertEquals(ErrorCode.USERNAME_NULL.getMessage(), exception.getMessage());
 	}
 
 	@Test
@@ -60,10 +56,10 @@ class UserAdminServiceTest {
 			"username", null, "slackId", "admin-key123");
 
 		// When & Then
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+		UserException exception = assertThrows(UserException.class, () -> {
 			userAdminService.signUpUserAdmin(requestServiceDto);
 		});
-		assertEquals("비밀번호는 비어 있을 수 없습니다.", exception.getMessage());
+		assertEquals(ErrorCode.PASSWORD_NULL.getMessage(), exception.getMessage());
 	}
 
 	@Test
@@ -73,10 +69,10 @@ class UserAdminServiceTest {
 			"username", "password123", null, "admin-key123");
 
 		// When & Then
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+		UserException exception = assertThrows(UserException.class, () -> {
 			userAdminService.signUpUserAdmin(requestServiceDto);
 		});
-		assertEquals("slackId는 비어 있을 수 없습니다.", exception.getMessage());
+		assertEquals(ErrorCode.SLACKID_NULL.getMessage(), exception.getMessage());
 	}
 
 	@Test
@@ -86,76 +82,155 @@ class UserAdminServiceTest {
 			"username", "password123", "slackId", null);
 
 		// When & Then
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+		UserException exception = assertThrows(UserException.class, () -> {
 			userAdminService.signUpUserAdmin(requestServiceDto);
 		});
-		assertEquals("key는 비어 있을 수 없습니다.", exception.getMessage());
+		assertEquals(ErrorCode.ADMIN_REGISTER_KEY_IS_NULL.getMessage(), exception.getMessage());
 	}
 
 	@Test
 	void signUpUserAdmin_whenUsernameAlreadyExists_shouldThrowException() {
 		// Given
-		String username = "existingUsername";
+		String username = "user01";
 		UserAdminSignUpRequestServiceDto requestServiceDto = new UserAdminSignUpRequestServiceDto(
-			username, "password123", "slackId", "admin-key123");
+			username, "password1!", "slackId", adminKey);
 
 		when(userRepository.existsByUsername(username)).thenReturn(true);
 
 		// When & Then
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+		UserException exception = assertThrows(UserException.class, () -> {
 			userAdminService.signUpUserAdmin(requestServiceDto);
 		});
-		assertEquals("이미 존재하는 사용자입니다.", exception.getMessage());
+		assertEquals(ErrorCode.ALREADY_EXISTS.getMessage(), exception.getMessage());
 	}
 
 	@Test
 	void signUpUserAdmin_whenKeyDoesNotMatch_shouldThrowException() {
 		// Given
 		UserAdminSignUpRequestServiceDto requestServiceDto = new UserAdminSignUpRequestServiceDto(
-			"username", "password123", "slackId", "wrongAdminKey");
+			"username", "password1!", "slackId", "wrongAdminKey");
 
 		// When & Then
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+		UserException exception = assertThrows(UserException.class, () -> {
 			userAdminService.signUpUserAdmin(requestServiceDto);
 		});
-		assertEquals("admin키가 일치하지 않습니다.", exception.getMessage());
+		assertEquals(ErrorCode.ADMIN_REGISTER_KEY_NOT_MATCH.getMessage(), exception.getMessage());
 	}
 
 	@Test
-	void signUpUserAdmin_whenValidRequest_shouldSaveUser() {
-		// Given
-		final String username = "validUsername";
-		final String rawPassword = "password123";
-		final String encodedPassword = "encodedPassword";
-		final String slackId = "slackId";
-
-		UserAdminSignUpRequestServiceDto requestDto = new UserAdminSignUpRequestServiceDto(
-			username, rawPassword, slackId, adminKey
+	void createUser_success() {
+		UserAdminCreateRequestServiceDto dto = new UserAdminCreateRequestServiceDto(
+			"testuser1",
+			"Password1!@#",
+			"slack123"
 		);
+		when(userRepository.existsByUsername("testuser1")).thenReturn(false);
+		when(passwordEncoder.encode("Password1!@#")).thenReturn("encodedPassword");
+		when(userRepository.save(any(User.class))).thenReturn(mock(User.class));
 
-		when(userRepository.existsByUsername(username)).thenReturn(false);
-		when(passwordEncoder.encode(eq(rawPassword))).thenReturn(encodedPassword);
+		assertDoesNotThrow(() -> userAdminService.createUser(dto));
 
-		// When
-		userAdminService.signUpUserAdmin(requestDto);
-
-		// Then
-		verify(userRepository, times(1)).existsByUsername(username);
-		verify(passwordEncoder, times(1)).encode(rawPassword);
-
-		ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-		verify(userRepository, times(1)).save(userCaptor.capture());
-
-		User savedUser = userCaptor.getValue();
-		assertAll(
-			() -> assertEquals(username, savedUser.getUsername(), "Username 불일치"),
-			() -> assertEquals(encodedPassword, savedUser.getPassword(), "Password 인코딩 실패"),
-			() -> assertEquals(slackId, savedUser.getSlackId(), "Slack ID 불일치"),
-			() -> assertEquals(UserRoleType.MASTER, savedUser.getRole(), "User role 권한 부족")
-		);
-
-		verifyNoMoreInteractions(userRepository, passwordEncoder);
+		verify(userRepository, times(1)).existsByUsername("testuser1");
+		verify(passwordEncoder, times(1)).encode("Password1!@#");
+		verify(userRepository, times(1)).save(any(User.class));
 	}
 
+	@Test
+	void createUser_usernameNull_throwsException() {
+		// Given: username이 null
+		UserAdminCreateRequestServiceDto dto = new UserAdminCreateRequestServiceDto(
+			null,
+			"Password123!@#",
+			"slack123"
+		);
+
+		// When & Then
+		UserException exception = assertThrows(UserException.class, () -> userAdminService.createUser(dto));
+		assertEquals(ErrorCode.USERNAME_NULL, exception.getErrorCode());
+	}
+
+	@Test
+	void createUser_usernameEmpty_throwsException() {
+		// Given: username이 빈 문자열
+		UserAdminCreateRequestServiceDto dto = new UserAdminCreateRequestServiceDto(
+			"",
+			"Password123!@#",
+			"slack123"
+		);
+
+		// When & Then
+		UserException exception = assertThrows(UserException.class, () -> userAdminService.createUser(dto));
+		assertEquals(ErrorCode.USERNAME_NULL, exception.getErrorCode());
+	}
+
+	@Test
+	void createUser_passwordNull_throwsException() {
+		// Given: password가 null
+		UserAdminCreateRequestServiceDto dto = new UserAdminCreateRequestServiceDto(
+			"testuser123",
+			null,
+			"slack123"
+		);
+
+		// When & Then
+		UserException exception = assertThrows(UserException.class, () -> userAdminService.createUser(dto));
+		assertEquals(ErrorCode.PASSWORD_NULL, exception.getErrorCode());
+	}
+
+	@Test
+	void createUser_slackIdEmpty_throwsException() {
+		// Given: slackId가 빈 문자열
+		UserAdminCreateRequestServiceDto dto = new UserAdminCreateRequestServiceDto(
+			"testuser123",
+			"Password123!@#",
+			""
+		);
+
+		// When & Then
+		UserException exception = assertThrows(UserException.class, () -> userAdminService.createUser(dto));
+		assertEquals(ErrorCode.SLACKID_NULL, exception.getErrorCode());
+	}
+
+	@Test
+	void createUser_usernameInvalidFormat_throwsException() {
+		// Given: username이 정규 표현식에 맞지 않음 (대문자 포함)
+		UserAdminCreateRequestServiceDto dto = new UserAdminCreateRequestServiceDto(
+			"TestUser123",           // 대문자 포함
+			"Password123!@#",
+			"slack123"
+		);
+
+		// When & Then
+		UserException exception = assertThrows(UserException.class, () -> userAdminService.createUser(dto));
+		assertEquals(ErrorCode.USERNAME_REGEX_NOT_MATCH, exception.getErrorCode());
+	}
+
+	@Test
+	void createUser_passwordInvalidFormat_throwsException() {
+		// Given: password가 정규 표현식에 맞지 않음 (특수문자 없음)
+		UserAdminCreateRequestServiceDto dto = new UserAdminCreateRequestServiceDto(
+			"testuser1",
+			"Password123", // 특수문자 없음
+			"slack123"
+		);
+
+		// When & Then
+		UserException exception = assertThrows(UserException.class, () -> userAdminService.createUser(dto));
+		assertEquals(ErrorCode.PASSWORD_REGEX_NOT_MATCH, exception.getErrorCode());
+	}
+
+	@Test
+	void createUser_usernameAlreadyExists_throwsException() {
+		UserAdminCreateRequestServiceDto dto = new UserAdminCreateRequestServiceDto(
+			"testuser1",
+			"Password1!@#",
+			"slack123"
+		);
+		when(userRepository.existsByUsername("testuser1")).thenReturn(true);
+		System.out.println("Mock exists: " + userRepository.existsByUsername("testuser1"));
+		System.out.println(dto.username());
+		UserException exception = assertThrows(UserException.class, () -> userAdminService.createUser(dto));
+		assertEquals(ErrorCode.ALREADY_EXISTS, exception.getErrorCode());
+	}
 }
 

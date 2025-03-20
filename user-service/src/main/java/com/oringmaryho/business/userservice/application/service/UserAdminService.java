@@ -1,0 +1,300 @@
+package com.oringmaryho.business.userservice.application.service;
+
+import java.util.regex.Pattern;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.oringmaryho.business.userservice.application.dto.mapper.UserApplicationMapper;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminCreateRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRoleRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminFindRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminGrantRoleRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminSearchRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminSignUpRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRoleRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.response.UserAdminFindResponseDto;
+import com.oringmaryho.business.userservice.application.utils.RedisUtil;
+import com.oringmaryho.business.userservice.domain.User;
+import com.oringmaryho.business.userservice.domain.UserRoleType;
+import com.oringmaryho.business.userservice.domain.UserSearchCriteria;
+import com.oringmaryho.business.userservice.domain.repository.CustomUserRepository;
+import com.oringmaryho.business.userservice.domain.repository.UserRepository;
+import com.oringmaryho.business.userservice.exception.ErrorCode;
+import com.oringmaryho.business.userservice.exception.UserException;
+import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminGrantRoleResponseDto;
+import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminSearchResponseDto;
+import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminUpdateResponseDto;
+import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminUpdateRoleResponseDto;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class UserAdminService {
+
+	private final UserRepository userRepository;
+	private final CustomUserRepository customUserRepository;
+	private final UserApplicationMapper userApplicationMapper;
+	private final PasswordEncoder passwordEncoder;
+	private final RedisUtil redisUtil;
+
+	@Value("${admin.key}")
+	private String adminKey;
+
+	private static final String USERNAME_REGEX = "^[a-z0-9]{4,10}$";
+	private static final String PASSWORD_REGEX = "^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,15}$";
+
+	@Transactional
+	public void signUpUserAdmin(UserAdminSignUpRequestServiceDto requestServiceDto) {
+		//null처리
+		validateRequiredField(requestServiceDto.username(), ErrorCode.USERNAME_NULL);
+		validateRequiredField(requestServiceDto.password(), ErrorCode.PASSWORD_NULL);
+		validateRequiredField(requestServiceDto.slackId(), ErrorCode.SLACKID_NULL);
+		validateRequiredField(requestServiceDto.key(), ErrorCode.ADMIN_REGISTER_KEY_IS_NULL);
+
+		//형식에 맞는지 체크
+		usernameVerify(requestServiceDto.username());
+		passwordVerify(requestServiceDto.password());
+
+		// username 중복 체크
+		if (userRepository.existsByUsername(requestServiceDto.username())) {
+			throw new UserException(ErrorCode.ALREADY_EXISTS);
+		}
+
+		//key 검증
+		if (!requestServiceDto.key().equals(adminKey)) {
+			throw new UserException(ErrorCode.ADMIN_REGISTER_KEY_NOT_MATCH);
+		}
+
+		// 비번 암호화
+		String encodedPassword = passwordEncoder.encode(requestServiceDto.password());
+
+		// DTO -> Entity 변환 후 저장
+		User user = User.builder()
+			.username(requestServiceDto.username())
+			.password(encodedPassword)
+			.slackId(requestServiceDto.slackId())
+			.role(UserRoleType.MASTER)
+			.build();
+
+		userRepository.save(user);
+	}
+
+	@Transactional
+	public void createUser(UserAdminCreateRequestServiceDto requestServiceDto) {
+		//null처리
+		validateRequiredField(requestServiceDto.username(), ErrorCode.USERNAME_NULL);
+		validateRequiredField(requestServiceDto.password(), ErrorCode.PASSWORD_NULL);
+		validateRequiredField(requestServiceDto.slackId(), ErrorCode.SLACKID_NULL);
+
+		//형식에 맞는지 체크
+		usernameVerify(requestServiceDto.username());
+		passwordVerify(requestServiceDto.password());
+
+		// username 중복 체크
+		if (userRepository.existsByUsername(requestServiceDto.username())) {
+			throw new UserException(ErrorCode.ALREADY_EXISTS);
+		}
+
+		// 비번 암호화
+		String encodedPassword = passwordEncoder.encode(requestServiceDto.password());
+
+		// DTO -> Entity 변환 후 저장
+		User user = User.builder()
+			.username(requestServiceDto.username())
+			.password(encodedPassword)
+			.slackId(requestServiceDto.slackId())
+			.build();
+
+		userRepository.save(user);
+	}
+
+	@Transactional
+	public void slackConfirmUser(UserSlackConfirmRequestServiceDto requestServiceDto) {
+		//todo: 일반 사용자 service에서 기능 가져와서 추가하기
+		//todo: 슬랙인증 요청과 승인 요청
+	}
+
+	//유저 단일 조회 메서드
+	@Transactional(readOnly = true)
+	@Cacheable(cacheNames = "user", key = "#requestServiceDto.id()")
+	public UserAdminFindResponseDto findUserAdmin(UserAdminFindRequestServiceDto requestServiceDto) {
+		User user = userRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		return userApplicationMapper.toUserAdminFindResponseDto(user);
+	}
+
+	@Transactional(readOnly = true)
+	@Cacheable(cacheNames = "users")
+	public Page<UserAdminSearchResponseDto> searchUsers(
+		UserAdminSearchRequestServiceDto requestServiceDto, Pageable pageable) {
+
+		//쿼리 dsl로 유저 조회
+		Page<User> users = customUserRepository.findDynamicQuery(createHubSearchCriteria(requestServiceDto),
+			pageable);
+
+		return users.map(userApplicationMapper::toUserAdminSearchResponseDto);
+	}
+
+	@Transactional
+	public UserAdminUpdateResponseDto updateUser(UserAdminUpdateRequestServiceDto requestServiceDto) {
+		if (requestServiceDto.id() == null && requestServiceDto.id() < 1) {
+			throw new UserException(ErrorCode.USERNAME_NULL);
+		}
+
+		User user = userRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		//db에 업데이트
+		if (requestServiceDto.username() != null && !requestServiceDto.username().isEmpty()) {
+			//username 형식에 맞는지 체크
+			usernameVerify(requestServiceDto.username());
+			user.updateUsername(requestServiceDto.username());
+		}
+		if (requestServiceDto.password() != null && !requestServiceDto.password().isEmpty()) {
+			//비밀번호 형식에 맞는지 체크
+			passwordVerify(requestServiceDto.password());
+			String encodedPassword = passwordEncoder.encode(requestServiceDto.password());
+			user.updatePassword(encodedPassword);
+		}
+		if (requestServiceDto.slackId() != null && !requestServiceDto.slackId().isEmpty()) {
+			user.updateSlackId(requestServiceDto.slackId());
+		}
+
+		User updatedUser = userRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		//redis에 업데이트
+		redisUtil.updateUserInfo(updatedUser);
+
+		return userApplicationMapper.toUserAdminUpdateResponseDto(user.getId());
+	}
+
+	@Transactional
+	public UserAdminGrantRoleResponseDto grantRoleUser(
+		UserAdminGrantRoleRequestServiceDto requestServiceDto) {
+		//todo: null 처리 통일하기 어노테이션으로
+		//todo: null 처리 추가
+
+		if (requestServiceDto.role().equals(UserRoleType.MASTER)) {
+			throw new UserException(ErrorCode.CANNOT_GRANT_MASTER_ROLE);
+		}
+
+		User user = userRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		user.updateRoleType(requestServiceDto.role());
+
+		User updatedUser = userRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		//redis에 업데이트
+		redisUtil.updateUserInfo(updatedUser);
+
+		return userApplicationMapper.toUserAdminGrantRoleResponseDto(
+			requestServiceDto.id());
+	}
+
+	@Transactional
+	public UserAdminUpdateRoleResponseDto updateRoleUser(
+		UserAdminUpdateRoleRequestServiceDto requestServiceDto) {
+
+		Long curUserId = requestServiceDto.id();
+
+		UserRoleType newRole = requestServiceDto.newRole();
+
+		User user = userRepository.findById(curUserId)
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		if (!user.getRole().equals(UserRoleType.MASTER)) {
+			throw new UserException(ErrorCode.LESS_ROLE);
+		}
+
+		UserRoleType role = user.getRole();
+
+		//db에 업데이트
+		user.updateRoleType(newRole);
+
+		User updatedUser = userRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		//redis에 업데이트
+		redisUtil.updateUserInfo(updatedUser);
+
+		UserAdminUpdateRoleResponseDto responseDto = userApplicationMapper.toUserAdminUpdateRoleResponseDto(
+			curUserId, role, newRole);
+		return responseDto;
+	}
+
+	@Transactional
+	public void deleteRoleUser(UserAdminDeleteRoleRequestServiceDto requestServiceDto) {
+
+		Long userId = requestServiceDto.id();
+
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		if (!user.getRole().equals(UserRoleType.MASTER)) {
+			throw new UserException(ErrorCode.LESS_ROLE);
+		}
+
+		user.deleteRoleType();
+
+		User updatedUser = userRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		//redis에 업데이트
+		redisUtil.updateUserInfo(updatedUser);
+	}
+
+	@Transactional
+	public void deleteUser(UserAdminDeleteRequestServiceDto requestServiceDto) {
+		//todo: 삭제 시 메시지 큐에 메시지 날리기
+		User user = userRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		user.delete(user.getId());
+	}
+
+	//username 형식에 맞는지 체크
+	public void usernameVerify(String username) {
+		if (!Pattern.matches(USERNAME_REGEX, username)) {
+			throw new UserException(ErrorCode.USERNAME_REGEX_NOT_MATCH);
+		}
+	}
+
+	//password 형식에 맞는지 체크
+	public void passwordVerify(String password) {
+		if (!Pattern.matches(PASSWORD_REGEX, password)) {
+			throw new UserException(ErrorCode.PASSWORD_REGEX_NOT_MATCH);
+		}
+	}
+
+	//null 체크
+	private void validateRequiredField(String value, ErrorCode errorCode) {
+		if (value == null || value.isEmpty()) {
+			throw new UserException(errorCode);
+		}
+	}
+
+	public UserSearchCriteria createHubSearchCriteria(UserAdminSearchRequestServiceDto requestDto) {
+		return UserSearchCriteria.builder()
+			.id(requestDto.id())
+			.username(requestDto.username())
+			.slackId(requestDto.slackId())
+			.role(requestDto.role())
+			.status(requestDto.status())
+			.isDeleted(requestDto.isDeleted())
+			.build();
+	}
+}

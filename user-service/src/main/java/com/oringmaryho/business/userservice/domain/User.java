@@ -63,4 +63,16 @@ public class User extends BaseEntity implements Serializable {
 	public void deleteRoleType() {
 		this.role = UserRoleType.DEFAULT;
 	}
+
+	public void updateUsername(String username) {
+		this.username = username;
+	}
+
+	public void updatePassword(String encodedPassword) {
+		this.password = encodedPassword;
+	}
+
+	public void updateSlackId(String slackId) {
+		this.slackId = slackId;
+	}
 }
