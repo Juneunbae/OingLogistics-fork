@@ -152,7 +152,7 @@ public class DeliveryService {
         route.changeStatus(requestServiceDto.status());
 
         if (route.getStatus() == DeliveryRouteStatus.HUB_ARRIVED) { // 목적지 허브 도착 상태로 변경 시도하는 경우
-            Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
+            Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(route.getDelivery().getId())
                     .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
             if (delivery.getDestinationHubId() == route.getDestinationHubId()) {    // 경로 상 목적지 허브가 배송 목적지 허브와 같으면 배송 상태 변경
