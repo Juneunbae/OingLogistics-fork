@@ -6,6 +6,7 @@ import org.mapstruct.Mapping;
 import com.oringmaryho.business.userservice.application.dto.response.UserAdminUpdateRoleResponseServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserSearchResponseServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserSignInResponseServiceDto;
+import com.oringmaryho.business.userservice.domain.UserRoleType;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminGrantRoleResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminUpdateResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminUpdateRoleResponseDto;
@@ -29,5 +30,5 @@ public interface UserApplicationMapper {
 	@Mapping(target = "role", source = "role")
 	@Mapping(target = "newRole", source = "newRole")
 	UserAdminUpdateRoleResponseDto toUserAdminUpdateRoleResponseDto(
-		UserAdminUpdateRoleResponseServiceDto responseServiceDto);
+		Long id, UserRoleType role, UserRoleType newRole);
 }

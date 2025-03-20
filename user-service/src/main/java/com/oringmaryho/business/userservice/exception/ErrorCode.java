@@ -24,6 +24,7 @@ public enum ErrorCode {
 	STORAGE_NEGATIVE_ERROR("U-011", "TTL이 음수일 수 없습니다.", HttpStatus.BAD_REQUEST),
 
 	CANNOT_GRANT_MASTER_ROLE("U-012", "MASTER 권한은 부여할 수 없습니다.", HttpStatus.BAD_REQUEST),
+	LESS_ROLE("U-013", "사용자의 권한이 부족합니다.", HttpStatus.BAD_REQUEST),
 	;
 
 	private final String errorCode;

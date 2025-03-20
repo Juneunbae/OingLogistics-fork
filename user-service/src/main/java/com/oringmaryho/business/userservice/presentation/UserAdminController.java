@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.oringmaryho.business.userservice.application.UserAdminService;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminCreateRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminFindRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminGrantRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSearchRequestServiceDto;
@@ -24,11 +26,9 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpd
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.config.pageable.PageableConfig;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminCreateRequestDto;
-import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminDeleteRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminGrantRoleRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSearchRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSignUpRequestDto;
-import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminDeleteRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminUpdateRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminUpdateRoleRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminGrantRoleResponseDto;
@@ -109,14 +109,13 @@ public class UserAdminController {
 	}
 
 	@PutMapping("/roles/{id}")
-	public ResponseEntity<?> updateRoleUserMaster(@PathVariable Long id,
+	public ResponseEntity<UserAdminUpdateRoleResponseDto> updateRoleUserMaster(@PathVariable Long id,
 		@RequestBody UserAdminUpdateRoleRequestDto userAdminUpdateRoleRequestDto) {
 		UserAdminUpdateRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminUpdateRoleRequestServiceDto(
 			userAdminUpdateRoleRequestDto, id);
 		UserAdminUpdateRoleResponseDto responseDto = userAdminService.updateRoleUser(
 			requestServiceDto);
-		//todo: responsedto 반환하기
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok(responseDto);
 	}
 
 	@DeleteMapping("/roles/{id}")

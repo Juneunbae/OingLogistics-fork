@@ -15,14 +15,13 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminSig
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
-import com.oringmaryho.business.userservice.application.dto.response.UserAdminUpdateRoleResponseServiceDto;
 import com.oringmaryho.business.userservice.domain.User;
 import com.oringmaryho.business.userservice.domain.UserRoleType;
 import com.oringmaryho.business.userservice.domain.repository.UserRepository;
 import com.oringmaryho.business.userservice.exception.ErrorCode;
 import com.oringmaryho.business.userservice.exception.UserException;
-import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminDeleteRequestServiceDto;
-import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminDeleteRoleRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminGrantRoleResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminSearchResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminUpdateResponseDto;
@@ -113,7 +112,7 @@ public class UserAdminService {
 		//todo: null 처리 통일하기 어노테이션으로
 		//todo: null 처리 추가
 
-		if(requestServiceDto.role().equals(UserRoleType.MASTER)) {
+		if (requestServiceDto.role().equals(UserRoleType.MASTER)) {
 			throw new UserException(ErrorCode.CANNOT_GRANT_MASTER_ROLE);
 		}
 
@@ -128,14 +127,38 @@ public class UserAdminService {
 
 	public UserAdminUpdateRoleResponseDto updateRoleUser(
 		UserAdminUpdateRoleRequestServiceDto requestServiceDto) {
-		//todo: 유저 변경 전 role 받아와서 묶어서 반환하기
-		UserAdminUpdateRoleResponseServiceDto responseServiceDto = null;
+
+		Long curUserId = requestServiceDto.id();
+
+		UserRoleType newRole = requestServiceDto.newRole();
+
+		User user = userRepository.findById(curUserId)
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		if(!user.getRole().equals(UserRoleType.MASTER)) {
+			throw new UserException(ErrorCode.LESS_ROLE);
+		}
+
+		UserRoleType role = user.getRole();
+
+		user.updateRoleType(newRole);
+
 		UserAdminUpdateRoleResponseDto responseDto = userApplicationMapper.toUserAdminUpdateRoleResponseDto(
-			responseServiceDto);
-		return null;
+			curUserId, role, newRole);
+		return responseDto;
 	}
 
 	public void deleteRoleUser(UserAdminDeleteRoleRequestServiceDto requestServiceDto) {
+
+		Long userId = requestServiceDto.id();
+
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		if(!user.getRole().equals(UserRoleType.MASTER)) {
+			throw new UserException(ErrorCode.LESS_ROLE);
+		}
+		
 
 	}
 
