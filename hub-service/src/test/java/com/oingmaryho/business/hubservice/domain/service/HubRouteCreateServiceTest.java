@@ -5,7 +5,6 @@ import static org.mockito.Mockito.*;
 
 import java.util.UUID;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,11 +53,11 @@ class HubRouteCreateServiceTest {
 		assertThatThrownBy(() -> hubRouteCreateService
 				.createHubRoute(nonExistHubId, validHubId, 1, 1.0))
 			.isInstanceOf(HubException.class)
-			.hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND);
+			.hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND_HUB);
 
 		assertThatThrownBy(() -> hubRouteCreateService
 			.createHubRoute(validHubId, nonExistHubId, 1, 1.0))
 			.isInstanceOf(HubException.class)
-			.hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND);
+			.hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND_HUB);
 	}
 }

@@ -41,4 +41,14 @@ public class HubRoute extends BaseEntity{
 	@Column(nullable = false)
 	@Builder.Default
 	private Boolean isDeleted = false;
+
+	public void update(UUID departureHubId, UUID arriveHubId, RouteInfo routeInfo) {
+		this.departureHubId = departureHubId;
+		this.arriveHubId = arriveHubId;
+		this.routeInfo = routeInfo;
+	}
+
+	public void delete() {
+		this.isDeleted = true;
+	}
 }

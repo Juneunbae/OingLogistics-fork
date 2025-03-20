@@ -181,6 +181,6 @@ class HubServiceTest {
 		// When & Then
 		assertThatThrownBy(() -> hubService.getHubById(requestDto))
 			.isInstanceOf(HubException.class)
-			.hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND);
+			.hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND_HUB);
 	}
 }

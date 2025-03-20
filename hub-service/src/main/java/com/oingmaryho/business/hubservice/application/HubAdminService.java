@@ -94,7 +94,7 @@ public class HubAdminService {
 
 	private Hub findHubById(UUID id) {
 		return hubRepository.findById(id)
-			.orElseThrow(() -> new HubException(ErrorCode.NOT_FOUND));
+			.orElseThrow(() -> new HubException(ErrorCode.NOT_FOUND_HUB));
 	}
 
 	private HubSearchCriteria createHubSearchAdminCriteria(HubsSearchAdminRequestServiceDto requestDto) {
