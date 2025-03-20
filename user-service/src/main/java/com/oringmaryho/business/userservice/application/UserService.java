@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -13,14 +14,18 @@ import org.springframework.transaction.annotation.Transactional;
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserSlackCodeRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserSearchResponseServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserSignInResponseServiceDto;
+import com.oringmaryho.business.userservice.application.utils.CodeStorage;
+import com.oringmaryho.business.userservice.application.utils.DirectMessageAuthService;
 import com.oringmaryho.business.userservice.config.security.jwt.JwtTokenProvider;
 import com.oringmaryho.business.userservice.domain.User;
+import com.oringmaryho.business.userservice.domain.UserConfirmStatus;
+import com.oringmaryho.business.userservice.domain.repository.UserRepository;
 import com.oringmaryho.business.userservice.exception.ErrorCode;
 import com.oringmaryho.business.userservice.exception.UserException;
-import com.oringmaryho.business.userservice.infrastructure.UserRepository;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserSearchResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserSignInResponseDto;
 
@@ -35,7 +40,14 @@ public class UserService {
 	private final UserApplicationMapper userApplicationMapper;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
+	private final DirectMessageAuthService directMessageAuthService;
+
 	private final RedisTemplate<String, Object> redisTemplate;
+
+	private final CodeStorage codeStorage;
+
+	@Value("${slack.code.ttl}")
+	private Long SLACK_CODE_TTL;
 
 	@Transactional
 	public void signUpUser(UserSignUpRequestServiceDto requestServiceDto) {
@@ -124,7 +136,69 @@ public class UserService {
 		return userApplicationMapper.toSearchResponseDto(userSearchResponseServiceDto);
 	}
 
+	public void slackCodeRequestUser(UserSlackCodeRequestServiceDto requestServiceDto) {
+		if (requestServiceDto.username() == null || requestServiceDto.username().isEmpty()) {
+			throw new UserException(ErrorCode.USERNAME_NULL);
+		}
+		if (requestServiceDto.slackId() == null || requestServiceDto.slackId().isEmpty()) {
+			throw new UserException(ErrorCode.SLACKID_NULL);
+		}
+		if (!userRepository.existsByUsername(requestServiceDto.username())) {
+			throw new UserException(ErrorCode.NOT_FOUND);
+		}
+
+		User user = userRepository.findByUsername(requestServiceDto.username())
+			.orElseThrow(()-> new UserException(ErrorCode.NOT_FOUND));
+
+		if(!requestServiceDto.slackId().equals(user.getSlackId())
+		|| !requestServiceDto.username().equals(user.getUsername())) {
+			throw new UserException(ErrorCode.USER_NOT_MATCH);
+		}
+
+		if(user.getStatus().equals(UserConfirmStatus.CONFIRMED)){
+			throw new UserException(ErrorCode.SLACK_ALREADY_AUTH);
+		}
+
+		//슬랙 코드 생성 및 codestorage에 저장
+		String slackCode = directMessageAuthService.generateCode();
+
+		directMessageAuthService.sendDirectMessage(requestServiceDto.slackId(), slackCode);
+
+		//이전에 요청한 적 있는 유저 id라면 스토리지에 있는 내용 삭제 후 다시 저장
+		if (codeStorage.hasKey(requestServiceDto.username())) {
+			codeStorage.removeCode(requestServiceDto.username());
+		}
+		codeStorage.storeCode(requestServiceDto.username(), requestServiceDto.slackId(), slackCode,
+			SLACK_CODE_TTL);
+
+		//todo: slack 코드 생성하고 ttl 만큼 살려두고 삭제하는 테스트 작성하기
+	}
+
 	public void slackConfirmUser(UserSlackConfirmRequestServiceDto requestServiceDto) {
+		String username = requestServiceDto.username();
+		String slackId = requestServiceDto.slackId();
+
+		String slackCode = codeStorage.getCode(requestServiceDto.username());
+
+		if (slackCode != null
+			&& codeStorage.getSlackUsername(username).equals(slackId)
+			&& slackCode.equals(requestServiceDto.confirmCode())
+		) {
+			User user = userRepository.findByUsername(username)
+				.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+			User verifiedUser = User.builder()
+				.id(user.getId())
+				.username(user.getUsername())
+				.password(user.getPassword())
+				.slackId(user.getSlackId())
+				.role(user.getRole())
+				.status(UserConfirmStatus.CONFIRMED)
+				.build();
+			userRepository.save(verifiedUser);
+			codeStorage.removeCode(requestServiceDto.username());
+		} else {
+			throw new UserException(ErrorCode.SLACK_AUTH_FAIL);
+		}
 
 	}
 

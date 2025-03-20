@@ -14,6 +14,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpd
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserSlackCodeRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminCreateRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminDeleteRequestServiceDto;
@@ -25,6 +26,7 @@ import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSe
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminUpdateRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignInRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignUpRequestDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserSlackCodeRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSlackConfirmRequestDto;
 
 @Mapper(componentModel = "spring")
@@ -70,4 +72,6 @@ public interface UserPresentationMapper {
 
 	@Mapping(target = "id", source = "id")
 	UserAdminDeleteRequestServiceDto toUserAdminDeleteRequestServiceDto(Long id);
+
+	UserSlackCodeRequestServiceDto toUserSlackCodeRequestServiceDto(UserSlackCodeRequestDto requestDto);
 }
