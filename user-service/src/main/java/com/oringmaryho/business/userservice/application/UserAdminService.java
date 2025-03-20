@@ -166,8 +166,7 @@ public class UserAdminService {
 			throw new UserException(ErrorCode.LESS_ROLE);
 		}
 
-
-
+		user.deleteRoleType();
 	}
 
 	@Transactional
