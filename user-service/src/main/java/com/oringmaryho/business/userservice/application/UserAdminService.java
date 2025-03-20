@@ -60,7 +60,6 @@ public class UserAdminService {
 			throw new UserException(ErrorCode.ADMIN_REGISTER_KEY_IS_NULL);
 		}
 
-		// 사용
 		if (!Pattern.matches(USERNAME_REGEX, requestServiceDto.username())) {
 			throw new UserException(ErrorCode.USERNAME_REGEX_NOT_MATCH);
 		}

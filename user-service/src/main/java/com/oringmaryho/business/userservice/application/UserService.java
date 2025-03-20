@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -49,6 +50,9 @@ public class UserService {
 	@Value("${slack.code.ttl}")
 	private Long SLACK_CODE_TTL;
 
+	private static final String USERNAME_REGEX = "^[a-z0-9]{4,10}$";
+	private static final String PASSWORD_REGEX = "^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,15}$";
+
 	@Transactional
 	public void signUpUser(UserSignUpRequestServiceDto requestServiceDto) {
 
@@ -61,6 +65,13 @@ public class UserService {
 		}
 		if (requestServiceDto.slackId() == null || requestServiceDto.slackId().isEmpty()) {
 			throw new UserException(ErrorCode.SLACKID_NULL);
+		}
+
+		if (!Pattern.matches(USERNAME_REGEX, requestServiceDto.username())) {
+			throw new UserException(ErrorCode.USERNAME_REGEX_NOT_MATCH);
+		}
+		if (!Pattern.matches(PASSWORD_REGEX, requestServiceDto.password())) {
+			throw new UserException(ErrorCode.PASSWORD_REGEX_NOT_MATCH);
 		}
 
 		// username 중복 체크
