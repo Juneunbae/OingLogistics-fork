@@ -9,5 +9,6 @@ public record DeliveryResponseServiceDto(UUID id,
                                          String address,
                                          String receiver,
                                          String receiverSlackId,
-                                         UUID managerId){
+                                         UUID managerId,
+                                         Boolean isDeleted){
 }

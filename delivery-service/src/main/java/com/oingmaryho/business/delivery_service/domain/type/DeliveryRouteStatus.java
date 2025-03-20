@@ -1,4 +1,4 @@
-package com.oingmaryho.business.delivery_service.domain;
+package com.oingmaryho.business.delivery_service.domain.type;
 
 import lombok.Getter;
 

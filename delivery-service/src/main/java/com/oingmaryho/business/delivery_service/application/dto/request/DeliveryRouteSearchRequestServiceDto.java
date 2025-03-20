@@ -8,5 +8,6 @@ public record DeliveryRouteSearchRequestServiceDto(UUID id, // 배송 id
                                                    UUID hubId,
                                                    UUID companyId,
                                                    UUID managerId,
+                                                   Boolean isDeleted,
                                                    Pageable customPageable){
 }
