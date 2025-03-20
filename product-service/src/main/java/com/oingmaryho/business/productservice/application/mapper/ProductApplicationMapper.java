@@ -5,6 +5,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import com.oingmaryho.business.productservice.application.dto.response.ProductDetailsSearchResponseServiceDto;
+import com.oingmaryho.business.productservice.application.dto.response.ProductSearchResponseServiceDto;
 import com.oingmaryho.business.productservice.domain.Product;
 import com.oingmaryho.business.productservice.application.dto.request.ProductCreateRequestServiceDto;
 
@@ -25,4 +26,7 @@ public interface ProductApplicationMapper {
 	// out : entity -> application response dto
 	@BeanMapping(ignoreByDefault = true)
 	ProductDetailsSearchResponseServiceDto toResponseDto(Product product);
+
+	@BeanMapping(ignoreByDefault = true)
+	ProductSearchResponseServiceDto toProductSearchResponseServiceDto(Product product);
 }

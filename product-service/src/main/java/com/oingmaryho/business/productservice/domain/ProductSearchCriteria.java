@@ -12,8 +12,10 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProductSearchCriteria {
 	private final UUID id;
+	private final String productCode;
 	private final String name;
-	private final UUID manageHunId;
+	private final UUID manageHubId;
+	private final UUID companyID;
 
 	private final Long minPrice;
 	private final Long maxPrice;
