@@ -31,9 +31,9 @@ public class ProductQueryDslRepository implements CustomProductRepository {
 	@Override
 	public Page<Product> findDynamicQuery(ProductSearchCriteria searchCriteria, Pageable pageable){
 		QProduct product = QProduct.product;
-		BooleanBuilder builder = new BooleanBuilder();
+		BooleanBuilder builder =buildSearchConditions(searchCriteria, product);
 
-		List<Product> result = queryFactory
+			List<Product> result = queryFactory
 			.selectFrom(product)
 			.where(builder)
 			.orderBy(QueryDslUtils.getOrderSpecifiers(pageable.getSort(), Product.class))
@@ -49,7 +49,7 @@ public class ProductQueryDslRepository implements CustomProductRepository {
 		return PageableExecutionUtils.getPage(result, pageable, () -> total);
 	}
 
-	private BooleanBuilder builderSearchConditions(ProductSearchCriteria searchCriteria, QProduct product) {
+	private BooleanBuilder buildSearchConditions(ProductSearchCriteria searchCriteria, QProduct product) {
 		BooleanBuilder builder = new BooleanBuilder();
 
 		addIdCondition(builder, searchCriteria.getId(), product);

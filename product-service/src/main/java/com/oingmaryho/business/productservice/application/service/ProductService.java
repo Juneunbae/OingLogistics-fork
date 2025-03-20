@@ -6,7 +6,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.oingmaryho.business.productservice.application.dto.request.ProductDetailsSearchRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.request.ProductSearchRequestServiceDto;
+import com.oingmaryho.business.productservice.application.dto.response.ProductDetailsSearchResponseServiceDto;
 import com.oingmaryho.business.productservice.application.dto.response.ProductSearchResponseServiceDto;
 import com.oingmaryho.business.productservice.application.mapper.ProductApplicationMapper;
 import com.oingmaryho.business.productservice.domain.Product;
@@ -15,6 +17,8 @@ import com.oingmaryho.business.productservice.domain.repository.CustomProductRep
 import com.oingmaryho.business.productservice.domain.repository.ProductRepository;
 import com.oingmaryho.business.productservice.application.dto.request.ProductCreateRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.response.ProductCreateResponseServiceDto;
+import com.oingmaryho.business.productservice.exception.ErrorCode;
+import com.oingmaryho.business.productservice.exception.ProductException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,8 +37,15 @@ public class ProductService {
 	}
 
 	public Page<ProductSearchResponseServiceDto> searchProducts(ProductSearchRequestServiceDto requestDto, Pageable pageable){
+		validateSearchCriteria(createProductSearchCriteria(requestDto));
 		Page<Product> products = customProductRepository.findDynamicQuery(createProductSearchCriteria(requestDto),pageable);
 		return products.map(productApplicationMapper::toProductSearchResponseServiceDto);
+	}
+
+	public ProductDetailsSearchResponseServiceDto getProductDetails(ProductDetailsSearchRequestServiceDto requestDto) {
+		Product product = productRepository.findByIdAndIsDeletedFalse(requestDto.id())
+			.orElseThrow(() -> new ProductException(ErrorCode.NOT_FOUND));
+		return productApplicationMapper.toResponseDto(product);
 	}
 
 	private ProductSearchCriteria createProductSearchCriteria(ProductSearchRequestServiceDto requestDto){
@@ -49,5 +60,18 @@ public class ProductService {
 			.minStock(requestDto.minStock())
 			.maxStock(requestDto.maxStock())
 			.build();
+	}
+	private void validateSearchCriteria(ProductSearchCriteria searchCriteria) {
+		if (searchCriteria.getMinPrice() != null && searchCriteria.getMaxPrice() != null) {
+			if (searchCriteria.getMinPrice() > searchCriteria.getMaxPrice()) {
+				throw new ProductException(ErrorCode.INVALID_PRICE_RANGE);
+			}
+		}
+
+		if (searchCriteria.getMinStock() != null && searchCriteria.getMaxStock() != null) {
+			if (searchCriteria.getMinStock() > searchCriteria.getMaxStock()) {
+				throw new ProductException(ErrorCode.INVALID_STOCK_RANGE);
+			}
+		}
 	}
 }
