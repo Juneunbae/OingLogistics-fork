@@ -10,4 +10,6 @@ import com.oingmaryho.business.productservice.domain.Product;
 @Repository
 public interface ProductRepository {
 	Optional<Product> findByIdAndIsDeletedFalse(UUID id);
+
+	Product save(Product product);
 }
