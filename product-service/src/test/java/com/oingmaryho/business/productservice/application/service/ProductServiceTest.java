@@ -21,9 +21,11 @@ import org.springframework.data.domain.Pageable;
 import com.oingmaryho.business.productservice.application.dto.request.ProductCreateRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.request.ProductDetailsSearchRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.request.ProductSearchRequestServiceDto;
+import com.oingmaryho.business.productservice.application.dto.request.ProductUpdateRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.response.ProductCreateResponseServiceDto;
 import com.oingmaryho.business.productservice.application.dto.response.ProductDetailsSearchResponseServiceDto;
 import com.oingmaryho.business.productservice.application.dto.response.ProductSearchResponseServiceDto;
+import com.oingmaryho.business.productservice.application.dto.response.ProductUpdateResponseServiceDto;
 import com.oingmaryho.business.productservice.application.mapper.ProductApplicationMapper;
 import com.oingmaryho.business.productservice.domain.Product;
 import com.oingmaryho.business.productservice.domain.repository.CustomProductRepository;
@@ -138,6 +140,24 @@ class ProductServiceTest {
 		System.out.println("상품 정보 : " + response.name());
 		assertThat(response).isNotNull();
 		assertThat(response.id()).isEqualTo(expectedResponse.id());
+	}
+
+	@Test
+	@Description("상품 수정 테스트")
+	void updateProduct() {
+		ProductUpdateRequestServiceDto requestDto = new ProductUpdateRequestServiceDto(
+			productId, "Updated product name", 2L, 1L
+		);
+
+		when(productRepository.findByIdAndIsDeletedFalse(productId)).thenReturn(Optional.of(product));
+		when(productApplicationMapper.toUpdateResponseDto(any(UUID.class)))
+			.thenReturn(new ProductUpdateResponseServiceDto(FIXED_PRODUCT_ID));
+
+		ProductUpdateResponseServiceDto response = productService.updateProduct(requestDto);
+
+		assertThat(product.getName()).isEqualTo("Updated product name");
+		assertThat(response).isNotNull();
+		assertThat(response.id()).isEqualTo(productId);
 	}
 
 }
