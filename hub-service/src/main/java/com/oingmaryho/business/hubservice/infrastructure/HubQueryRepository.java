@@ -13,7 +13,6 @@ import org.springframework.util.StringUtils;
 
 import com.oingmaryho.business.hubservice.domain.Hub;
 import com.oingmaryho.business.hubservice.domain.HubSearchCriteria;
-import com.oingmaryho.business.hubservice.domain.repository.CustomHubRepository;
 import com.oingmaryho.business.hubservice.utils.QueryDslUtils;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -24,11 +23,10 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class HubQueryRepository implements CustomHubRepository {
+public class HubQueryRepository {
 
 	private final JPAQueryFactory queryFactory;
 
-	@Override
 	public Page<Hub> findDynamicQuery(HubSearchCriteria criteria, Pageable pageable) {
 		BooleanBuilder conditions = new BooleanBuilder();
 		conditions
@@ -57,7 +55,6 @@ public class HubQueryRepository implements CustomHubRepository {
 		return new PageImpl<>(query.fetch(), pageable, total);
 	}
 
-	@Override
 	public Optional<Hub> findActiveHubById(UUID id) {
 		return Optional.ofNullable(queryFactory
 			.selectFrom(hub)
