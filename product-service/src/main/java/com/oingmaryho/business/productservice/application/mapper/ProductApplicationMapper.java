@@ -1,11 +1,14 @@
 package com.oingmaryho.business.productservice.application.mapper;
 
+import java.util.UUID;
+
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import com.oingmaryho.business.productservice.application.dto.response.ProductDetailsSearchResponseServiceDto;
 import com.oingmaryho.business.productservice.application.dto.response.ProductSearchResponseServiceDto;
+import com.oingmaryho.business.productservice.application.dto.response.ProductUpdateResponseServiceDto;
 import com.oingmaryho.business.productservice.domain.Product;
 import com.oingmaryho.business.productservice.application.dto.request.ProductCreateRequestServiceDto;
 
@@ -29,4 +32,6 @@ public interface ProductApplicationMapper {
 
 	@BeanMapping(ignoreByDefault = true)
 	ProductSearchResponseServiceDto toProductSearchResponseServiceDto(Product product);
+
+	ProductUpdateResponseServiceDto toUpdateResponseDto(UUID id);
 }

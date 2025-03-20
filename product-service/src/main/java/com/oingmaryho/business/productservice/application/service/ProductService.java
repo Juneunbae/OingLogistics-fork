@@ -8,8 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.oingmaryho.business.productservice.application.dto.request.ProductDetailsSearchRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.request.ProductSearchRequestServiceDto;
+import com.oingmaryho.business.productservice.application.dto.request.ProductUpdateRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.response.ProductDetailsSearchResponseServiceDto;
 import com.oingmaryho.business.productservice.application.dto.response.ProductSearchResponseServiceDto;
+import com.oingmaryho.business.productservice.application.dto.response.ProductUpdateResponseServiceDto;
 import com.oingmaryho.business.productservice.application.mapper.ProductApplicationMapper;
 import com.oingmaryho.business.productservice.domain.Product;
 import com.oingmaryho.business.productservice.domain.ProductSearchCriteria;
@@ -48,6 +50,19 @@ public class ProductService {
 		return productApplicationMapper.toResponseDto(product);
 	}
 
+	@Transactional
+	public ProductUpdateResponseServiceDto updateProduct(ProductUpdateRequestServiceDto requestServiceDto) {
+		Product product = productRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
+			.orElseThrow(() -> new ProductException(ErrorCode.NOT_FOUND));
+
+		product.update(
+			requestServiceDto.name(),
+			requestServiceDto.price(),
+			requestServiceDto.stock()
+		);
+		return productApplicationMapper.toUpdateResponseDto(product.getId());
+	}
+
 	private ProductSearchCriteria createProductSearchCriteria(ProductSearchRequestServiceDto requestDto){
 		return ProductSearchCriteria.builder()
 			.id(requestDto.id())
@@ -74,4 +89,5 @@ public class ProductService {
 			}
 		}
 	}
+
 }

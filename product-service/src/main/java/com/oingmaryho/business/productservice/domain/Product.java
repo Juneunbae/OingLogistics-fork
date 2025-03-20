@@ -1,10 +1,14 @@
 package com.oingmaryho.business.productservice.domain;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import com.oingmaryho.business.common.entity.BaseEntity;
+import com.oingmaryho.business.productservice.exception.ErrorCode;
+import com.oingmaryho.business.productservice.exception.ProductException;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -45,4 +49,29 @@ public class Product extends BaseEntity {
 
 	@Column(nullable = false)
 	private Long price;
+
+	public void update(String name, Long price, Long stock) {
+		Optional.ofNullable(name)
+			.filter(n -> !n.isBlank())
+			.ifPresentOrElse(
+				value -> this.name = value,
+				() -> { throw new ProductException(ErrorCode.INVALID_PRODUCT_NAME); }
+			);
+
+		Optional.ofNullable(price)
+			.ifPresent(value -> {
+				if (value <= 0) {
+					throw new ProductException(ErrorCode.INVALID_PRICE);
+				}
+				this.price = value;
+			});
+
+		Optional.ofNullable(stock)
+			.ifPresent(value -> {
+				if (value < 0) {
+					throw new ProductException(ErrorCode.INVALID_STOCK);
+				}
+				this.stock = value;
+			});
+	}
 }
