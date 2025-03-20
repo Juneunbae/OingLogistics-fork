@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProductService {
 	private final ProductRepository productRepository;
-	private final CustomProductRepository customProductRepository;
+	// private final CustomProductRepository customProductRepository;
 	private final ProductApplicationMapper productApplicationMapper;
 
 	@Transactional
