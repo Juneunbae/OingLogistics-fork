@@ -3,8 +3,8 @@ package com.oingmaryho.business.delivery_service.application.service;
 import com.oingmaryho.business.delivery_service.application.dto.mapper.DeliveryApplicationMapper;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
-import com.oingmaryho.business.delivery_service.domain.DeliveryRouteSearchCriteria;
-import com.oingmaryho.business.delivery_service.domain.DeliverySearchCriteria;
+import com.oingmaryho.business.delivery_service.domain.criteria.DeliveryRouteSearchCriteria;
+import com.oingmaryho.business.delivery_service.domain.criteria.DeliverySearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.entity.Delivery;
 import com.oingmaryho.business.delivery_service.domain.entity.DeliveryManager;
 import com.oingmaryho.business.delivery_service.domain.entity.DeliveryRoute;
@@ -65,7 +65,7 @@ public class DeliveryAdminService {
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
         DeliveryManager newManager = deliveryRepository.findManagerByIdAndIsDeleted(requestServiceDto.managerId())
-                .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_MANGER_NOT_FOUND));
+                .orElseThrow(() -> new DeliveryException(ErrorCode.MANGER_NOT_FOUND));
 
         delivery.update(requestServiceDto.receiver(), requestServiceDto.receiverSlackId(), requestServiceDto.address(), newManager);
         return deliveryApplicationMapper.toUpdateResponseServiceDto(delivery.getId());
@@ -95,6 +95,7 @@ public class DeliveryAdminService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "delivery", key = "#requestServiceDto.id()")
     public DeliveryResponseServiceDto GetDeliveryDetail(Long userId,
                                                         UserRoleType userRole,
                                                         DeliveryDetailRequestServiceDto requestServiceDto) {
@@ -121,6 +122,7 @@ public class DeliveryAdminService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "route", key = "#requestServiceDto.id()")
     public DeliveryRouteResponseServiceDto GetDeliveryRouteDetail(Long userId,
                                                                   UserRoleType userRole,
                                                                   DeliveryRouteDetailRequestServiceDto requestServiceDto) {
@@ -152,7 +154,7 @@ public class DeliveryAdminService {
                                                                                  DeliveryRouteUpdateStatusRequestServiceDto requestServiceDto) {
 
         DeliveryRoute route = deliveryRepository.findRouteById(requestServiceDto.id())
-                .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_ROUTE_NOT_FOUND));
+                .orElseThrow(() -> new DeliveryException(ErrorCode.ROUTE_NOT_FOUND));
 
         route.changeStatus(requestServiceDto.status());
 

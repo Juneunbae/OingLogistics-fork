@@ -9,10 +9,10 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
 
     DELIVERY_NOT_FOUND("D-001", "해당 배송을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    DELIVERY_ROUTE_NOT_FOUND("D-002", "해당 배송 경로를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    DELIVERY_MANGER_NOT_FOUND("D-003", "해당 배송 담당자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    ROUTE_NOT_FOUND("D-002", "해당 배송 경로를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    MANGER_NOT_FOUND("D-003", "해당 배송 담당자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
-    UNAUTHORIZED("D-003", "해당 요청에 대한 권한이 없습니다.", HttpStatus.UNAUTHORIZED);
+    UNAUTHORIZED("D-004", "해당 요청에 대한 권한이 없습니다.", HttpStatus.UNAUTHORIZED);
 
     private final String code;
     private final String message;

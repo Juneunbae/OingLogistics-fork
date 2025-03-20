@@ -1,7 +1,7 @@
 package com.oingmaryho.business.delivery_service.infrastructure.repository;
 
-import com.oingmaryho.business.delivery_service.domain.DeliveryRouteSearchCriteria;
-import com.oingmaryho.business.delivery_service.domain.DeliverySearchCriteria;
+import com.oingmaryho.business.delivery_service.domain.criteria.DeliveryRouteSearchCriteria;
+import com.oingmaryho.business.delivery_service.domain.criteria.DeliverySearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.entity.Delivery;
 import com.oingmaryho.business.delivery_service.domain.entity.DeliveryManager;
 import com.oingmaryho.business.delivery_service.domain.entity.DeliveryRoute;
