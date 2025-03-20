@@ -52,7 +52,7 @@ public class HubRouteAdminController {
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deleteHubRoute(@PathVariable UUID id) {
-		hubRouteAdminService.deleteHubRoute(id, mapper.toHubRouteDeleteRequestServiceDto(id));
+		hubRouteAdminService.deleteHubRoute(mapper.toHubRouteDeleteRequestServiceDto(id));
 		return ResponseEntity.ok().build();
 	}
 }

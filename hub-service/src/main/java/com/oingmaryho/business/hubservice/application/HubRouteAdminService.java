@@ -57,8 +57,8 @@ public class HubRouteAdminService {
 
 	// TODO : Auditing 설정 추가
 	@Transactional
-	public void deleteHubRoute(UUID id, HubRouteDeleteRequestServiceDto hubRouteDeleteRequestServiceDto) {
-		HubRoute hubRoute = findHubRouteById(id);
+	public void deleteHubRoute(HubRouteDeleteRequestServiceDto requestDto) {
+		HubRoute hubRoute = findHubRouteById(requestDto.id());
 		hubRoute.delete();
 	}
 
