@@ -63,7 +63,7 @@ public class OrderAdminController {
     }
 
     @Description(
-        "마스터,- 주문 수정하기"
+        "마스터 - 주문 수정하기"
     )
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateOrder(@PathVariable UUID id, @RequestBody OrderUpdateRequestDto update) {

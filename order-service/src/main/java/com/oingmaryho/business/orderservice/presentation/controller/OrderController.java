@@ -1,9 +1,11 @@
 package com.oingmaryho.business.orderservice.presentation.controller;
 
+import com.oingmaryho.business.orderservice.application.dto.request.OrderUpdateServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.request.OrdersRequestServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.service.OrderService;
 import com.oingmaryho.business.orderservice.presentation.dto.mapper.OrderPresentationMapper;
+import com.oingmaryho.business.orderservice.presentation.dto.request.OrderUpdateRequestDto;
 import com.oingmaryho.business.orderservice.utils.PageableUtils;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -11,10 +13,9 @@ import org.springframework.context.annotation.Description;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -45,5 +46,20 @@ public class OrderController {
         Page<OrderResponseServiceDto> response = orderService.getOrders(ordersRequestServiceDto);
 
         return ResponseEntity.ok(response.map(orderPresentationMapper::toOrderResponseServiceDto));
+    }
+
+    @Description(
+        "허브 관리자 - 주문 수정"
+    )
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateOrders(@PathVariable UUID id, @RequestBody OrderUpdateRequestDto update) {
+        OrderUpdateServiceDto orderUpdateServiceDto = orderPresentationMapper.toOrderUpdateServiceDto(
+            id, update, update.requestOrderDetails().stream().map(
+                orderPresentationMapper::toOrderDetailUpdateServiceDto
+            ).toList()
+        );
+        orderService.updateOrder(orderUpdateServiceDto);
+
+        return ResponseEntity.ok().build();
     }
 }
