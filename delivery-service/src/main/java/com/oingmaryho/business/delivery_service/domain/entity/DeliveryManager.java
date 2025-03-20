@@ -31,6 +31,5 @@ public class DeliveryManager extends BaseEntity {
     @Column(nullable = false)
     private DeliveryManagerType type;   // TODO 배송 담당자 타입이 업체 배송담당자인 경우, 소속 허브 ID 유효성 검사
 
-    @Column(nullable = false)
     private Integer sequence;
 }

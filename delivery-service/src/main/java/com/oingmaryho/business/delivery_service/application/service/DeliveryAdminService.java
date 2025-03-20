@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class DeliveryAdminService {
     private final DeliveryRepository deliveryRepository;
+    private final DeliveryApplicationMapper deliveryApplicationMapper;
 
 
     @Transactional
@@ -67,7 +68,7 @@ public class DeliveryAdminService {
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_MANGER_NOT_FOUND));
 
         delivery.update(requestServiceDto.receiver(), requestServiceDto.receiverSlackId(), requestServiceDto.address(), newManager);
-        return DeliveryApplicationMapper.INSTANCE.toUpdateResponseServiceDto(delivery.getId());
+        return deliveryApplicationMapper.toUpdateResponseServiceDto(delivery.getId());
     }
 
     @Transactional
@@ -78,7 +79,7 @@ public class DeliveryAdminService {
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
         delivery.updateStatus(requestServiceDto.status());
-        return DeliveryApplicationMapper.INSTANCE.toUpdateStatusResponseServiceDto(delivery.getId());
+        return deliveryApplicationMapper.toUpdateStatusResponseServiceDto(delivery.getId());
     }
 
     @Transactional
@@ -100,7 +101,7 @@ public class DeliveryAdminService {
         Delivery delivery = deliveryRepository.findById(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
-        return DeliveryApplicationMapper.INSTANCE.toDeliveryResponseServiceDto(delivery);
+        return deliveryApplicationMapper.toDeliveryResponseServiceDto(delivery);
     }
 
     @Transactional(readOnly =true)
@@ -111,12 +112,12 @@ public class DeliveryAdminService {
         // TODO 2. userId로 배송 담당자 id 조회
         // TODO 3. 엄체 담당자인 경우 userId로 담당 업체 id 조회
 
-        DeliverySearchCriteria criteria = createDeliverySearchCriteria(requestServiceDto, userRole);
+        DeliverySearchCriteria criteria = createDeliverySearchCriteria(userId, requestServiceDto, userRole);
         Page<Delivery> deliveries = deliveryRepository.searchDelivery(
                 criteria,
                 requestServiceDto.customPageable());
 
-        return deliveries.map(DeliveryApplicationMapper.INSTANCE::toDeliveryResponseServiceDto);
+        return deliveries.map(deliveryApplicationMapper::toDeliveryResponseServiceDto);
     }
 
     @Transactional(readOnly = true)
@@ -126,7 +127,7 @@ public class DeliveryAdminService {
         DeliveryRoute route = deliveryRepository.findRouteById(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
-        return DeliveryApplicationMapper.INSTANCE.toRouteResponseServiceDto(route);
+        return deliveryApplicationMapper.toRouteResponseServiceDto(route);
     }
 
     @Transactional(readOnly = true)
@@ -137,12 +138,12 @@ public class DeliveryAdminService {
         // TODO 2. userId로 배송 담당자 id 조회
         // TODO 3. 엄체 담당자인 경우 userId로 담당 업체 id 조회
 
-        DeliveryRouteSearchCriteria criteria = createDeliveryRouteSearchCriteria(requestServiceDto, userRole);
+        DeliveryRouteSearchCriteria criteria = createDeliveryRouteSearchCriteria(userId, requestServiceDto, userRole);
         Page<DeliveryRoute> routes = deliveryRepository.searchRoute(
                 criteria,
                 requestServiceDto.customPageable());
 
-        return routes.map(DeliveryApplicationMapper.INSTANCE::toRouteResponseServiceDto);
+        return routes.map(deliveryApplicationMapper::toRouteResponseServiceDto);
     }
 
     @Transactional
@@ -164,13 +165,14 @@ public class DeliveryAdminService {
             }
         }
 
-        return DeliveryApplicationMapper.INSTANCE.toUpdateRouteStatusResponseServiceDto(route.getId());
+        return deliveryApplicationMapper.toUpdateRouteStatusResponseServiceDto(route.getId());
 
     }
 
     // 배송 조회 검색 조건 생성 (admin)
-    private DeliverySearchCriteria createDeliverySearchCriteria(DeliverySearchRequestServiceDto requestServiceDto, UserRoleType userRole) {
+    private DeliverySearchCriteria createDeliverySearchCriteria(Long userId, DeliverySearchRequestServiceDto requestServiceDto, UserRoleType userRole) {
         return DeliverySearchCriteria.builder()
+                .userId(userId)
                 .hubId(requestServiceDto.hubId())
                 .companyId(requestServiceDto.companyId())   // TODO 담당 업체 id
                 .managerId(requestServiceDto.managerId())   // TODO 배송 담당자 id
@@ -181,8 +183,9 @@ public class DeliveryAdminService {
     }
 
     // 배송 경로 조회 검색 조건 생성 (admin)
-    private DeliveryRouteSearchCriteria createDeliveryRouteSearchCriteria(DeliveryRouteSearchRequestServiceDto requestServiceDto, UserRoleType userRole) {
+    private DeliveryRouteSearchCriteria createDeliveryRouteSearchCriteria(Long userId, DeliveryRouteSearchRequestServiceDto requestServiceDto, UserRoleType userRole) {
         return DeliveryRouteSearchCriteria.builder()
+                .userId(userId)
                 .hubId(requestServiceDto.hubId())
                 .companyId(requestServiceDto.companyId())   // TODO 담당 업체 id
                 .managerId(requestServiceDto.managerId())   // TODO 배송 담당자 id

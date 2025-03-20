@@ -27,6 +27,8 @@ import java.util.UUID;
 public class DeliveryController {
 
     private final DeliveryService deliveryService;
+    private final DeliveryPresentationMapper deliveryPresentationMapper;
+
 
     @PutMapping("/{id}")
     public ResponseEntity<DeliveryUpdateResponseDto> updateDelivery(
@@ -38,13 +40,13 @@ public class DeliveryController {
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
 
-        DeliveryUpdateRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateServiceDto(id, requestDto);
+        DeliveryUpdateRequestServiceDto requestServiceDto = deliveryPresentationMapper.toUpdateServiceDto(id, requestDto);
         DeliveryUpdateResponseServiceDto responseServiceDto = deliveryService.updateDelivery(
                 userId,
-                userRole,
+                UserRoleType.HUB_DELIVERY_MANAGER,
                 requestServiceDto);
 
-        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateResponseDto(responseServiceDto));
+        return ResponseEntity.ok(deliveryPresentationMapper.toUpdateResponseDto(responseServiceDto));
     }
 
     @PutMapping("/{id}/status")
@@ -57,13 +59,13 @@ public class DeliveryController {
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
 
-        DeliveryUpdateStatusRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateStatusServiceDto(id, requestDto);
+        DeliveryUpdateStatusRequestServiceDto requestServiceDto = deliveryPresentationMapper.toUpdateStatusServiceDto(id, requestDto);
         DeliveryUpdateStatusResponseServiceDto responseServiceDto = deliveryService.updateStatusDelivery(
                 userId,
-                userRole,
+                UserRoleType.HUB_DELIVERY_MANAGER,
                 requestServiceDto);
 
-        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateStatusResponseDto(responseServiceDto));
+        return ResponseEntity.ok(deliveryPresentationMapper.toUpdateStatusResponseDto(responseServiceDto));
     }
 
     @DeleteMapping("/{id}")
@@ -75,10 +77,10 @@ public class DeliveryController {
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
 
-        DeliveryDeletionRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toDeletionServiceDto(id);
+        DeliveryDeletionRequestServiceDto requestServiceDto = deliveryPresentationMapper.toDeletionServiceDto(id);
         deliveryService.deleteDelivery(
                 userId,
-                userRole,
+                UserRoleType.HUB_DELIVERY_MANAGER,
                 requestServiceDto);
 
         return ResponseEntity.noContent().build();
@@ -94,13 +96,13 @@ public class DeliveryController {
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
 
-        DeliveryDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toDetailServiceDto(id);
+        DeliveryDetailRequestServiceDto requestServiceDto = deliveryPresentationMapper.toDetailServiceDto(id);
         DeliveryResponseServiceDto responseServiceDto = deliveryService.GetDeliveryDetail(
                 userId,
-                userRole,
+                UserRoleType.HUB_DELIVERY_MANAGER,
                 requestServiceDto);
 
-        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toDetailResponseDto(responseServiceDto));
+        return ResponseEntity.ok(deliveryPresentationMapper.toDetailResponseDto(responseServiceDto));
     }
 
     // 배송 전체 조회 (검색)
@@ -122,13 +124,13 @@ public class DeliveryController {
         DeliverySearchRequestDto requestDto = new DeliverySearchRequestDto(hubId, companyId, managerId, Boolean.FALSE);
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
 
-        DeliverySearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toSearchServiceDto(requestDto, customPageable);
+        DeliverySearchRequestServiceDto requestServiceDto = deliveryPresentationMapper.toSearchServiceDto(requestDto, customPageable);
         Page<DeliveryResponseServiceDto> responseServiceDtos = deliveryService.GetDeliveriesBySearch(
                 userId,
-                userRole,
+                UserRoleType.HUB_DELIVERY_MANAGER,
                 requestServiceDto);
 
-        return ResponseEntity.ok(responseServiceDtos.map(DeliveryPresentationMapper.INSTANCE::toSearchResponseDto));
+        return ResponseEntity.ok(responseServiceDtos.map(deliveryPresentationMapper::toSearchResponseDto));
     }
 
     // 배송 경로 조회
@@ -141,13 +143,13 @@ public class DeliveryController {
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
 
-        DeliveryRouteDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteDetailServiceDto(id);
+        DeliveryRouteDetailRequestServiceDto requestServiceDto = deliveryPresentationMapper.toRouteDetailServiceDto(id);
         DeliveryRouteResponseServiceDto responseServiceDto = deliveryService.GetDeliveryRouteDetail(
                 userId,
-                userRole,
+                UserRoleType.HUB_DELIVERY_MANAGER,
                 requestServiceDto);
 
-        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toRouteDetailResponseDto(responseServiceDto));
+        return ResponseEntity.ok(deliveryPresentationMapper.toRouteDetailResponseDto(responseServiceDto));
     }
 
     // 배송 경로 전체 조회 (검색)
@@ -170,13 +172,13 @@ public class DeliveryController {
         DeliveryRouteSearchRequestDto requestDto = new DeliveryRouteSearchRequestDto(hubId, companyId, managerId, Boolean.FALSE);
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
 
-        DeliveryRouteSearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteSearchServiceDto(id, requestDto, customPageable);
+        DeliveryRouteSearchRequestServiceDto requestServiceDto = deliveryPresentationMapper.toRouteSearchServiceDto(id, requestDto, customPageable);
         Page<DeliveryRouteResponseServiceDto> responseServiceDtos = deliveryService.GetDeliveryRoutesBySearch(
                 userId,
-                userRole,
+                UserRoleType.HUB_DELIVERY_MANAGER,
                 requestServiceDto);
 
-        return ResponseEntity.ok(responseServiceDtos.map(DeliveryPresentationMapper.INSTANCE::toRouteSearchResponseDto));
+        return ResponseEntity.ok(responseServiceDtos.map(deliveryPresentationMapper::toRouteSearchResponseDto));
     }
 
     @PutMapping("/routes/{id}/status")
@@ -189,13 +191,13 @@ public class DeliveryController {
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
 
-        DeliveryRouteUpdateStatusRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateRouteStatusServiceDto(id, requestDto);
+        DeliveryRouteUpdateStatusRequestServiceDto requestServiceDto = deliveryPresentationMapper.toUpdateRouteStatusServiceDto(id, requestDto);
         DeliveryRouteUpdateStatusResponseServiceDto responseServiceDto =
                 deliveryService.updateRouteStatusDelivery(
                         userId,
-                        userRole,
+                        UserRoleType.HUB_DELIVERY_MANAGER,
                         requestServiceDto);
 
-        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateRouteStatusResponseDto(responseServiceDto));
+        return ResponseEntity.ok(deliveryPresentationMapper.toUpdateRouteStatusResponseDto(responseServiceDto));
     }
 }

@@ -13,6 +13,7 @@ import java.util.UUID;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class DeliverySearchCriteria {
 
+    private final Long userId;
     private final UUID hubId;
     private final UUID companyId;
     private final UUID managerId;

@@ -15,7 +15,6 @@ import java.util.UUID;
 
 @Mapper(componentModel = "spring")
 public interface DeliveryApplicationMapper {
-    DeliveryApplicationMapper INSTANCE = Mappers.getMapper(DeliveryApplicationMapper.class);
 
     // RequestServiceDto -> Entity
     @BeanMapping(ignoreByDefault = true)

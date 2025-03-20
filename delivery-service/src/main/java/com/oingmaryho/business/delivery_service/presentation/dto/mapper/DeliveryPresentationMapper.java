@@ -13,7 +13,6 @@ import java.util.UUID;
 
 @Mapper(componentModel = "spring")
 public interface DeliveryPresentationMapper {
-    DeliveryPresentationMapper INSTANCE = Mappers.getMapper(DeliveryPresentationMapper.class);
 
     // RequestServiceDto -> RequestDto
     DeliveryCreationRequestServiceDto toCreationServiceDto(DeliveryCreationRequestDto requestDto);
