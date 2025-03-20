@@ -8,5 +8,6 @@ public record DeliverySearchRequestServiceDto(
         UUID hubId,
         UUID companyId,
         UUID managerId,
+        Boolean isDeleted,
         Pageable customPageable){
 }

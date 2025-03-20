@@ -3,8 +3,7 @@ package com.oingmaryho.business.delivery_service.presentation;
 import com.oingmaryho.business.delivery_service.application.service.DeliveryService;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
-import com.oingmaryho.business.delivery_service.domain.DeliveryRoute;
-import com.oingmaryho.business.delivery_service.domain.UserRoleType;
+import com.oingmaryho.business.delivery_service.domain.type.UserRoleType;
 import com.oingmaryho.business.delivery_service.presentation.dto.request.*;
 import com.oingmaryho.business.delivery_service.utils.PageableUtils;
 import com.oingmaryho.business.delivery_service.presentation.dto.mapper.DeliveryPresentationMapper;
@@ -28,6 +27,8 @@ import java.util.UUID;
 public class DeliveryController {
 
     private final DeliveryService deliveryService;
+    private final DeliveryPresentationMapper deliveryPresentationMapper;
+
 
     @PutMapping("/{id}")
     public ResponseEntity<DeliveryUpdateResponseDto> updateDelivery(
@@ -35,48 +36,79 @@ public class DeliveryController {
             @PathVariable UUID id,
             @RequestBody DeliveryUpdateRequestDto requestDto) {
 
-        log.info(">>>controller");
-        // TODO change userId, userRole type from UserVO
-        DeliveryUpdateRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateServiceDto(id, requestDto);
-        DeliveryUpdateResponseServiceDto responseServiceDto = deliveryService.updateDelivery(1L, UserRoleType.HUB_DELIVERY_MANAGER,requestServiceDto);
-        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateResponseDto(responseServiceDto));
+        // 인터셉터에서 처리한 userId, userRole을 가져온다.
+        Long userId = (Long) request.getAttribute("userId");
+        UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
+
+        DeliveryUpdateRequestServiceDto requestServiceDto = deliveryPresentationMapper.toUpdateServiceDto(id, requestDto);
+        DeliveryUpdateResponseServiceDto responseServiceDto = deliveryService.updateDelivery(
+                userId,
+                UserRoleType.HUB_DELIVERY_MANAGER,
+                requestServiceDto);
+
+        return ResponseEntity.ok(deliveryPresentationMapper.toUpdateResponseDto(responseServiceDto));
     }
 
     @PutMapping("/{id}/status")
     public ResponseEntity<DeliveryUpdateStatusResponseDto> updateDeliveryStatus(
+            HttpServletRequest request,
             @PathVariable UUID id,
             @RequestBody DeliveryUpdateStatusRequestDto requestDto) {
 
-        // TODO change userId, userRole type from UserVO
-        DeliveryUpdateStatusRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateStatusServiceDto(id, requestDto);
-        DeliveryUpdateStatusResponseServiceDto responseServiceDto = deliveryService.updateStatusDelivery(1L, UserRoleType.HUB_DELIVERY_MANAGER, requestServiceDto);
-        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateStatusResponseDto(responseServiceDto));
+        // 인터셉터에서 처리한 userId, userRole을 가져온다.
+        Long userId = (Long) request.getAttribute("userId");
+        UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
+
+        DeliveryUpdateStatusRequestServiceDto requestServiceDto = deliveryPresentationMapper.toUpdateStatusServiceDto(id, requestDto);
+        DeliveryUpdateStatusResponseServiceDto responseServiceDto = deliveryService.updateStatusDelivery(
+                userId,
+                UserRoleType.HUB_DELIVERY_MANAGER,
+                requestServiceDto);
+
+        return ResponseEntity.ok(deliveryPresentationMapper.toUpdateStatusResponseDto(responseServiceDto));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDelivery(
+            HttpServletRequest request,
             @PathVariable UUID id) {
 
-        // TODO change userId, userRole type from UserVO
-        DeliveryDeletionRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toDeletionServiceDto(id);
-        deliveryService.deleteDelivery(1L, UserRoleType.HUB_DELIVERY_MANAGER, requestServiceDto);
+        // 인터셉터에서 처리한 userId, userRole을 가져온다.
+        Long userId = (Long) request.getAttribute("userId");
+        UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
+
+        DeliveryDeletionRequestServiceDto requestServiceDto = deliveryPresentationMapper.toDeletionServiceDto(id);
+        deliveryService.deleteDelivery(
+                userId,
+                UserRoleType.HUB_DELIVERY_MANAGER,
+                requestServiceDto);
+
         return ResponseEntity.noContent().build();
     }
 
     // 배송 조회
     @GetMapping("/{id}")
     public ResponseEntity<DeliveryResponseDto> getDeliveryDetail(
+            HttpServletRequest request,
             @PathVariable UUID id) {
 
-        // TODO change userId, userRole type from UserVO
-        DeliveryDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toDetailServiceDto(id);
-        DeliveryResponseServiceDto responseServiceDto = deliveryService.GetDeliveryDetail(1L, UserRoleType.HUB_DELIVERY_MANAGER, requestServiceDto);
-        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toDetailResponseDto(responseServiceDto));
+        // 인터셉터에서 처리한 userId, userRole을 가져온다.
+        Long userId = (Long) request.getAttribute("userId");
+        UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
+
+        DeliveryDetailRequestServiceDto requestServiceDto = deliveryPresentationMapper.toDetailServiceDto(id);
+        DeliveryResponseServiceDto responseServiceDto = deliveryService.GetDeliveryDetail(
+                userId,
+                UserRoleType.HUB_DELIVERY_MANAGER,
+                requestServiceDto);
+
+        return ResponseEntity.ok(deliveryPresentationMapper.toDetailResponseDto(responseServiceDto));
     }
 
     // 배송 전체 조회 (검색)
     @GetMapping
     public ResponseEntity<Page<DeliveryResponseDto>> searchDelivery(
+            HttpServletRequest request,
             @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
             @RequestParam(value = "size", required = false, defaultValue = "10") Integer size,
             @RequestParam(value = "sortDirection", required = false, defaultValue = "DESC") String sortDirection,
@@ -85,31 +117,45 @@ public class DeliveryController {
             @RequestParam(value = "companyId", required = false) UUID companyId,
             @RequestParam(value = "managerId", required = false) UUID managerId) {
 
-        DeliverySearchRequestDto requestDto = new DeliverySearchRequestDto(hubId, companyId, managerId);
+        // 인터셉터에서 처리한 userId, userRole을 가져온다.
+        Long userId = (Long) request.getAttribute("userId");
+        UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
+
+        DeliverySearchRequestDto requestDto = new DeliverySearchRequestDto(hubId, companyId, managerId, Boolean.FALSE);
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
 
-        // TODO change userId, userRole type from UserVO
-        DeliverySearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toSearchServiceDto(requestDto, customPageable);
-        Page<DeliveryResponseServiceDto> responseServiceDtos = deliveryService.GetDeliveriesBySearch(1L, UserRoleType.HUB_DELIVERY_MANAGER, requestServiceDto);
+        DeliverySearchRequestServiceDto requestServiceDto = deliveryPresentationMapper.toSearchServiceDto(requestDto, customPageable);
+        Page<DeliveryResponseServiceDto> responseServiceDtos = deliveryService.GetDeliveriesBySearch(
+                userId,
+                UserRoleType.HUB_DELIVERY_MANAGER,
+                requestServiceDto);
 
-        return ResponseEntity.ok(responseServiceDtos.map(DeliveryPresentationMapper.INSTANCE::toSearchResponseDto));
+        return ResponseEntity.ok(responseServiceDtos.map(deliveryPresentationMapper::toSearchResponseDto));
     }
 
     // 배송 경로 조회
     @GetMapping("/routes/{id}")
     public ResponseEntity<DeliveryRouteResponseDto> getDeliveryRouteDetail(
+            HttpServletRequest request,
             @PathVariable UUID id) {
 
-        // TODO change userId, userRole type from UserVO
-        DeliveryRouteDetailRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteDetailServiceDto(id);
-        DeliveryRouteResponseServiceDto responseServiceDto = deliveryService.GetDeliveryRouteDetail(1L, UserRoleType.HUB_DELIVERY_MANAGER, requestServiceDto);
+        // 인터셉터에서 처리한 userId, userRole을 가져온다.
+        Long userId = (Long) request.getAttribute("userId");
+        UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
 
-        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toRouteDetailResponseDto(responseServiceDto));
+        DeliveryRouteDetailRequestServiceDto requestServiceDto = deliveryPresentationMapper.toRouteDetailServiceDto(id);
+        DeliveryRouteResponseServiceDto responseServiceDto = deliveryService.GetDeliveryRouteDetail(
+                userId,
+                UserRoleType.HUB_DELIVERY_MANAGER,
+                requestServiceDto);
+
+        return ResponseEntity.ok(deliveryPresentationMapper.toRouteDetailResponseDto(responseServiceDto));
     }
 
     // 배송 경로 전체 조회 (검색)
     @GetMapping("/{id}/routes")
     public ResponseEntity<Page<DeliveryRouteResponseDto>> searchDeliveryRoute(
+            HttpServletRequest request,
             @PathVariable UUID id,
             @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
             @RequestParam(value = "size", required = false, defaultValue = "10") Integer size,
@@ -119,24 +165,39 @@ public class DeliveryController {
             @RequestParam(value = "companyId", required = false) UUID companyId,
             @RequestParam(value = "managerId", required = false) UUID managerId) {
 
-        DeliveryRouteSearchRequestDto requestDto = new DeliveryRouteSearchRequestDto(hubId, companyId, managerId);
+        // 인터셉터에서 처리한 userId, userRole을 가져온다.
+        Long userId = (Long) request.getAttribute("userId");
+        UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
+
+        DeliveryRouteSearchRequestDto requestDto = new DeliveryRouteSearchRequestDto(hubId, companyId, managerId, Boolean.FALSE);
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
 
-        // TODO change userId, userRole type from UserVO
-        DeliveryRouteSearchRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toRouteSearchServiceDto(id, requestDto, customPageable);
-        Page<DeliveryRouteResponseServiceDto> responseServiceDtos = deliveryService.GetDeliveryRoutesBySearch(1L, UserRoleType.HUB_DELIVERY_MANAGER, requestServiceDto);
+        DeliveryRouteSearchRequestServiceDto requestServiceDto = deliveryPresentationMapper.toRouteSearchServiceDto(id, requestDto, customPageable);
+        Page<DeliveryRouteResponseServiceDto> responseServiceDtos = deliveryService.GetDeliveryRoutesBySearch(
+                userId,
+                UserRoleType.HUB_DELIVERY_MANAGER,
+                requestServiceDto);
 
-        return ResponseEntity.ok(responseServiceDtos.map(DeliveryPresentationMapper.INSTANCE::toRouteSearchResponseDto));
+        return ResponseEntity.ok(responseServiceDtos.map(deliveryPresentationMapper::toRouteSearchResponseDto));
     }
 
     @PutMapping("/routes/{id}/status")
     public ResponseEntity<DeliveryRouteUpdateStatusResponseDto> updateDeliveryRouteStatus(
+            HttpServletRequest request,
             @PathVariable UUID id,
             @RequestBody DeliveryRouteUpdateStatusRequestDto requestDto) {
 
-        // TODO change userId, userRole type from UserVO
-        DeliveryRouteUpdateStatusRequestServiceDto requestServiceDto = DeliveryPresentationMapper.INSTANCE.toUpdateRouteStatusServiceDto(id, requestDto);
-        DeliveryRouteUpdateStatusResponseServiceDto responseServiceDto = deliveryService.updateRouteStatusDelivery(1L, UserRoleType.HUB_DELIVERY_MANAGER, requestServiceDto);
-        return ResponseEntity.ok(DeliveryPresentationMapper.INSTANCE.toUpdateRouteStatusResponseDto(responseServiceDto));
+        // 인터셉터에서 처리한 userId, userRole을 가져온다.
+        Long userId = (Long) request.getAttribute("userId");
+        UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
+
+        DeliveryRouteUpdateStatusRequestServiceDto requestServiceDto = deliveryPresentationMapper.toUpdateRouteStatusServiceDto(id, requestDto);
+        DeliveryRouteUpdateStatusResponseServiceDto responseServiceDto =
+                deliveryService.updateRouteStatusDelivery(
+                        userId,
+                        UserRoleType.HUB_DELIVERY_MANAGER,
+                        requestServiceDto);
+
+        return ResponseEntity.ok(deliveryPresentationMapper.toUpdateRouteStatusResponseDto(responseServiceDto));
     }
 }

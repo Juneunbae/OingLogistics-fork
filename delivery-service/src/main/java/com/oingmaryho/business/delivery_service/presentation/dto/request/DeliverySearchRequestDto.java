@@ -4,5 +4,6 @@ import java.util.UUID;
 
 public record DeliverySearchRequestDto(UUID hubId,
                                        UUID companyId,
-                                       UUID managerId) {
+                                       UUID managerId,
+                                       Boolean isDeleted) {
 }

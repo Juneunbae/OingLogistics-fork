@@ -2,8 +2,8 @@ package com.oingmaryho.business.delivery_service.application.dto.mapper;
 
 import com.oingmaryho.business.delivery_service.application.dto.request.DeliveryCreationRequestServiceDto;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
-import com.oingmaryho.business.delivery_service.domain.Delivery;
-import com.oingmaryho.business.delivery_service.domain.DeliveryRoute;
+import com.oingmaryho.business.delivery_service.domain.entity.Delivery;
+import com.oingmaryho.business.delivery_service.domain.entity.DeliveryRoute;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -15,7 +15,6 @@ import java.util.UUID;
 
 @Mapper(componentModel = "spring")
 public interface DeliveryApplicationMapper {
-    DeliveryApplicationMapper INSTANCE = Mappers.getMapper(DeliveryApplicationMapper.class);
 
     // RequestServiceDto -> Entity
     @BeanMapping(ignoreByDefault = true)
@@ -39,6 +38,7 @@ public interface DeliveryApplicationMapper {
     @Mapping(target = "deliveryId", source = "route.delivery.id")
     @Mapping(target = "managerId", source = "delivery.manager.id")
     DeliveryRouteResponseServiceDto toRouteResponseServiceDto(DeliveryRoute route);
+
 
 
 }
