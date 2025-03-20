@@ -93,7 +93,41 @@ public class UserAdminService {
 
 	@Transactional
 	public void createUser(UserAdminCreateRequestServiceDto requestServiceDto) {
+		//null처리
+		if (requestServiceDto.username() == null || requestServiceDto.username().isEmpty()) {
+			throw new UserException(ErrorCode.USERNAME_NULL);
+		}
+		if (requestServiceDto.password() == null || requestServiceDto.password().isEmpty()) {
+			throw new UserException(ErrorCode.PASSWORD_NULL);
+		}
+		if (requestServiceDto.slackId() == null || requestServiceDto.slackId().isEmpty()) {
+			throw new UserException(ErrorCode.SLACKID_NULL);
+		}
 
+		if (!Pattern.matches(USERNAME_REGEX, requestServiceDto.username())) {
+			throw new UserException(ErrorCode.USERNAME_REGEX_NOT_MATCH);
+		}
+		if (!Pattern.matches(PASSWORD_REGEX, requestServiceDto.password())) {
+			throw new UserException(ErrorCode.PASSWORD_REGEX_NOT_MATCH);
+		}
+
+		// username 중복 체크
+		if (userRepository.existsByUsername(requestServiceDto.username())) {
+			throw new UserException(ErrorCode.ALREADY_EXISTS);
+		}
+
+		// 비번 암호화
+		String encodedPassword = passwordEncoder.encode(requestServiceDto.password());
+
+		// DTO -> Entity 변환 후 저장
+		User user = User.builder()
+			.username(requestServiceDto.username())
+			.password(encodedPassword)
+			.slackId(requestServiceDto.slackId())
+			.role(UserRoleType.MASTER)
+			.build();
+
+		userRepository.save(user);
 	}
 
 	@Transactional
