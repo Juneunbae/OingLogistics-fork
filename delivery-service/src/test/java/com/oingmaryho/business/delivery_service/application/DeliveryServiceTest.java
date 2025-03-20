@@ -2,8 +2,11 @@ package com.oingmaryho.business.delivery_service.application;
 
 import com.oingmaryho.business.delivery_service.application.dto.mapper.DeliveryApplicationMapper;
 import com.oingmaryho.business.delivery_service.application.dto.request.DeliveryDetailRequestServiceDto;
+import com.oingmaryho.business.delivery_service.application.dto.request.DeliveryRouteDetailRequestServiceDto;
+import com.oingmaryho.business.delivery_service.application.dto.request.DeliveryRouteSearchRequestServiceDto;
 import com.oingmaryho.business.delivery_service.application.dto.request.DeliverySearchRequestServiceDto;
 import com.oingmaryho.business.delivery_service.application.dto.response.DeliveryResponseServiceDto;
+import com.oingmaryho.business.delivery_service.application.dto.response.DeliveryRouteResponseServiceDto;
 import com.oingmaryho.business.delivery_service.application.service.DeliveryService;
 import com.oingmaryho.business.delivery_service.domain.entity.Delivery;
 import com.oingmaryho.business.delivery_service.domain.entity.DeliveryManager;
@@ -31,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.oingmaryho.business.delivery_service.domain.entity.QDelivery.delivery;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -738,21 +742,256 @@ public class DeliveryServiceTest {
                 .searchDelivery(any(), any());
     }
 
-
     @Test
     @DisplayName("배송 경로 상세 조회: 허브 배송 담당자는 본인의 배송 경로를 조회할 수 있다.")
     public void 배송경로상세조회_허브배송담당자() {
+        //given
+        DeliveryManager manager1 = DeliveryManager.builder()
+                .id(hubDeliveryManagerId1)
+                .slackId(hubDeliveryManagerSlackId1)
+                .hubId(hubId1)
+                .companyId(null)
+                .managerId(userId1)
+                .type(managerType1)
+                .sequence(1)
+                .build();
 
+        DeliveryManager manager2 = DeliveryManager.builder()
+                .id(companyDeliveryManagerId1)
+                .slackId(companyDeliveryManagerSlackId1)
+                .hubId(hubId2)
+                .companyId(companyId1)
+                .managerId(userId2)
+                .type(managerType2)
+                .sequence(1)
+                .build();
+
+        Delivery delivery = Delivery.builder()
+                .id(deliveryId1)
+                .status(deliveryStatus1)
+                .orderId(orderId1)
+                .departureHubId(hubId1)
+                .destinationHubId(hubId2)
+                .address(address1)
+                .receiver(receiver1)
+                .receiverSlackId(receiverSlackId1)
+                .manager(manager2)
+                .build();
+
+        // 배송 경로
+        DeliveryRoute route = DeliveryRoute.builder()
+                .id(routeId1)
+                .delivery(delivery)
+                .sequence(1)
+                .departureHubId(hubId1)
+                .destinationHubId(hubId2)
+                .status(routeStatus1)
+                .estimatedDistance(12.1234)
+                .estimatedTime(1)
+                .manager(manager1)
+                .build();
+
+        DeliveryRouteDetailRequestServiceDto requestDto = new DeliveryRouteDetailRequestServiceDto(
+                routeId1
+        );
+
+        DeliveryRouteResponseServiceDto responseDto = new DeliveryRouteResponseServiceDto(
+                routeId1,
+                deliveryId1,
+                1,
+                hubId1,
+                hubId2,
+                routeStatus1,
+                12.1234,
+                1,
+                null,
+                null,
+                hubDeliveryManagerId1,
+                Boolean.FALSE
+        );
+
+        when(mapper.toRouteResponseServiceDto(any(DeliveryRoute.class)))
+                .thenReturn(responseDto);
+
+        when(deliveryRepository.findRouteByIdAndIsDeleted(routeId1))
+                .thenReturn(Optional.of(route));
+
+        //when
+        DeliveryRouteResponseServiceDto result = deliveryService.GetDeliveryRouteDetail(
+                userId2,
+                role2,
+                requestDto
+        );
+
+        //then
+        assertThat(result).isNotNull()
+                .extracting(
+                        DeliveryRouteResponseServiceDto::id,
+                        DeliveryRouteResponseServiceDto::deliveryId,
+                        DeliveryRouteResponseServiceDto::sequence,
+                        DeliveryRouteResponseServiceDto::departureHubId,
+                        DeliveryRouteResponseServiceDto::destinationHubId,
+                        DeliveryRouteResponseServiceDto::status,
+                        DeliveryRouteResponseServiceDto::estimatedDistance,
+                        DeliveryRouteResponseServiceDto::estimatedTime,
+                        DeliveryRouteResponseServiceDto::managerId,
+                        DeliveryRouteResponseServiceDto::isDeleted
+                )
+                .containsExactlyInAnyOrder(
+                        routeId1,
+                        deliveryId1,
+                        1,
+                        hubId1,
+                        hubId2,
+                        routeStatus1,
+                        12.1234,
+                        1,
+                        hubDeliveryManagerId1,
+                        Boolean.FALSE
+                );
+        verify(deliveryRepository, times(1))
+                .findRouteByIdAndIsDeleted(routeId1);
     }
 
     @Test
-    @DisplayName("배송 경로 검색")
-    public void 배송경로검색() {
+    @DisplayName("배송 경로 검색: 업체 배송 담당자는 배송 경로를 검색할 수 있다.")
+    public void 배송경로검색_업체배송담당자() {
+        //given
+        Pageable pageable = PageableUtils.customPageable(1, 10, null, null);
+        DeliveryRouteSearchRequestServiceDto requestDto = new DeliveryRouteSearchRequestServiceDto(
+                deliveryId1,
+                null,
+                null,
+                null,
+                Boolean.FALSE,
+                pageable
+        );
 
+        // 업체 배송 담당자
+        DeliveryManager manager1 = DeliveryManager.builder()
+                .id(companyDeliveryManagerId1)
+                .slackId(companyDeliveryManagerSlackId1)
+                .hubId(hubId1)
+                .companyId(companyId1)
+                .managerId(userId1)
+                .type(managerType2)
+                .sequence(1)
+                .build();
+
+        // 허브 배송 담당자
+        DeliveryManager manager2 = DeliveryManager.builder()
+                .id(hubDeliveryManagerId1)
+                .slackId(hubDeliveryManagerSlackId1)
+                .hubId(hubId1)
+                .companyId(null)
+                .managerId(userId2)
+                .type(managerType1)
+                .sequence(1)
+                .build();
+
+        // 허브 배송 담당자
+        DeliveryManager manager3 = DeliveryManager.builder()
+                .id(hubDeliveryManagerId2)
+                .slackId(hubDeliveryManagerSlackId2)
+                .hubId(hubId2)
+                .companyId(null)
+                .managerId(userId3)
+                .type(managerType1)
+                .sequence(2)
+                .build();
+
+        Delivery delivery = Delivery.builder()
+                .id(deliveryId1)
+                .status(deliveryStatus1)
+                .orderId(orderId1)
+                .departureHubId(hubId1)
+                .destinationHubId(hubId3)
+                .address(address1)
+                .receiver(receiver1)
+                .receiverSlackId(receiverSlackId1)
+                .manager(manager1)
+                .build();
+
+        // 배송 경로
+        DeliveryRoute route1 = DeliveryRoute.builder()
+                .id(routeId1)
+                .delivery(delivery)
+                .sequence(1)
+                .departureHubId(hubId1)
+                .destinationHubId(hubId2)
+                .status(routeStatus1)
+                .estimatedDistance(12.1234)
+                .estimatedTime(1)
+                .manager(manager2)
+                .build();
+
+        // 배송 경로
+        DeliveryRoute route2 = DeliveryRoute.builder()
+                .id(routeId2)
+                .delivery(delivery)
+                .sequence(2)
+                .departureHubId(hubId2)
+                .destinationHubId(hubId3)
+                .status(routeStatus1)
+                .estimatedDistance(22.1234)
+                .estimatedTime(2)
+                .manager(manager3)
+                .build();
+
+        Page<DeliveryRoute> page = new PageImpl<>(List.of(route1, route2), pageable, 2);
+
+        DeliveryRouteResponseServiceDto responseDto1 = new DeliveryRouteResponseServiceDto(
+                routeId1,
+                deliveryId1,
+                1,
+                hubId1,
+                hubId2,
+                routeStatus1,
+                12.1234,
+                1,
+                null,
+                null,
+                hubDeliveryManagerId1,
+                Boolean.FALSE
+        );
+
+        DeliveryRouteResponseServiceDto responseDto2 = new DeliveryRouteResponseServiceDto(
+                routeId2,
+                deliveryId1,
+                1,
+                hubId2,
+                hubId3,
+                routeStatus1,
+                22.1234,
+                2,
+                null,
+                null,
+                hubDeliveryManagerId2,
+                Boolean.FALSE
+        );
+
+
+        when(deliveryRepository.searchRoute(any(), eq(pageable))).thenReturn(page);
+        when(mapper.toRouteResponseServiceDto(route1)).thenReturn(responseDto1);
+        when(mapper.toRouteResponseServiceDto(route2)).thenReturn(responseDto2);
+
+        //when
+        Page<DeliveryRouteResponseServiceDto> result = deliveryService.GetDeliveryRoutesBySearch(
+                userId1,
+                role1,
+                requestDto
+        );
+
+        //then
+        assertThat(result.getContent()).hasSize(2)
+                .containsExactly(responseDto1, responseDto2);
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        verify(deliveryRepository, times(1))
+                .searchRoute(any(), any());
     }
 
     @Test
-    @DisplayName("배송 수정 - ")
+    @DisplayName("배송 수정 - 배송 정보를 수정한다.")
     public void 배송수정() {
 
     }
