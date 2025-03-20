@@ -1,4 +1,4 @@
-package com.oingmaryho.business.delivery_service.domain;
+package com.oingmaryho.business.delivery_service.domain.criteria;
 
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryManagerType;
 import lombok.AccessLevel;

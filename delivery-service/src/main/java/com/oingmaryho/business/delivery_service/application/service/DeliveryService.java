@@ -3,8 +3,8 @@ package com.oingmaryho.business.delivery_service.application.service;
 import com.oingmaryho.business.delivery_service.application.dto.mapper.DeliveryApplicationMapper;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
-import com.oingmaryho.business.delivery_service.domain.DeliveryRouteSearchCriteria;
-import com.oingmaryho.business.delivery_service.domain.DeliverySearchCriteria;
+import com.oingmaryho.business.delivery_service.domain.criteria.DeliveryRouteSearchCriteria;
+import com.oingmaryho.business.delivery_service.domain.criteria.DeliverySearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.entity.Delivery;
 import com.oingmaryho.business.delivery_service.domain.entity.DeliveryManager;
 import com.oingmaryho.business.delivery_service.domain.entity.DeliveryRoute;
@@ -42,7 +42,7 @@ public class DeliveryService {
         DeliveryManager newManager = null;
         if (requestServiceDto.managerId() != null) {
             newManager = deliveryRepository.findManagerByIdAndIsDeleted(requestServiceDto.managerId())
-                    .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_MANGER_NOT_FOUND));
+                    .orElseThrow(() -> new DeliveryException(ErrorCode.MANGER_NOT_FOUND));
         }
 
         delivery.update(requestServiceDto.receiver(), requestServiceDto.receiverSlackId(), requestServiceDto.address(), newManager);
@@ -77,6 +77,7 @@ public class DeliveryService {
     }
 
     @Transactional(readOnly =true)
+    @Cacheable(cacheNames = "delivery", key = "#requestServiceDto.id()")
     public DeliveryResponseServiceDto GetDeliveryDetail(
             Long userId,
             UserRoleType userRole,
@@ -108,13 +109,14 @@ public class DeliveryService {
     }
 
     @Transactional(readOnly =true)
+    @Cacheable(cacheNames = "route", key = "#requestServiceDto.id()")
     public DeliveryRouteResponseServiceDto GetDeliveryRouteDetail(
             Long userId,
             UserRoleType userRole,
             DeliveryRouteDetailRequestServiceDto requestServiceDto) {
 
         DeliveryRoute route = deliveryRepository.findRouteByIdAndIsDeleted(requestServiceDto.id())
-                .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_ROUTE_NOT_FOUND));
+                .orElseThrow(() -> new DeliveryException(ErrorCode.ROUTE_NOT_FOUND));
 
         return deliveryApplicationMapper.toRouteResponseServiceDto(route);
     }
@@ -146,7 +148,7 @@ public class DeliveryService {
             DeliveryRouteUpdateStatusRequestServiceDto requestServiceDto) {
 
         DeliveryRoute route = deliveryRepository.findRouteByIdAndIsDeleted(requestServiceDto.id())
-                .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_ROUTE_NOT_FOUND));
+                .orElseThrow(() -> new DeliveryException(ErrorCode.ROUTE_NOT_FOUND));
 
         // TODO 권한 확인
         route.changeStatus(requestServiceDto.status());

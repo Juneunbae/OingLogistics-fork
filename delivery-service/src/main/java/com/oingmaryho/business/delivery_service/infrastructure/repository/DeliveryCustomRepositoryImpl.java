@@ -1,9 +1,10 @@
 package com.oingmaryho.business.delivery_service.infrastructure.repository;
 
+import com.oingmaryho.business.delivery_service.domain.criteria.DeliveryRouteSearchCriteria;
+import com.oingmaryho.business.delivery_service.domain.criteria.DeliverySearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.entity.*;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryManagerType;
 import com.oingmaryho.business.delivery_service.utils.QueryDslUtils;
-import com.oingmaryho.business.delivery_service.domain.*;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;

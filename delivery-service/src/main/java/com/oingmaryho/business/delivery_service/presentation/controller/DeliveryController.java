@@ -1,4 +1,4 @@
-package com.oingmaryho.business.delivery_service.presentation;
+package com.oingmaryho.business.delivery_service.presentation.controller;
 
 import com.oingmaryho.business.delivery_service.application.service.DeliveryService;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
