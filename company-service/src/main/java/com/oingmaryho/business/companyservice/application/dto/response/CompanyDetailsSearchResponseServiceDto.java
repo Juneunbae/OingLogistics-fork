@@ -6,6 +6,7 @@ public record CompanyDetailsSearchResponseServiceDto(
 	UUID id,
 	String name,
 	String type,
+	Long managerId,
 	UUID manageHubId,
 	String address
 ) {

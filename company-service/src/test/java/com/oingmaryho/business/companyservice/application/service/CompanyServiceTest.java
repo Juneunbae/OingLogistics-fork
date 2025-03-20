@@ -29,6 +29,7 @@ import com.oingmaryho.business.companyservice.application.dto.response.CompanySe
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyUpdateResponseServiceDto;
 import com.oingmaryho.business.companyservice.domain.Company;
 import com.oingmaryho.business.companyservice.domain.repository.CompanyRepository;
+import com.oingmaryho.business.companyservice.domain.repository.CustomCompanyRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import jdk.jfr.Description;
@@ -39,6 +40,9 @@ class CompanyServiceTest {
 	private CompanyRepository companyRepository;
 
 	@Mock
+	private CustomCompanyRepository customCompanyRepository;
+
+	@Mock
 	private CompanyApplicationMapper companyApplicationMapper;
 
 	@InjectMocks
@@ -46,6 +50,7 @@ class CompanyServiceTest {
 
 	private Company company;
 	private static final UUID FIXED_COMPANY_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+	private static final UUID FIXED_MANAGE_HUB_ID = UUID.fromString("000e0000-e89b-12d3-a456-426614174000");
 	private UUID companyId;
 
 	@BeforeEach
@@ -55,7 +60,8 @@ class CompanyServiceTest {
 			.id(FIXED_COMPANY_ID)
 			.name("Test Company")
 			.type("Retail")
-			.manageHubId(FIXED_COMPANY_ID)
+			.managerId(1L)
+			.manageHubId(FIXED_MANAGE_HUB_ID)
 			.address("123 Test Street")
 			.isDeleted(false)
 			.build();
@@ -68,7 +74,8 @@ class CompanyServiceTest {
 		CompanyCreateRequestServiceDto requestDto = new CompanyCreateRequestServiceDto(
 			"Test Company",
 			"Retail",
-			FIXED_COMPANY_ID,
+			1L,
+			FIXED_MANAGE_HUB_ID,
 			"123 Test Street"
 		);
 
@@ -94,7 +101,7 @@ class CompanyServiceTest {
 
 		// ✅ 올바른 개수의 인자로 객체 생성
 		CompanyDetailsSearchResponseServiceDto expectedResponse = new CompanyDetailsSearchResponseServiceDto(
-			companyId, "Test Company", "Retail", FIXED_COMPANY_ID, "123 Test Street"
+			companyId, "Test Company", "Retail",1L, FIXED_MANAGE_HUB_ID, "123 Test Street"
 		);
 
 		when(companyRepository.findByIdAndIsDeletedFalse(companyId)).thenReturn(Optional.of(company));
@@ -117,7 +124,7 @@ class CompanyServiceTest {
 		Pageable pageable = mock(Pageable.class);
 		CompanySearchRequestServiceDto requestDto = mock(CompanySearchRequestServiceDto.class);
 		Page<Company> companyPage = new PageImpl<>(List.of(company));
-		when(companyRepository.findDynamicQuery(any(), eq(pageable))).thenReturn(companyPage);
+		when(customCompanyRepository.findDynamicQuery(any(), eq(pageable))).thenReturn(companyPage);
 		when(companyApplicationMapper.toCompanySearchResponseServiceDto(any())).thenReturn(mock(
 			CompanySearchResponseServiceDto.class));
 
@@ -132,7 +139,7 @@ class CompanyServiceTest {
 	@Description("업체 수정 테스트")
 	void updateCompany_DirtyChecking() {
 		CompanyUpdateRequestServiceDto requestDto = new CompanyUpdateRequestServiceDto(
-			companyId, "Updated Company Name", "Retail", FIXED_COMPANY_ID, "456 New Address"
+			companyId, "Updated Company Name", "Retail", 1L, FIXED_MANAGE_HUB_ID, "456 New Address"
 		);
 
 		when(companyRepository.findByIdAndIsDeletedFalse(companyId)).thenReturn(Optional.of(company));

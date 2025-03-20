@@ -1,5 +1,6 @@
 package com.oingmaryho.business.companyservice.domain;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -45,9 +46,6 @@ public class Company extends BaseEntity {
 
 	@Column(nullable = false)
 	private String address;
-
-	@Column(nullable = false)
-	private Boolean isDeleted;
 
 	public void update(String name, String type, UUID manageHubId, String address) {
 		Optional.ofNullable(name).filter(n -> !n.isBlank()).ifPresent(value -> this.name = value);
