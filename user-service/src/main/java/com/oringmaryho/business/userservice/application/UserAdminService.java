@@ -1,14 +1,20 @@
 package com.oringmaryho.business.userservice.application;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminCreateRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminFindRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminGrantRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSearchRequestServiceDto;
@@ -16,13 +22,12 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminSig
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
+import com.oringmaryho.business.userservice.config.security.jwt.JwtTokenProvider;
 import com.oringmaryho.business.userservice.domain.User;
 import com.oringmaryho.business.userservice.domain.UserRoleType;
 import com.oringmaryho.business.userservice.domain.repository.UserRepository;
 import com.oringmaryho.business.userservice.exception.ErrorCode;
 import com.oringmaryho.business.userservice.exception.UserException;
-import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRequestServiceDto;
-import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminGrantRoleResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminSearchResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminUpdateResponseDto;
@@ -37,6 +42,8 @@ public class UserAdminService {
 	private final UserRepository userRepository;
 	private final UserApplicationMapper userApplicationMapper;
 	private final PasswordEncoder passwordEncoder;
+	private final JwtTokenProvider jwtTokenProvider;
+	private final RedisTemplate<String, Object> redisTemplate;
 
 	@Value("${admin.key}")
 	private String adminKey;
@@ -139,7 +146,6 @@ public class UserAdminService {
 
 	}
 
-
 	public List<UserAdminSearchResponseDto> searchUsers(
 		UserAdminSearchRequestServiceDto requestServiceDto) {
 		return null;
@@ -151,20 +157,32 @@ public class UserAdminService {
 			throw new UserException(ErrorCode.USERNAME_NULL);
 		}
 
-		//비밀번호나 유저네임 바꿀 때 정규식 추가하기
 		User user = userRepository.findById(requestServiceDto.id())
 			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
 
+		//db에 업데이트
 		if (requestServiceDto.username() != null && !requestServiceDto.username().isEmpty()) {
+			if (!Pattern.matches(USERNAME_REGEX, requestServiceDto.username())) {
+				throw new UserException(ErrorCode.USERNAME_REGEX_NOT_MATCH);
+			}
 			user.updateUsername(requestServiceDto.username());
 		}
 		if (requestServiceDto.password() != null && !requestServiceDto.password().isEmpty()) {
+			if (!Pattern.matches(PASSWORD_REGEX, requestServiceDto.password())) {
+				throw new UserException(ErrorCode.PASSWORD_REGEX_NOT_MATCH);
+			}
 			String encodedPassword = passwordEncoder.encode(requestServiceDto.password());
 			user.updatePassword(encodedPassword);
 		}
 		if (requestServiceDto.slackId() != null && !requestServiceDto.slackId().isEmpty()) {
 			user.updateSlackId(requestServiceDto.slackId());
 		}
+
+		User updatedUser = userRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		//redis에 업데이트
+		updateRedisCache(updatedUser);
 
 		return userApplicationMapper.toUserAdminUpdateResponseDto(user.getId());
 	}
@@ -199,13 +217,16 @@ public class UserAdminService {
 		User user = userRepository.findById(curUserId)
 			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
 
-		if(!user.getRole().equals(UserRoleType.MASTER)) {
+		if (!user.getRole().equals(UserRoleType.MASTER)) {
 			throw new UserException(ErrorCode.LESS_ROLE);
 		}
 
 		UserRoleType role = user.getRole();
 
+		//db에 업데이트
 		user.updateRoleType(newRole);
+
+		//todo: redis에 업데이트
 
 		UserAdminUpdateRoleResponseDto responseDto = userApplicationMapper.toUserAdminUpdateRoleResponseDto(
 			curUserId, role, newRole);
@@ -220,7 +241,7 @@ public class UserAdminService {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
 
-		if(!user.getRole().equals(UserRoleType.MASTER)) {
+		if (!user.getRole().equals(UserRoleType.MASTER)) {
 			throw new UserException(ErrorCode.LESS_ROLE);
 		}
 
@@ -229,6 +250,25 @@ public class UserAdminService {
 
 	@Transactional
 	public void deleteUser(UserAdminDeleteRequestServiceDto requestServiceDto) {
+		//todo: 삭제 시 메시지 큐에 메시지 날리기
+		User user = userRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
 
+		user.delete(user.getId());
+	}
+
+	//레디스 캐시 업데이트 메서드
+	private void updateRedisCache(User user) {
+		String userInfoKey = "user:info:" + user.getId();
+		Map<String, Object> userInfoMap = new ConcurrentHashMap<>();
+
+		userInfoMap.put("username", user.getUsername());
+		userInfoMap.put("slackId", user.getSlackId());
+		userInfoMap.put("role", user.getRole());
+		userInfoMap.put("status", user.getStatus());
+
+		long expirationTime = jwtTokenProvider.getRefreshTokenExpiration();
+		redisTemplate.opsForValue().set(userInfoKey, userInfoMap);
+		redisTemplate.expire(userInfoKey, expirationTime, TimeUnit.MILLISECONDS);
 	}
 }
