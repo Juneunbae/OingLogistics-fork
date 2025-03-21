@@ -9,9 +9,9 @@ public record ProductSearchRequestServiceDto(
 	UUID manageHubId,
 	UUID companyId,
 	String companyName,
-	Long minPrice,
-	Long maxPrice,
-	Long minStock,
-	Long maxStock
+	Integer minPrice,
+	Integer maxPrice,
+	Integer minStock,
+	Integer maxStock
 ) {
 }

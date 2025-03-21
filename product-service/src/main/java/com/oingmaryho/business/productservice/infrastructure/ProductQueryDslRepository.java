@@ -101,7 +101,7 @@ public class ProductQueryDslRepository implements CustomProductRepository {
 		}
 	}
 
-	private void addPriceConditions(BooleanBuilder builder, Long minPrice, Long maxPrice, QProduct product) {
+	private void addPriceConditions(BooleanBuilder builder, Integer minPrice, Integer maxPrice, QProduct product) {
 		if (minPrice != null) {
 			builder.and(product.price.goe(minPrice));
 		}
@@ -110,7 +110,7 @@ public class ProductQueryDslRepository implements CustomProductRepository {
 		}
 	}
 
-	private void addStockConditions(BooleanBuilder builder, Long minStock, Long maxStock, QProduct product) {
+	private void addStockConditions(BooleanBuilder builder, Integer minStock, Integer maxStock, QProduct product) {
 		if (minStock != null) {
 			builder.and(product.stock.goe(minStock));
 		}

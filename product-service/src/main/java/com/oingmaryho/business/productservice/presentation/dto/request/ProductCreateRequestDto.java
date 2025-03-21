@@ -8,7 +8,7 @@ public record ProductCreateRequestDto(
 	String productCode,
 	String name,
 	UUID manageHubId,
-	Long stock,
-	Long price
+	Integer stock,
+	Integer price
 ) {
 }

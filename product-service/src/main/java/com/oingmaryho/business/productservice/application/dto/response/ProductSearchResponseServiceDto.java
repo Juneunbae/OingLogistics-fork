@@ -9,8 +9,8 @@ public record ProductSearchResponseServiceDto(
 	UUID manageHubId,
 	UUID companyId,
 	String companyName,
-	Long price,
-	Long stock
+	Integer price,
+	Integer stock
 
 ) {
 }
