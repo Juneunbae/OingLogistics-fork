@@ -113,12 +113,11 @@ public class UserService {
 	public void signOutUser(UserSignOutRequestServiceDto requestServiceDto) {
 		Long userId = requestServiceDto.id();
 		String tokenKey = "user:token:" + userId;
-		if(!redisTemplate.hasKey(tokenKey)) {
+		if (!redisTemplate.hasKey(tokenKey)) {
 			throw new UserException(ErrorCode.NOT_FOUND);
 		}
 		Map<Object, Object> token = redisTemplate.opsForHash().entries(tokenKey);
-		String accessToken = (String) token.get("accessToken");
-
+		String accessToken = (String)token.get("accessToken");
 
 		if (token == null || token.isEmpty()) {
 			throw new UserException(ErrorCode.JWT_REQUIRED);
@@ -152,7 +151,7 @@ public class UserService {
 	public UserSearchResponseDto searchUser(UserSearchRequestServiceDto requestServiceDto) {
 		//본인이 맞는지 체크
 		//헤더에서 받아온 유저 id와 일치하는지 확인
-		if(!requestServiceDto.id().equals(requestServiceDto.userId())){
+		if (!requestServiceDto.id().equals(requestServiceDto.userId())) {
 			throw new UserException(ErrorCode.USER_NOT_MATCH);
 		}
 

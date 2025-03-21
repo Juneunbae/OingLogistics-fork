@@ -21,14 +21,19 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminFin
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminGrantRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSignUpRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminSlackCodeRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminSlackConfirmRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignOutRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserAdminFindResponseDto;
+import com.oringmaryho.business.userservice.application.utils.CodeStorage;
+import com.oringmaryho.business.userservice.application.utils.DirectMessageAuthService;
 import com.oringmaryho.business.userservice.application.utils.RedisUtil;
 import com.oringmaryho.business.userservice.application.utils.jwt.JwtTokenProvider;
 import com.oringmaryho.business.userservice.domain.User;
+import com.oringmaryho.business.userservice.domain.UserConfirmStatus;
 import com.oringmaryho.business.userservice.domain.UserRoleType;
 import com.oringmaryho.business.userservice.domain.UserSearchCriteria;
 import com.oringmaryho.business.userservice.domain.repository.CustomUserRepository;
@@ -57,8 +62,14 @@ public class UserAdminService {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RedisUtil redisUtil;
 
+	private final DirectMessageAuthService directMessageAuthService;
+	private final CodeStorage codeStorage;
+
 	@Value("${admin.key}")
 	private String adminKey;
+
+	@Value("${slack.code.ttl}")
+	private Long SLACK_CODE_TTL;
 
 	private static final String USERNAME_REGEX = "^[a-z0-9]{4,10}$";
 	private static final String PASSWORD_REGEX = "^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,15}$";
@@ -129,9 +140,29 @@ public class UserAdminService {
 	}
 
 	@Transactional
-	public void slackConfirmUser(UserSlackConfirmRequestServiceDto requestServiceDto) {
-		//todo: 일반 사용자 service에서 기능 가져와서 추가하기
-		//todo: 슬랙인증 요청과 승인 요청
+	public void slackConfirmUser(UserAdminSlackConfirmRequestServiceDto requestServiceDto) {
+		String username = requestServiceDto.username();
+		String slackId = requestServiceDto.slackId();
+
+		String slackCode = codeStorage.getCode(requestServiceDto.username());
+
+		if (slackCode != null
+			&& codeStorage.getSlackUsername(username).equals(slackId)
+			&& slackCode.equals(requestServiceDto.confirmCode())
+		) {
+			User user = userRepository.findByUsername(username)
+				.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+			user.changeStatus(UserConfirmStatus.CONFIRMED);
+
+			codeStorage.removeCode(requestServiceDto.username());
+		} else {
+			throw new UserException(ErrorCode.SLACK_AUTH_FAIL);
+		}
+
+		User updatedUser = userRepository.findByUsername(requestServiceDto.username())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		redisUtil.updateUserInfo(updatedUser);
 	}
 
 	//유저 단일 조회 메서드
@@ -311,12 +342,11 @@ public class UserAdminService {
 	public void signOutUser(UserSignOutRequestServiceDto requestServiceDto) {
 		Long userId = requestServiceDto.id();
 		String tokenKey = "user:token:" + userId;
-		if(!redisTemplate.hasKey(tokenKey)) {
+		if (!redisTemplate.hasKey(tokenKey)) {
 			throw new UserException(ErrorCode.NOT_FOUND);
 		}
 		Map<Object, Object> token = redisTemplate.opsForHash().entries(tokenKey);
-		String accessToken = (String) token.get("accessToken");
-
+		String accessToken = (String)token.get("accessToken");
 
 		if (token == null || token.isEmpty()) {
 			throw new UserException(ErrorCode.JWT_REQUIRED);
@@ -347,4 +377,36 @@ public class UserAdminService {
 		}
 	}
 
+	public void slackCodeRequestUser(UserAdminSlackCodeRequestServiceDto requestServiceDto) {
+		validateRequiredField(requestServiceDto.username(), ErrorCode.USERNAME_NULL);
+		validateRequiredField(requestServiceDto.slackId(), ErrorCode.SLACKID_NULL);
+
+		if (!userRepository.existsByUsername(requestServiceDto.username())) {
+			throw new UserException(ErrorCode.NOT_FOUND);
+		}
+
+		User user = userRepository.findByUsername(requestServiceDto.username())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		if (!requestServiceDto.slackId().equals(user.getSlackId())
+			|| !requestServiceDto.username().equals(user.getUsername())) {
+			throw new UserException(ErrorCode.USER_NOT_MATCH);
+		}
+
+		if (user.getStatus().equals(UserConfirmStatus.CONFIRMED)) {
+			throw new UserException(ErrorCode.SLACK_ALREADY_AUTH);
+		}
+
+		//슬랙 코드 생성 및 codestorage에 저장
+		String slackCode = directMessageAuthService.generateCode();
+
+		directMessageAuthService.sendDirectMessage(requestServiceDto.slackId(), slackCode);
+
+		//이전에 요청한 적 있는 유저 id라면 스토리지에 있는 내용 삭제 후 다시 저장
+		if (codeStorage.hasKey(requestServiceDto.username())) {
+			codeStorage.removeCode(requestServiceDto.username());
+		}
+		codeStorage.storeCode(requestServiceDto.username(), requestServiceDto.slackId(), slackCode,
+			SLACK_CODE_TTL);
+	}
 }

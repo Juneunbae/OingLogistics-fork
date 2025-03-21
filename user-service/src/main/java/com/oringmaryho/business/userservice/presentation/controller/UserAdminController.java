@@ -1,7 +1,5 @@
 package com.oringmaryho.business.userservice.presentation.controller;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.oringmaryho.business.userservice.application.dto.request.UserSignOutRequestServiceDto;
-import com.oringmaryho.business.userservice.application.service.UserAdminService;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminCreateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRoleRequestServiceDto;
@@ -25,16 +21,22 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminFin
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminGrantRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSignUpRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminSlackCodeRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminSlackConfirmRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRoleRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserSignOutRequestServiceDto;
+import com.oringmaryho.business.userservice.application.service.UserAdminService;
 import com.oringmaryho.business.userservice.config.pageable.PageableConfig;
 import com.oringmaryho.business.userservice.presentation.dto.mapper.UserPresentationMapper;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminCreateRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminGrantRoleRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSearchRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSignUpRequestDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSlackCodeRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminUpdateRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminUpdateRoleRequestDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserSlackConfirmRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminGrantRoleResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminSearchResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminUpdateResponseDto;
@@ -53,10 +55,9 @@ public class UserAdminController {
 
 	@PostMapping("/sign-up")
 	public ResponseEntity<Void> signUpMasterUser(
-		@RequestBody UserAdminSignUpRequestDto userAdminSignUpRequestDto) {
-		System.out.println("admin signup requested: " + userAdminSignUpRequestDto.toString());
+		@RequestBody UserAdminSignUpRequestDto requestDto) {
 		UserAdminSignUpRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminSignUpServiceDto(
-			userAdminSignUpRequestDto);
+			requestDto);
 		userAdminService.signUpUserAdmin(requestServiceDto);
 		return ResponseEntity.ok().build();
 	}
@@ -64,7 +65,7 @@ public class UserAdminController {
 	@PostMapping("/sign-out")
 	public ResponseEntity<?> signOutUser(
 		@RequestAttribute("userId") Long userId
-	){
+	) {
 		UserSignOutRequestServiceDto requestServiceDto = userPresentationMapper.toUserSignOutRequestServiceDto(userId);
 		userAdminService.signOutUser(requestServiceDto);
 		return ResponseEntity.ok().build();
@@ -72,9 +73,9 @@ public class UserAdminController {
 
 	@PostMapping()
 	public ResponseEntity<Void> createUser(
-		@RequestBody UserAdminCreateRequestDto userAdminCreateRequestDto) {
+		@RequestBody UserAdminCreateRequestDto requestDto) {
 		UserAdminCreateRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminCreateRequestServiceDto(
-			userAdminCreateRequestDto);
+			requestDto);
 		userAdminService.createUser(requestServiceDto);
 		return ResponseEntity.ok().build();
 	}
@@ -91,10 +92,10 @@ public class UserAdminController {
 		@RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
 		@RequestParam(value = "size", required = false) Integer size,
 		@RequestParam(value = "sortDirection", required = false) String sortDirection,
-		@RequestBody UserAdminSearchRequestDto userAdminSearchRequestDto) {
+		@RequestBody UserAdminSearchRequestDto requestDto) {
 		Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
 		UserAdminSearchRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminSearchRequestServiceDto(
-			userAdminSearchRequestDto, customPageable);
+			requestDto, customPageable);
 		Page<UserAdminSearchResponseDto> responseDtos = userAdminService.searchUsers(
 			requestServiceDto, customPageable);
 		return ResponseEntity.ok(responseDtos);
@@ -102,28 +103,27 @@ public class UserAdminController {
 
 	@PutMapping("/{id}")
 	public ResponseEntity<?> updateUserMaster(@PathVariable Long id,
-		@RequestBody UserAdminUpdateRequestDto userAdminUpdateRequestDto) {
+		@RequestBody UserAdminUpdateRequestDto requestDto) {
 		UserAdminUpdateRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminUpdateRequestServiceDto(
-			userAdminUpdateRequestDto, id);
+			requestDto, id);
 		UserAdminUpdateResponseDto responseDto = userAdminService.updateUser(requestServiceDto);
-		//todo: responsedto 반환하기
 		return ResponseEntity.ok(responseDto);
 	}
 
 	@PutMapping("/{id}/grant")
 	public ResponseEntity<UserAdminGrantRoleResponseDto> grantRoleUserMaster(@PathVariable Long id,
-		@RequestBody UserAdminGrantRoleRequestDto userAdminGrantRoleRequestDto) {
+		@RequestBody UserAdminGrantRoleRequestDto requestDto) {
 		UserAdminGrantRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminGrantRoleRequestServiceDto(
-			userAdminGrantRoleRequestDto, id);
+			requestDto, id);
 		UserAdminGrantRoleResponseDto responseDto = userAdminService.grantRoleUser(requestServiceDto);
 		return ResponseEntity.ok(responseDto);
 	}
 
 	@PutMapping("/roles/{id}")
 	public ResponseEntity<UserAdminUpdateRoleResponseDto> updateRoleUserMaster(@PathVariable Long id,
-		@RequestBody UserAdminUpdateRoleRequestDto userAdminUpdateRoleRequestDto) {
+		@RequestBody UserAdminUpdateRoleRequestDto requestDto) {
 		UserAdminUpdateRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminUpdateRoleRequestServiceDto(
-			userAdminUpdateRoleRequestDto, id);
+			requestDto, id);
 		UserAdminUpdateRoleResponseDto responseDto = userAdminService.updateRoleUser(
 			requestServiceDto);
 		return ResponseEntity.ok(responseDto);
@@ -144,4 +144,25 @@ public class UserAdminController {
 		userAdminService.deleteUser(requestServiceDto);
 		return ResponseEntity.ok().build();
 	}
+
+	//slack 인증을 위한 코드 전송 요청
+	@PostMapping("/slack/confirm-code")
+	public ResponseEntity<Void> slackCodeRequestUser(
+		@RequestBody UserAdminSlackCodeRequestDto requestDto) {
+		UserAdminSlackCodeRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminSlackCodeRequestServiceDto(
+			requestDto);
+		userAdminService.slackCodeRequestUser(requestServiceDto);
+		return ResponseEntity.ok().build();
+	}
+
+	//slack 인증 코드로 인증 확인
+	@PostMapping("/slack/confirm")
+	public ResponseEntity<Void> slackConfirmUser(
+		@RequestBody UserSlackConfirmRequestDto userSlackConfirmRequestDto) {
+		UserAdminSlackConfirmRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminSlackConfirmRequestServiceDto(
+			userSlackConfirmRequestDto);
+		userAdminService.slackConfirmUser(requestServiceDto);
+		return ResponseEntity.ok().build();
+	}
+
 }

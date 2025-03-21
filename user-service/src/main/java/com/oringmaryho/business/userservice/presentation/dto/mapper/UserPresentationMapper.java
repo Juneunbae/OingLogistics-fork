@@ -9,6 +9,8 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminFin
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminGrantRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSignUpRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminSlackCodeRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminSlackConfirmRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserFromDeliveryRequestServiceDto;
@@ -22,6 +24,7 @@ import com.oringmaryho.business.userservice.domain.UserRoleType;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminCreateRequestDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSignUpRequestDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSlackCodeRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminUpdateRoleRequestDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminGrantRoleRequestDto;
@@ -91,4 +94,9 @@ public interface UserPresentationMapper {
 
 	@Mapping(target = "isDeleted", source = "isDeleted")
 	UserFromDeliveryRequestServiceDto toUserFromDeliveryRequestServiceDto(Boolean isDeleted);
+
+	
+	UserAdminSlackCodeRequestServiceDto toUserAdminSlackCodeRequestServiceDto(UserAdminSlackCodeRequestDto requestDto);
+
+	UserAdminSlackConfirmRequestServiceDto toUserAdminSlackConfirmRequestServiceDto(UserSlackConfirmRequestDto userSlackConfirmRequestDto);
 }
