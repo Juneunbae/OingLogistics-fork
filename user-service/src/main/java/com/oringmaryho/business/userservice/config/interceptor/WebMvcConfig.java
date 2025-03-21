@@ -11,19 +11,21 @@ import com.oringmaryho.business.userservice.infrastructure.interceptor.UserCheck
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    private final RedisTemplate<String, Object> redisTemplate;
+	private final RedisTemplate<String, Object> redisTemplate;
 
-    public WebMvcConfig(RedisTemplate<String, Object> redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
+	public WebMvcConfig(RedisTemplate<String, Object> redisTemplate) {
+		this.redisTemplate = redisTemplate;
+	}
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new UserCheckInterceptor(redisTemplate));
-        registry.addInterceptor(new AdminCheckInterceptor(redisTemplate))
-            .excludePathPatterns(
-                "/api/**"
-            );
-    }
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		// admin 확인용 인터셉터
+		registry.addInterceptor(new AdminCheckInterceptor(redisTemplate))
+			.excludePathPatterns("/api/**");
+
+		// 일반 사용자 확인용 인터셉터
+		registry.addInterceptor(new UserCheckInterceptor(redisTemplate))
+			.excludePathPatterns("/admin/**");
+	}
 
 }

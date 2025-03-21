@@ -162,20 +162,11 @@ public class UserService {
 	}
 
 	public void slackCodeRequestUser(UserSlackCodeRequestServiceDto requestServiceDto) {
-		validateRequiredField(requestServiceDto.username(), ErrorCode.USERNAME_NULL);
-		validateRequiredField(requestServiceDto.slackId(), ErrorCode.SLACKID_NULL);
-
-		if (!userRepository.existsByUsername(requestServiceDto.username())) {
-			throw new UserException(ErrorCode.NOT_FOUND);
-		}
-
 		User user = userRepository.findByUsername(requestServiceDto.username())
 			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
 
-		if (!requestServiceDto.slackId().equals(user.getSlackId())
-			|| !requestServiceDto.username().equals(user.getUsername())) {
-			throw new UserException(ErrorCode.USER_NOT_MATCH);
-		}
+		validateRequiredField(user.getUsername(), ErrorCode.USERNAME_NULL);
+		validateRequiredField(user.getSlackId(), ErrorCode.SLACKID_NULL);
 
 		if (user.getStatus().equals(UserConfirmStatus.CONFIRMED)) {
 			throw new UserException(ErrorCode.SLACK_ALREADY_AUTH);
@@ -184,13 +175,13 @@ public class UserService {
 		//슬랙 코드 생성 및 codestorage에 저장
 		String slackCode = directMessageAuthService.generateCode();
 
-		directMessageAuthService.sendDirectMessage(requestServiceDto.slackId(), slackCode);
+		directMessageAuthService.sendDirectMessage(user.getSlackId(), slackCode);
 
 		//이전에 요청한 적 있는 유저 id라면 스토리지에 있는 내용 삭제 후 다시 저장
 		if (codeStorage.hasKey(requestServiceDto.username())) {
 			codeStorage.removeCode(requestServiceDto.username());
 		}
-		codeStorage.storeCode(requestServiceDto.username(), requestServiceDto.slackId(), slackCode,
+		codeStorage.storeCode(requestServiceDto.username(), user.getSlackId(), slackCode,
 			SLACK_CODE_TTL);
 
 		//todo: slack 코드 생성하고 ttl 만큼 살려두고 삭제하는 테스트 작성하기

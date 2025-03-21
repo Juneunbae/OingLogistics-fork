@@ -78,7 +78,6 @@ public class UserController {
 		return ResponseEntity.ok(responseDto);
 	}
 
-	//todo: 어드민 컨트롤러에도 만들기
 	//slack 인증을 위한 코드 전송 요청
 	@PostMapping("/slack/confirm-code")
 	public ResponseEntity<Void> slackCodeRequestUser(

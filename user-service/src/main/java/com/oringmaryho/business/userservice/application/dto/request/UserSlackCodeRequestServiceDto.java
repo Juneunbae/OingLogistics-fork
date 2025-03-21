@@ -1,5 +1,5 @@
 package com.oringmaryho.business.userservice.application.dto.request;
 
-public record UserSlackCodeRequestServiceDto(String username, String slackId) {
+public record UserSlackCodeRequestServiceDto(String username) {
 
 }
