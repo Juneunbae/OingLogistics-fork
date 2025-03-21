@@ -74,7 +74,7 @@ public interface UserPresentationMapper {
 		Long id);
 
 	@Mapping(target = "id", source = "id")
-	@Mapping(target = "newRole", source = "role")
+	@Mapping(target = "newRole", expression = "java(requestDto.role())")
 	UserAdminUpdateRoleRequestServiceDto toUserAdminUpdateRoleRequestServiceDto(
 		UserAdminUpdateRoleRequestDto requestDto, Long id);
 
