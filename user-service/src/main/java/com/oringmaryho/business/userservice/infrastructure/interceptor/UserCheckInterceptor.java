@@ -18,61 +18,61 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class UserCheckInterceptor implements HandlerInterceptor {
 
-    private final RedisTemplate<String, Object> redisTemplate;
-    // 인증 제외 경로 정의
-    private static final List<String> EXCLUDED_PATHS = Arrays.asList(
-        "/api/v1/users/slack/confirm-code",
-        "/api/v1/users/slack/confirm",
-        "/api/v1/users/sign-out"
-    );
+	private final RedisTemplate<String, Object> redisTemplate;
 
-    @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+	@Override
+	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws
+		Exception {
 
-        log.info("user preHandle");
-        log.info("Header X-User-Id: {}", request.getHeader("X-User-Id"));
+		log.info("user preHandle");
 
-        Object userIdHeader = request.getHeader("X-User-Id");
-        String requestPath = request.getRequestURI();
+		String userId = request.getHeader("X-User-Id");
+		String requestPath = request.getRequestURI();
 
-        if (userIdHeader == null) {
-            return true;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE로 변경
-        }
+		if (userId == null) {
+			return false;    // TODO throw Exception
+		}
 
-        String userId = String.valueOf(userIdHeader);
+		if (!redisTemplate.hasKey("user:info:" + userId)) {
+			return false;    // TODO throw Exception
+		}
 
-        if (!redisTemplate.hasKey("user:info:" + userId)) {
-            return true;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE로 변경
-        }
+		Map<Object, Object> userInfo = redisTemplate.opsForHash().entries("user:info:" + userId);
 
-        Map<Object, Object> userInfo = redisTemplate.opsForHash().entries("user:info:" + userId);
-        log.info("user info: {}", userInfo);
-        if (userInfo.isEmpty()) {
-            return true;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE로 변경
-        }
+		if (userInfo.isEmpty()) {
+			return false;    // TODO throw Exception
+		}
 
-        // 제외 경로에 해당하면 바로 true 반환
-        if (EXCLUDED_PATHS.contains(requestPath)) {
-            log.info("Skipping authentication for path: {}", requestPath);
-            // 사용자 정보를 request에 주입
-            request.setAttribute("userId", userId);
-            request.setAttribute("username", userInfo.get("username"));
-            request.setAttribute("slackId", userInfo.get("slackId"));
-            request.setAttribute("role", userInfo.get("role"));
-            return true;
-        }
+		// 사용자 정보를 request에 주입
+		request.setAttribute("userId", userId);
 
-        if (!userInfo.get("status").toString().equals(UserConfirmStatus.CONFIRMED.toString())) {
-            return false;
-        }
+		if (!userInfo.containsKey("username")) {
+			return false;   // TODO throw Exception
+		}
 
-        // 사용자 정보를 request에 주입
-        request.setAttribute("userId", userId);
-        request.setAttribute("username", userInfo.get("username"));
-        request.setAttribute("slackId", userInfo.get("slackId"));
-        request.setAttribute("role", userInfo.get("role"));
+		request.setAttribute("username", userInfo.get("username"));
 
-        return true;
+		if (!userInfo.containsKey("slackId")) {
+			return false;   // TODO throw Exception
+		}
 
-    }
+		request.setAttribute("slackId", userInfo.get("slackId"));
+
+		if (!userInfo.containsKey("role")) {
+			return false;   // TODO throw Exception
+		}
+
+		request.setAttribute("role", userInfo.get("role"));
+
+		if (!userInfo.containsKey("status")) {
+			return false;   // TODO throw Exception
+		}
+
+		if (!userInfo.get("status").toString().equals(UserConfirmStatus.CONFIRMED.toString())) {
+			return false;   // TODO throw Exception
+		}
+
+		return true;
+
+	}
 }
