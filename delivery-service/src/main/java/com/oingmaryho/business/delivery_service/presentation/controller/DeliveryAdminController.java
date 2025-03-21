@@ -30,9 +30,10 @@ public class DeliveryAdminController {
             HttpServletRequest request,
             @RequestBody DeliveryCreationRequestDto requestDto) {
 
-        // 인터셉터에서 처리한 userId, userRole을 가져온다.
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
+
+        // 권한 체크
 
         DeliveryCreationRequestServiceDto requestServiceDto = deliveryPresentationMapper.toCreationServiceDto(requestDto);
         DeliveryCreationResponseServiceDto responseServiceDto = deliveryAdminService.createDelivery(
@@ -48,9 +49,10 @@ public class DeliveryAdminController {
             @PathVariable UUID id,
             @RequestBody DeliveryUpdateRequestDto requestDto) {
 
-        // 인터셉터에서 처리한 userId, userRole을 가져온다.
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
+
+        // 권한 체크
 
         DeliveryUpdateRequestServiceDto requestServiceDto = deliveryPresentationMapper.toUpdateServiceDto(id, requestDto);
         DeliveryUpdateResponseServiceDto responseServiceDto = deliveryAdminService.updateDelivery(
@@ -66,9 +68,10 @@ public class DeliveryAdminController {
             @PathVariable UUID id,
             @RequestBody DeliveryUpdateStatusRequestDto requestDto) {
 
-        // 인터셉터에서 처리한 userId, userRole을 가져온다.
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
+
+        // 권한 체크
 
         DeliveryUpdateStatusRequestServiceDto requestServiceDto = deliveryPresentationMapper.toUpdateStatusServiceDto(id, requestDto);
         DeliveryUpdateStatusResponseServiceDto responseServiceDto = deliveryAdminService.updateStatusDelivery(
@@ -83,9 +86,10 @@ public class DeliveryAdminController {
             HttpServletRequest request,
             @PathVariable UUID id) {
 
-        // 인터셉터에서 처리한 userId, userRole을 가져온다.
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
+
+        // 권한 체크
 
         DeliveryDeletionRequestServiceDto requestServiceDto = deliveryPresentationMapper.toDeletionServiceDto(id);
         deliveryAdminService.deleteDelivery(
@@ -101,9 +105,10 @@ public class DeliveryAdminController {
             HttpServletRequest request,
             @PathVariable UUID id) {
 
-        // 인터셉터에서 처리한 userId, userRole을 가져온다.
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
+
+        // 권한 체크
 
         DeliveryDetailRequestServiceDto requestServiceDto = deliveryPresentationMapper.toDetailServiceDto(id);
         DeliveryResponseServiceDto responseServiceDto = deliveryAdminService.GetDeliveryDetail(
@@ -126,9 +131,10 @@ public class DeliveryAdminController {
             @RequestParam(value = "managerId", required = false) UUID managerId,
             @RequestParam(value = "isDeleted", required = false) Boolean isDeleted) {
 
-        // 인터셉터에서 처리한 userId, userRole을 가져온다.
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
+
+        // 권한 체크
 
         DeliverySearchRequestDto requestDto = new DeliverySearchRequestDto(hubId, companyId, managerId, isDeleted);
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
@@ -148,9 +154,10 @@ public class DeliveryAdminController {
             HttpServletRequest request,
             @PathVariable UUID id) {
 
-        // 인터셉터에서 처리한 userId, userRole을 가져온다.
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
+
+        // 권한 체크
 
         DeliveryRouteDetailRequestServiceDto requestServiceDto = deliveryPresentationMapper.toRouteDetailServiceDto(id);
         DeliveryRouteResponseServiceDto responseServiceDto = deliveryAdminService.GetDeliveryRouteDetail(
@@ -174,9 +181,10 @@ public class DeliveryAdminController {
             @RequestParam(value = "managerId", required = false) UUID managerId,
             @RequestParam(value = "isDeleted", required = false) Boolean isDeleted) {
 
-        // 인터셉터에서 처리한 userId, userRole을 가져온다.
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
+
+        // 권한 체크
 
         DeliveryRouteSearchRequestDto requestDto = new DeliveryRouteSearchRequestDto(hubId, companyId, managerId, isDeleted);
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
@@ -196,9 +204,10 @@ public class DeliveryAdminController {
             @PathVariable UUID id,
             @RequestBody DeliveryRouteUpdateStatusRequestDto requestDto) {
 
-        // 인터셉터에서 처리한 userId, userRole을 가져온다.
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
+
+        // 권한 체크
 
         DeliveryRouteUpdateStatusRequestServiceDto requestServiceDto = deliveryPresentationMapper.toUpdateRouteStatusServiceDto(id, requestDto);
         DeliveryRouteUpdateStatusResponseServiceDto responseServiceDto = deliveryAdminService.updateRouteStatusDelivery(

@@ -20,32 +20,50 @@ public class UserCheckInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
         log.info("user preHandle");
-        Object userIdAttr = request.getAttribute("X-User-Id");
 
-        if (userIdAttr == null) {
-            return true;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE로 변경
+        String userId = request.getHeader("X-User-Id");
+
+        if (userId == null) {
+            return false;    // TODO throw Exception
         }
 
-        String userId = String.valueOf(userIdAttr);
-
         if (!redisTemplate.hasKey("user:info:" + userId)) {
-            return true;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE로 변경
+            return false;    // TODO throw Exception
         }
 
         Map<Object, Object> userInfo = redisTemplate.opsForHash().entries("user:info:" + userId);
 
         if (userInfo.isEmpty()) {
-            return true;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE로 변경
+            return false;    // TODO throw Exception
+        }
+
+        if (!userInfo.containsKey("status")) {
+            return false;   // TODO throw Exception
         }
 
         if (!userInfo.get("status").toString().equals(UserConfirmStatus.CONFIRMED.toString())) {
-            return false;
+            return false;   // TODO throw Exception
         }
 
         // 사용자 정보를 request에 주입
         request.setAttribute("userId", userId);
+
+        if (!userInfo.containsKey("username")) {
+            return false;   // TODO throw Exception
+        }
+
         request.setAttribute("username", userInfo.get("username"));
+
+        if (!userInfo.containsKey("slackId")) {
+            return false;   // TODO throw Exception
+        }
+
         request.setAttribute("slackId", userInfo.get("slackId"));
+
+        if (!userInfo.containsKey("role")) {
+            return false;   // TODO throw Exception
+        }
+
         request.setAttribute("role", userInfo.get("role"));
 
         return true;
