@@ -769,6 +769,7 @@ public class DeliveryServiceTest {
     @DisplayName("배송 경로 상세 조회: 허브 배송 담당자는 본인의 배송 경로를 조회할 수 있다.")
     public void 배송경로상세조회_허브배송담당자() {
         //given
+        // 허브 배송 담당자
         DeliveryManager manager1 = DeliveryManager.builder()
                 .id(hubDeliveryManagerId1)
                 .slackId(hubDeliveryManagerSlackId1)
@@ -779,6 +780,7 @@ public class DeliveryServiceTest {
                 .sequence(1)
                 .build();
 
+        // 업체 배송 담당자
         DeliveryManager manager2 = DeliveryManager.builder()
                 .id(companyDeliveryManagerId1)
                 .slackId(companyDeliveryManagerSlackId1)
@@ -813,6 +815,8 @@ public class DeliveryServiceTest {
                 .estimatedTime(1)
                 .manager(manager1)
                 .build();
+
+        route.addRoute(delivery);
 
         DeliveryRouteDetailRequestServiceDto requestDto = new DeliveryRouteDetailRequestServiceDto(
                 routeId1
