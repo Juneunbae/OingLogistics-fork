@@ -57,6 +57,7 @@ public class ProductService {
 			.orElseThrow(() -> new ProductException(ErrorCode.NOT_FOUND));
 
 		product.update(
+			requestServiceDto.companyName(),
 			requestServiceDto.name(),
 			requestServiceDto.price(),
 			requestServiceDto.stock()
@@ -78,6 +79,7 @@ public class ProductService {
 			.name(requestDto.name())
 			.manageHubId(requestDto.manageHubId())
 			.companyID(requestDto.companyId())
+			.companyName(requestDto.companyName())
 			.minPrice(requestDto.minPrice())
 			.maxPrice(requestDto.maxPrice())
 			.minStock(requestDto.minStock())

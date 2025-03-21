@@ -56,6 +56,7 @@ public class ProductQueryDslRepository implements CustomProductRepository {
 		addProductCodeCondition(builder, searchCriteria.getProductCode(), product);
 		addNameCondition(builder, searchCriteria.getName(), product);
 		addManageHubIdCondition(builder, searchCriteria.getManageHubId(), product);
+		addCompanyNameCondition(builder, searchCriteria.getCompanyName(), product);
 		addCompanyIdCondition(builder, searchCriteria.getCompanyID(), product);
 		addPriceConditions(builder, searchCriteria.getMinPrice(), searchCriteria.getMaxPrice(), product);
 		addStockConditions(builder, searchCriteria.getMinStock(), searchCriteria.getMaxStock(), product);
@@ -91,6 +92,12 @@ public class ProductQueryDslRepository implements CustomProductRepository {
 	private void addCompanyIdCondition(BooleanBuilder builder, UUID companyId, QProduct product) {
 		if (companyId != null) {
 			builder.and(product.companyId.eq(companyId));
+		}
+	}
+
+	private void addCompanyNameCondition(BooleanBuilder builder, String companyName, QProduct product) {
+		if (companyName != null) {
+			builder.and(product.companyName.eq(companyName));
 		}
 	}
 

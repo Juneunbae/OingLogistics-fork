@@ -10,6 +10,7 @@ public record ProductSearchResponseDto(
 	String name,
 	UUID manageHubId,
 	UUID companyId,
+	String companyName,
 	Long price,
 	Long stock
 ) {

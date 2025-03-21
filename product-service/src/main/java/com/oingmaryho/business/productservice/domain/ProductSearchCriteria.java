@@ -16,6 +16,7 @@ public class ProductSearchCriteria {
 	private final String name;
 	private final UUID manageHubId;
 	private final UUID companyID;
+	private final String companyName;
 
 	private final Long minPrice;
 	private final Long maxPrice;
