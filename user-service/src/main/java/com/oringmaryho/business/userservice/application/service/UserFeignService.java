@@ -1,12 +1,18 @@
 package com.oringmaryho.business.userservice.application.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.context.annotation.Description;
 import org.springframework.stereotype.Service;
 
+import com.oringmaryho.business.userservice.application.dto.request.UserFromDeliveryRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UsersRequestServiceDto;
 import com.oringmaryho.business.userservice.domain.User;
+import com.oringmaryho.business.userservice.domain.UserRoleType;
 import com.oringmaryho.business.userservice.domain.repository.CustomUserRepository;
 import com.oringmaryho.business.userservice.exception.ErrorCode;
 import com.oringmaryho.business.userservice.exception.UserException;
@@ -28,7 +34,16 @@ public class UserFeignService {
 			.orElseThrow(() -> new UserException(ErrorCode.ROLE_ACTIVE_USERS_NOT_FOUND));
 	}
 
-
-	//todo:HUB_DELIVERY_MANAGER, COMPANY_DELIVERY_MANAGER묶어서 보내는 메서드
+	@Description(
+		"배송 서비스에서 사용할 HUB_DELIVERY_MANAGER, COMPANY_DELIVERY_MANAGER 리스트 반환하는 메서드"
+	)
+	public Map<UserRoleType, List<User>> userServiceToDeliveryServiceMap(UserFromDeliveryRequestServiceDto requestServiceDto) {
+		return Stream.of(UserRoleType.HUB_DELIVERY_MANAGER, UserRoleType.COMPANY_DELIVERY_MANAGER)
+			.collect(Collectors.toMap(
+				role -> role,
+				role -> customUserRepository.findUsersByRole(role, requestServiceDto.isDeleted())
+					.orElseThrow(() -> new UserException(ErrorCode.ROLE_ACTIVE_USERS_NOT_FOUND))
+			));
+	}
 
 }

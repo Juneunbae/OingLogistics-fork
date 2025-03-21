@@ -11,6 +11,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminSea
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRoleRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserFromDeliveryRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignOutRequestServiceDto;
@@ -87,4 +88,7 @@ public interface UserPresentationMapper {
 	@Mapping(target = "role", source = "role")
 	@Mapping(target = "isDeleted", source = "isDeleted")
 	UsersRequestServiceDto toUsersRequestServiceDto(UserRoleType role, Boolean isDeleted);
+
+	@Mapping(target = "isDeleted", source = "isDeleted")
+	UserFromDeliveryRequestServiceDto toUserFromDeliveryRequestServiceDto(Boolean isDeleted);
 }
