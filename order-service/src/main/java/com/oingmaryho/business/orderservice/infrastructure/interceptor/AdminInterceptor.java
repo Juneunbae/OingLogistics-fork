@@ -7,13 +7,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.util.Map;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class AdminInterceptor implements HandlerInterceptor {
     private final RedisTemplate<String, Object> redisTemplate;
@@ -21,7 +19,7 @@ public class AdminInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         log.info("admin preHandle");
-        Object userIdAttr = request.getAttribute("X-User-Id");
+        Object userIdAttr = request.getHeader("X-User-Id");
 
         if (userIdAttr == null) {
             return true;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE
@@ -46,11 +44,6 @@ public class AdminInterceptor implements HandlerInterceptor {
         if (!userInfo.get("role").equals(UserRole.MASTER)) {
             return false;
         }
-
-        request.setAttribute("userId", userId);
-        request.setAttribute("username", userInfo.get("username"));
-        request.setAttribute("slackId", userInfo.get("slackId"));
-        request.setAttribute("role", userInfo.get("role"));
 
         return true;
     }
