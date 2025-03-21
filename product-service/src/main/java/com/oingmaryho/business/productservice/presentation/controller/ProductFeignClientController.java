@@ -28,7 +28,7 @@ public class ProductFeignClientController {
 	@GetMapping("/{id}")
 	public ResponseEntity<ProductDetailsSearchResponseDto> getProductById(@PathVariable UUID id) {
 		ProductDetailsSearchRequestServiceDto requestServiceDto = productPresentationMapper.toDetailsSearchServiceDto(id);
-		ProductDetailsSearchResponseServiceDto responseServiceDto = productService.getProductDetails(requestServiceDto);
+		ProductDetailsSearchResponseServiceDto responseServiceDto = productService.getProduct(requestServiceDto);
 		ProductDetailsSearchResponseDto response = productPresentationMapper.toDetailsSearchDto(responseServiceDto);
 		return ResponseEntity.ok(response);
 	}

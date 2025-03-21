@@ -60,6 +60,7 @@ class ProductServiceTest {
 			.productCode("C0-1")
 			.name("Test Company")
 			.companyId(FIXED_COMPANY_ID)
+			.companyName("Test Company")
 			.manageHubId(FIXED_MANAGE_HUB_ID)
 			.price(1L)
 			.stock(2L)
@@ -73,6 +74,7 @@ class ProductServiceTest {
 		// Given
 		ProductCreateRequestServiceDto requestDto = new ProductCreateRequestServiceDto(
 			FIXED_COMPANY_ID,
+			"Test Company",
 			"C0-1",
 			"Test product",
 			FIXED_MANAGE_HUB_ID,
@@ -83,6 +85,7 @@ class ProductServiceTest {
 		Product product = Product.builder()
 			.id(FIXED_PRODUCT_ID)
 			.companyId(FIXED_COMPANY_ID)
+			.companyName("Test Company")
 			.name("Test product")
 			.manageHubId(FIXED_MANAGE_HUB_ID)
 			.stock(1L)
@@ -127,7 +130,7 @@ class ProductServiceTest {
 		ProductDetailsSearchRequestServiceDto requestDto = new ProductDetailsSearchRequestServiceDto(productId);
 
 		ProductDetailsSearchResponseServiceDto expectedResponse = new ProductDetailsSearchResponseServiceDto(
-			productId, "Test product", FIXED_COMPANY_ID, FIXED_MANAGE_HUB_ID, 1L, 2L
+			productId, "Test product", FIXED_COMPANY_ID, "Test Company", FIXED_MANAGE_HUB_ID, 1L, 2L
 		);
 
 		when(productRepository.findByIdAndIsDeletedFalse(productId)).thenReturn(Optional.of(product));
@@ -146,7 +149,7 @@ class ProductServiceTest {
 	@Description("상품 수정 테스트")
 	void updateProduct() {
 		ProductUpdateRequestServiceDto requestDto = new ProductUpdateRequestServiceDto(
-			productId, "Updated product name", 2L, 1L
+			productId, "Updated company name", "Updated product name", 2L, 1L
 		);
 
 		when(productRepository.findByIdAndIsDeletedFalse(productId)).thenReturn(Optional.of(product));

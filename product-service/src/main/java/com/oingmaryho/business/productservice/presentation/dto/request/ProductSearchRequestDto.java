@@ -8,6 +8,7 @@ public record ProductSearchRequestDto(
 	String name,
 	UUID manageHubId,
 	UUID companyId,
+	String companyName,
 	Long minPrice,
 	Long maxPrice,
 	Long minStock,

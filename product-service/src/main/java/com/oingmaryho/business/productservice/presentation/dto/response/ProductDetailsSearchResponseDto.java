@@ -6,6 +6,7 @@ public record ProductDetailsSearchResponseDto(
 	UUID id,
 	String name,
 	UUID companyId,
+	String companyName,
 	UUID manageHubId,
 	Integer price,
 	Integer stock

@@ -39,6 +39,9 @@ public class Product extends BaseEntity {
 	private UUID companyId;
 
 	@Column(nullable = false)
+	private String companyName;
+
+	@Column(nullable = false)
 	private String name;
 
 	@Column(nullable = false)
@@ -50,7 +53,14 @@ public class Product extends BaseEntity {
 	@Column(nullable = false)
 	private Long price;
 
-	public void update(String name, Long price, Long stock) {
+	public void update(String companyName, String name, Long price, Long stock) {
+		Optional.ofNullable(companyName)
+			.filter(c -> !c.isBlank())
+			.ifPresentOrElse(
+				value -> this.companyName = value,
+				() -> { throw new ProductException(ErrorCode.INVALID_PRODUCT_NAME); }
+			);
+
 		Optional.ofNullable(name)
 			.filter(n -> !n.isBlank())
 			.ifPresentOrElse(

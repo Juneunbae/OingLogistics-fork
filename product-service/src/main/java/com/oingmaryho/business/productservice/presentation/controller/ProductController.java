@@ -67,6 +67,7 @@ public class ProductController {
 		@RequestParam(name = "name", required = false) String name,
 		@RequestParam(name = "manageHubId", required = false) UUID manageHubId,
 		@RequestParam(name = "companyId", required = false) UUID companyId,
+		@RequestParam(name = "companyName", required = false) String companyName,
 		@RequestParam(name = "minPrice", required = false) Long minPrice,
 		@RequestParam(name = "maxPrice", required = false) Long maxPrice,
 		@RequestParam(name = "minStock", required = false) Long minStock,
@@ -74,7 +75,7 @@ public class ProductController {
 	){
 		// TODO: userId, role 받아오기
 		Pageable pageable = PageableUtils.customPageable(page, size, sortDirection, by);
-		ProductSearchRequestDto requestDto = new ProductSearchRequestDto(id, productCode, name, manageHubId, companyId, minPrice, maxPrice, minStock,maxStock);
+		ProductSearchRequestDto requestDto = new ProductSearchRequestDto(id, productCode, name, manageHubId, companyId, companyName, minPrice, maxPrice, minStock,maxStock);
 
 		Page<ProductSearchResponseServiceDto> responseDto = productService.searchProducts(productPresentationMapper.toProductSearchResponseServiceDto(requestDto), pageable);
 
