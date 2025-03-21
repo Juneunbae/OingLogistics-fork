@@ -141,7 +141,6 @@ public class DeliveryService {
             UserRoleType userRole,
             DeliveryDeletionRequestServiceDto requestServiceDto) {
 
-        // TODO 권한 확인
         Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
@@ -158,6 +157,42 @@ public class DeliveryService {
 
         Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
+
+        if (userRole == UserRoleType.HUB_MANAGER) {
+            // TODO hub 쪽에 HUB_MANAGER 소속 허브 id 조회 -> hubId
+            UUID hubId = UUID.randomUUID();
+            boolean flag = delivery.getRoutes().stream()
+                    .anyMatch(route -> route.getDepartureHubId().equals(hubId));
+
+            // 허브 배송 담당자가 담당하는 배송이 아닌 경우
+            if (!flag) {
+                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+            }
+
+        }
+
+        if (userRole == UserRoleType.COMPANY_DELIVERY_MANAGER) {
+            // 업체 배송 담당자가 담당하는 배송이 아닌 경우
+            if (!Objects.equals(delivery.getManager().getManagerId(), userId)) {
+                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+            }
+        }
+
+        if (userRole == UserRoleType.HUB_DELIVERY_MANAGER) {
+            boolean flag = delivery.getRoutes().stream()
+                    .anyMatch(route -> route.getManager().getManagerId().equals(userId));
+
+            // 허브 배송 담당자가 담당하는 배송이 아닌 경우
+            if (!flag) {
+                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+            }
+
+        }
+
+        if (userRole == UserRoleType.COMPANY_MANAGER) {
+            // TODO company 쪽에 userId로 담당 업체 id를 조회 -> companyId
+            // delivery.getManager().getCompanyId() != companyId -> throw DeliveryException(ErrorCode.UNAUTHORIZED)
+        }
 
         return deliveryApplicationMapper.toDeliveryResponseServiceDto(delivery);
     }
