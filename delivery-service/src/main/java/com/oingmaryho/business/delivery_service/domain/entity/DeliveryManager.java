@@ -32,4 +32,11 @@ public class DeliveryManager extends BaseEntity {
     private DeliveryManagerType type;   // TODO 배송 담당자 타입이 업체 배송담당자인 경우, 소속 허브 ID 유효성 검사
 
     private Integer sequence;
+
+    public void updateManager(Long managerId, String slackId, UUID hubId, UUID companyId){
+        this.managerId = managerId;
+        this.slackId = slackId;
+        this.hubId = hubId;
+        this.companyId = companyId;
+    }
 }

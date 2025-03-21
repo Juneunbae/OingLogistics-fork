@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,7 +48,8 @@ public class Delivery extends BaseEntity {
     private DeliveryManager manager; // 업체 배송 담당자 userId
 
     @OneToMany(mappedBy = "delivery", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DeliveryRoute> routes;
+    @Builder.Default
+    private List<DeliveryRoute> routes = new ArrayList<>();
 
     public void update(String receiver, String receiverSlackId, String address, DeliveryManager manager) {
         if (receiver != null) {

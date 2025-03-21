@@ -48,6 +48,10 @@ public class DeliveryRoute extends BaseEntity {
     @JoinColumn(name = "manager_id")
     private DeliveryManager manager; // 허브 배송 담당자 id
 
+    public void addRoute(Delivery delivery) {
+        delivery.getRoutes().add(this);
+    }
+
     /**
      * 배송 상태 변경
      * @param newStatus 변경할 상태
