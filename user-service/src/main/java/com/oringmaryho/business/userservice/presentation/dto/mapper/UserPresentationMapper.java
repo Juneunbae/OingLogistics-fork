@@ -11,12 +11,14 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminSea
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRoleRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserFromDeliveryRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSearchRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignInRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignOutRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackCodeRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
+import com.oringmaryho.business.userservice.domain.UserRoleType;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminCreateRequestDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSignUpRequestDto;
@@ -29,6 +31,7 @@ import com.oringmaryho.business.userservice.presentation.dto.request.UserSignInR
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSignUpRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSlackCodeRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserSlackConfirmRequestDto;
+import com.oringmaryho.business.userservice.application.dto.request.UsersRequestServiceDto;
 
 @Mapper(componentModel = "spring")
 public interface UserPresentationMapper {
@@ -80,4 +83,12 @@ public interface UserPresentationMapper {
 
 	@Mapping(target = "id", source = "userId")
 	UserSignOutRequestServiceDto toUserSignOutRequestServiceDto(Long userId);
+
+
+	@Mapping(target = "role", source = "role")
+	@Mapping(target = "isDeleted", source = "isDeleted")
+	UsersRequestServiceDto toUsersRequestServiceDto(UserRoleType role, Boolean isDeleted);
+
+	@Mapping(target = "isDeleted", source = "isDeleted")
+	UserFromDeliveryRequestServiceDto toUserFromDeliveryRequestServiceDto(Boolean isDeleted);
 }

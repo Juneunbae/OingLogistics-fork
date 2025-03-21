@@ -30,8 +30,10 @@ public enum ErrorCode {
 	PASSWORD_REGEX_NOT_MATCH("U-016", "비밀번호는 8~15자이며, 대소문자(A-Z, a-z), 숫자(0-9), 특수문자(!@#$%^&*)를 포함해야 합니다.", HttpStatus.BAD_REQUEST),
 	ADMIN_REGISTER_KEY_NOT_MATCH("U-017", "MASTER 인증을 위한 key값이 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
 
-	JWT_REQUIRED("U-018", "로그아웃을 위해 JWT 토큰이 필요합니다.", HttpStatus.BAD_REQUEST),
-	JWT_NOT_FOUND("U-019", "로그인시 생성한 JWT 토큰이 없습니다.", HttpStatus.BAD_REQUEST),
+	JWT_REQUIRED("U-018", "로그아웃을 위해 JWT 토큰이 필요합니다.", HttpStatus.UNAUTHORIZED),
+	JWT_NOT_FOUND("U-019", "로그인시 생성한 JWT 토큰이 없습니다.", HttpStatus.UNAUTHORIZED),
+
+	ROLE_ACTIVE_USERS_NOT_FOUND("U-020", "Role에 따른 활성화된 사용자 없음.", HttpStatus.NOT_FOUND),
 	;
 
 	private final String errorCode;

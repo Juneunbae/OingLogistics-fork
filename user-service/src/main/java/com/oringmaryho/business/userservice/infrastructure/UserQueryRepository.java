@@ -2,6 +2,7 @@ package com.oringmaryho.business.userservice.infrastructure;
 
 import static com.oringmaryho.business.userservice.domain.QUser.*;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -67,6 +68,19 @@ public class UserQueryRepository implements CustomUserRepository {
 			)
 			.fetchOne()
 		);
+	}
+
+	@Override
+	public Optional<List<User>> findUsersByRole(UserRoleType role, Boolean isDeleted) {
+		List<User> users = queryFactory
+			.selectFrom(user)
+			.where(
+				eqRole(role),
+				eqIsDeleted(isDeleted)
+			)
+			.fetch();
+
+		return Optional.ofNullable(users.isEmpty() ? null : users);
 	}
 
 	private BooleanExpression eqId(Long id) {
