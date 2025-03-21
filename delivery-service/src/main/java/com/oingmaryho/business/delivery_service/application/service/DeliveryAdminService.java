@@ -103,9 +103,10 @@ public class DeliveryAdminService {
             @CacheEvict(cacheNames = "delivery", key = "#requestServiceDto.id()"),
             @CacheEvict(cacheNames = "deliveries", allEntries = true)
     })
-    public void deleteDelivery(Long userId,
-                               UserRoleType userRole,
-                               DeliveryDeletionRequestServiceDto requestServiceDto) {
+    public void deleteDelivery(
+            Long userId,
+            UserRoleType userRole,
+            DeliveryDeletionRequestServiceDto requestServiceDto) {
 
         Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));

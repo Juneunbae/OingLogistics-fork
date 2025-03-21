@@ -269,7 +269,17 @@ public class DeliveryServiceTest {
     @DisplayName("배송 상세 조회: 허브 배송 담당자는 본인의 배송을 조회할 수 있다.")
     public void 배송조회_허브배송담당자() {
         //given
-        DeliveryManager manager = DeliveryManager.builder()
+        DeliveryManager manager1 = DeliveryManager.builder()
+                .id(companyDeliveryManagerId1)
+                .slackId(companyDeliveryManagerSlackId1)
+                .hubId(hubId1)
+                .companyId(companyId1)
+                .managerId(userId2)
+                .type(managerType2)
+                .sequence(1)
+                .build();
+
+        DeliveryManager manager2 = DeliveryManager.builder()
                 .id(hubDeliveryManagerId1)
                 .slackId(hubDeliveryManagerSlackId1)
                 .hubId(hubId1)
@@ -288,8 +298,23 @@ public class DeliveryServiceTest {
                 .address(address1)
                 .receiver(receiver1)
                 .receiverSlackId(receiverSlackId1)
-                .manager(manager)
+                .manager(manager1)
                 .build();
+
+        // 배송 경로
+        DeliveryRoute route = DeliveryRoute.builder()
+                .id(routeId1)
+                .delivery(delivery)
+                .sequence(1)
+                .departureHubId(hubId1)
+                .destinationHubId(hubId2)
+                .status(routeStatus1)
+                .estimatedDistance(12.1234)
+                .estimatedTime(1)
+                .manager(manager2)
+                .build();
+
+        route.addRoute(delivery);
 
         DeliveryDetailRequestServiceDto requestDto = new DeliveryDetailRequestServiceDto(
                 deliveryId1
@@ -302,7 +327,7 @@ public class DeliveryServiceTest {
                 address1,
                 receiver1,
                 receiverSlackId1,
-                hubDeliveryManagerId1,
+                companyDeliveryManagerId1,
                 Boolean.FALSE
         );
 
@@ -340,7 +365,7 @@ public class DeliveryServiceTest {
                         address1,
                         receiver1,
                         receiverSlackId1,
-                        hubDeliveryManagerId1,
+                        companyDeliveryManagerId1,
                         Boolean.FALSE
                 );
         verify(deliveryRepository, times(1))
