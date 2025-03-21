@@ -26,7 +26,6 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminSla
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignOutRequestServiceDto;
-import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserAdminFindResponseDto;
 import com.oringmaryho.business.userservice.application.utils.CodeStorage;
 import com.oringmaryho.business.userservice.application.utils.DirectMessageAuthService;

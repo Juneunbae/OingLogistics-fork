@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -109,8 +110,9 @@ public class UserAdminController {
 		@RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
 		@RequestParam(value = "size", required = false) Integer size,
 		@RequestParam(value = "sortDirection", required = false) String sortDirection,
-		@RequestBody UserAdminSearchRequestDto requestDto) {
+		@ModelAttribute UserAdminSearchRequestDto requestDto) {
 		Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
+
 		UserAdminSearchRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminSearchRequestServiceDto(
 			requestDto, customPageable);
 		Page<UserAdminSearchResponseDto> responseDtos = userAdminService.searchUsers(
