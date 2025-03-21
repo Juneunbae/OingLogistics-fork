@@ -7,7 +7,7 @@ import java.util.UUID;
 public record DeliveryResponseServiceDto(UUID id,
                                          DeliveryStatus status,
                                          UUID departureHubId,
-                                         UUID destinationHubId,
+                                         UUID arriveHubId,
                                          String address,
                                          String receiver,
                                          String receiverSlackId,
