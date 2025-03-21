@@ -16,14 +16,15 @@ import com.oingmaryho.business.delivery_service.exception.DeliveryException;
 import com.oingmaryho.business.delivery_service.exception.ErrorCode;
 import com.oingmaryho.business.delivery_service.infrastructure.repository.DeliveryRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +38,7 @@ public class DeliveryService {
             @CacheEvict(cacheNames = "delivery", key = "#requestServiceDto.id()"),
             @CacheEvict(cacheNames = "deliveries", allEntries = true)
     })
+
     public DeliveryUpdateResponseServiceDto updateDelivery(
             Long userId,
             UserRoleType userRole,
@@ -45,16 +47,48 @@ public class DeliveryService {
         Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
-
-        // TODO 권한 확인
-        DeliveryManager newManager = null;
-        if (requestServiceDto.managerId() != null) {
-            newManager = deliveryRepository.findManagerByIdAndIsDeleted(requestServiceDto.managerId())
-                    .orElseThrow(() -> new DeliveryException(ErrorCode.MANGER_NOT_FOUND));
+        if (userRole == UserRoleType.HUB_MANAGER) {
+            // TODO hub 쪽에 HUB_MANAGER 소속 허브 id 조회 -> hubId
+            // delivery.getManager().getHubId() != hubId -> throw DeliveryException(ErrorCode.UNAUTHORIZED)
         }
 
-        delivery.update(requestServiceDto.receiver(), requestServiceDto.receiverSlackId(), requestServiceDto.address(), newManager);
+        if (userRole == UserRoleType.COMPANY_DELIVERY_MANAGER) {
+            // 업체 배송 담당자가 담당하는 배송이 아닌 경우
+            if (!Objects.equals(delivery.getManager().getManagerId(), userId)) {
+                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+            }
+
+            // 업체 배송 담당자가 업체 배송 담당자를 수정하려는 경우
+            if (requestServiceDto.managerId() != null) {
+                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+            }
+        }
+
+        if (userRole == UserRoleType.HUB_DELIVERY_MANAGER) {
+            boolean flag = delivery.getRoutes().stream()
+                    .anyMatch(route -> route.getManager().getManagerId().equals(userId));
+
+            // 허브 배송 담당자가 담당하는 배송이 아닌 경우
+            if (!flag) {
+                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+            }
+
+            // 허브 배송 담당자가 업체 배송 담당자를 수정하려는 경우
+            if (requestServiceDto.managerId() != null) {
+                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+            }
+        }
+
+        DeliveryManager manager = delivery.getManager();
+        // manager
+        if (requestServiceDto.managerId() != null) {
+            // TODO managerId로 user쪽에 실제 존재하는 '업체 배송 담당자'인지 확인 요청 & updateManager() 필드 값 수정
+            manager.updateManager(requestServiceDto.managerId(), "slackId", UUID.randomUUID(), UUID.randomUUID());
+        }
+
+        delivery.update(requestServiceDto.receiver(), requestServiceDto.receiverSlackId(), requestServiceDto.address(), manager);
         return deliveryApplicationMapper.toUpdateResponseServiceDto(delivery.getId());
+
     }
 
     @Transactional
@@ -69,7 +103,30 @@ public class DeliveryService {
 
         Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
-        // TODO 권한 확인
+
+        if (userRole == UserRoleType.HUB_MANAGER) {
+            // TODO hub 쪽에 HUB_MANAGER 소속 허브 id 조회 -> hubId
+            // delivery.getManager().getHubId() != hubId -> throw DeliveryException(ErrorCode.UNAUTHORIZED)
+        }
+
+        if (userRole == UserRoleType.COMPANY_DELIVERY_MANAGER) {
+            // 업체 배송 담당자가 담당하는 배송이 아닌 경우
+            if (!Objects.equals(delivery.getManager().getManagerId(), userId)) {
+                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+            }
+        }
+
+        if (userRole == UserRoleType.HUB_DELIVERY_MANAGER) {
+            boolean flag = delivery.getRoutes().stream()
+                    .anyMatch(route -> route.getManager().getManagerId().equals(userId));
+
+            // 허브 배송 담당자가 담당하는 배송이 아닌 경우
+            if (!flag) {
+                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+            }
+
+        }
+
         delivery.updateStatus(requestServiceDto.status());
         return deliveryApplicationMapper.toUpdateStatusResponseServiceDto(delivery.getId());
     }
