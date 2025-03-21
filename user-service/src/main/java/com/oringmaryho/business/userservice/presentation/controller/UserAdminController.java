@@ -22,6 +22,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminDel
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminFindRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminGrantRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSearchRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminSignInRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSlackCodeRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSlackConfirmRequestServiceDto;
@@ -34,6 +35,7 @@ import com.oringmaryho.business.userservice.presentation.dto.mapper.UserPresenta
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminCreateRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminGrantRoleRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSearchRequestDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSignInRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSignUpRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSlackCodeRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminUpdateRequestDto;
@@ -43,6 +45,7 @@ import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminG
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminSearchResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminUpdateResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminUpdateRoleResponseDto;
+import com.oringmaryho.business.userservice.presentation.dto.response.UserSignInResponseDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -65,6 +68,18 @@ public class UserAdminController {
 			requestDto);
 		userAdminService.signUpUserAdmin(requestServiceDto);
 		return ResponseEntity.ok().build();
+	}
+
+	@Description(
+		"username, password를 입력받아 로그인"
+	)
+	@PostMapping("/sign-in")
+	public ResponseEntity<UserSignInResponseDto> signInUser(
+		@RequestBody UserAdminSignInRequestDto requestDto) {
+		UserAdminSignInRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminSignInRequestServiceDto(
+			requestDto);
+		UserSignInResponseDto responseDto = userAdminService.signInUserAdmin(requestServiceDto);
+		return ResponseEntity.ok().body(responseDto);
 	}
 
 	@Description(

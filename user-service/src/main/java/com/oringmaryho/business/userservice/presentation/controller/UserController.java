@@ -41,9 +41,9 @@ public class UserController {
 		"username, password, slackId를 입력 받아 회원가입"
 	)
 	@PostMapping("/sign-up")
-	public ResponseEntity<Void> signUpUser(@RequestBody UserSignUpRequestDto userSignUpRequestDto) {
+	public ResponseEntity<Void> signUpUser(@RequestBody UserSignUpRequestDto requestDto) {
 		UserSignUpRequestServiceDto requestServiceDto = userPresentationMapper.toUserSignUpServiceDto(
-			userSignUpRequestDto);
+			requestDto);
 		userService.signUpUser(requestServiceDto);
 		return ResponseEntity.ok().build();
 	}
@@ -53,9 +53,9 @@ public class UserController {
 	)
 	@PostMapping("/sign-in")
 	public ResponseEntity<UserSignInResponseDto> signInUser(
-		@RequestBody UserSignInRequestDto userSignInRequestDto) {
+		@RequestBody UserSignInRequestDto requestDto) {
 		UserSignInRequestServiceDto requestServiceDto = userPresentationMapper.toUserSignInServiceDto(
-			userSignInRequestDto);
+			requestDto);
 		UserSignInResponseDto responseDto = userService.signInUser(requestServiceDto);
 		return ResponseEntity.ok().body(responseDto);
 	}
@@ -90,12 +90,12 @@ public class UserController {
 
 	@PostMapping("/slack/confirm-code")
 	@Description(
-	"slack 인증을 위한 코드 전송 요청"
+		"slack 인증을 위한 코드 전송 요청"
 	)
 	public ResponseEntity<Void> slackCodeRequestUser(
-		@RequestBody UserSlackCodeRequestDto userSlackCodeRequestDto) {
+		@RequestBody UserSlackCodeRequestDto requestDto) {
 		UserSlackCodeRequestServiceDto requestServiceDto = userPresentationMapper.toUserSlackCodeRequestServiceDto(
-			userSlackCodeRequestDto);
+			requestDto);
 		userService.slackCodeRequestUser(requestServiceDto);
 		return ResponseEntity.ok().build();
 	}
@@ -105,9 +105,9 @@ public class UserController {
 		"slack 인증 코드로 인증 확인"
 	)
 	public ResponseEntity<Void> slackConfirmUser(
-		@RequestBody UserSlackConfirmRequestDto userSlackConfirmRequestDto) {
+		@RequestBody UserSlackConfirmRequestDto requestDto) {
 		UserSlackConfirmRequestServiceDto requestServiceDto = userPresentationMapper.toUserSlackConfirmRequestServiceDto(
-			userSlackConfirmRequestDto);
+			requestDto);
 		userService.slackConfirmUser(requestServiceDto);
 		return ResponseEntity.ok().build();
 	}

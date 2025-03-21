@@ -95,7 +95,7 @@ public class UserService {
 
 		// 인증된 사용자 정보 가져오기
 		User user = userRepository.findByUsername(requestServiceDto.username()).orElseThrow(
-			() -> new EntityNotFoundException("User not found with username: " + requestServiceDto.username())
+			() -> new UserException(ErrorCode.NOT_FOUND)
 		);
 
 		redisUtil.updateUserInfo(user);

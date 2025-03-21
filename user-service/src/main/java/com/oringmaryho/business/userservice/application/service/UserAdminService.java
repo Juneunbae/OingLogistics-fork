@@ -20,6 +20,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminDel
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminFindRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminGrantRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSearchRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminSignInRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSlackCodeRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSlackConfirmRequestServiceDto;
@@ -27,6 +28,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpd
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpdateRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSignOutRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserAdminFindResponseDto;
+import com.oringmaryho.business.userservice.application.dto.response.UserSignInResponseServiceDto;
 import com.oringmaryho.business.userservice.application.utils.CodeStorage;
 import com.oringmaryho.business.userservice.application.utils.DirectMessageAuthService;
 import com.oringmaryho.business.userservice.application.utils.RedisUtil;
@@ -43,6 +45,7 @@ import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminG
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminSearchResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminUpdateResponseDto;
 import com.oringmaryho.business.userservice.presentation.dto.response.UserAdminUpdateRoleResponseDto;
+import com.oringmaryho.business.userservice.presentation.dto.response.UserSignInResponseDto;
 
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -403,5 +406,28 @@ public class UserAdminService {
 		}
 		codeStorage.storeCode(user.getUsername(), user.getSlackId(), slackCode,
 			SLACK_CODE_TTL);
+	}
+
+	public UserSignInResponseDto signInUserAdmin(UserAdminSignInRequestServiceDto requestServiceDto) {
+		// 사용자 인증
+		if (!userRepository.existsByUsername(requestServiceDto.username())) {
+			throw new UserException(ErrorCode.NOT_FOUND);
+		}
+
+		// 인증된 사용자 정보 가져오기
+		User user = userRepository.findByUsername(requestServiceDto.username()).orElseThrow(
+			() -> new UserException(ErrorCode.NOT_FOUND)
+		);
+
+		redisUtil.updateUserInfo(user);
+		Map<String, String> tokenMap = redisUtil.updateUserJwtToken(user.getId());
+
+		// 응답 DTO 생성
+		UserSignInResponseServiceDto serviceDto = new UserSignInResponseServiceDto(
+			tokenMap.get("accessToken"),
+			tokenMap.get("refreshToken")
+		);
+
+		return userApplicationMapper.toSignInResponseDto(serviceDto);
 	}
 }

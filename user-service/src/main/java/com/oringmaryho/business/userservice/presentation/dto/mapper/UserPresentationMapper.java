@@ -8,6 +8,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminCre
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminFindRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminGrantRoleRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSearchRequestServiceDto;
+import com.oringmaryho.business.userservice.application.dto.request.UserAdminSignInRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSignUpRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSlackCodeRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminSlackConfirmRequestServiceDto;
@@ -23,6 +24,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserSlackCon
 import com.oringmaryho.business.userservice.domain.UserRoleType;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminCreateRequestDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRequestServiceDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSignInRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSignUpRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSlackCodeRequestDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminUpdateRoleRequestDto;
@@ -63,16 +65,16 @@ public interface UserPresentationMapper {
 	UserAdminSearchRequestServiceDto toUserAdminSearchRequestServiceDto(
 		UserAdminSearchRequestDto requestDto, Pageable pageable);
 
-	@Mapping(target = "id", expression = "java(id)")
+	@Mapping(target = "id", source = "id")
 	UserAdminUpdateRequestServiceDto toUserAdminUpdateRequestServiceDto(UserAdminUpdateRequestDto requestDto,
 		Long id);
 
-	@Mapping(target = "id", expression = "java(id)")
+	@Mapping(target = "id", source = "id")
 	UserAdminGrantRoleRequestServiceDto toUserAdminGrantRoleRequestServiceDto(UserAdminGrantRoleRequestDto requstDto,
 		Long id);
 
-	@Mapping(target = "id", expression = "java(id)")
-	@Mapping(target = "newRole", expression = "java(requestDto.role())")
+	@Mapping(target = "id", source = "id")
+	@Mapping(target = "newRole", source = "role")
 	UserAdminUpdateRoleRequestServiceDto toUserAdminUpdateRoleRequestServiceDto(
 		UserAdminUpdateRoleRequestDto requestDto, Long id);
 
@@ -99,4 +101,6 @@ public interface UserPresentationMapper {
 	UserAdminSlackCodeRequestServiceDto toUserAdminSlackCodeRequestServiceDto(UserAdminSlackCodeRequestDto requestDto);
 
 	UserAdminSlackConfirmRequestServiceDto toUserAdminSlackConfirmRequestServiceDto(UserSlackConfirmRequestDto userSlackConfirmRequestDto);
+
+	UserAdminSignInRequestServiceDto toUserAdminSignInRequestServiceDto(UserAdminSignInRequestDto requestDto);
 }
