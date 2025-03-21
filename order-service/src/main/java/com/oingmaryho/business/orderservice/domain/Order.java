@@ -53,7 +53,8 @@ public class Order extends BaseEntity {
     private String requests;
 
     @Column(
-        nullable = false
+        nullable = false,
+        columnDefinition = "boolean default false"
     )
     private Boolean isDeleted;
 
