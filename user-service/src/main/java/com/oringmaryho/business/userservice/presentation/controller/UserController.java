@@ -1,12 +1,12 @@
 package com.oringmaryho.business.userservice.presentation.controller;
 
+import org.springframework.context.annotation.Description;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,6 +37,9 @@ public class UserController {
 	private final UserService userService;
 	private final UserPresentationMapper userPresentationMapper;
 
+	@Description(
+		"username, password, slackId를 입력 받아 회원가입"
+	)
 	@PostMapping("/sign-up")
 	public ResponseEntity<Void> signUpUser(@RequestBody UserSignUpRequestDto userSignUpRequestDto) {
 		UserSignUpRequestServiceDto requestServiceDto = userPresentationMapper.toUserSignUpServiceDto(
@@ -45,8 +48,9 @@ public class UserController {
 		return ResponseEntity.ok().build();
 	}
 
-	//일반 사용자, 관리자 사용자 둘 다 같은 메서드 사용
-	//todo: 분리해야할까?
+	@Description(
+		"username, password를 입력받아 로그인"
+	)
 	@PostMapping("/sign-in")
 	public ResponseEntity<UserSignInResponseDto> signInUser(
 		@RequestBody UserSignInRequestDto userSignInRequestDto) {
@@ -57,19 +61,25 @@ public class UserController {
 	}
 
 	@PostMapping("/sign-out")
+	@Description(
+		"로그인했던 사용자 id를 받아 로그아웃"
+	)
 	public ResponseEntity<?> signOutUser(
 		@RequestAttribute("userId") Long userId
-	){
+	) {
 		UserSignOutRequestServiceDto requestServiceDto = userPresentationMapper.toUserSignOutRequestServiceDto(userId);
 		userService.signOutUser(requestServiceDto);
 		return ResponseEntity.ok().build();
 	}
 
 	@GetMapping("/{id}")
+	@Description(
+		"user id 로 사용자 정보 단일 조회"
+	)
 	public ResponseEntity<UserSearchResponseDto> searchUser(
 		@PathVariable Long id,
 		@RequestAttribute("userId") Long userId
-		) {
+	) {
 		log.info("search user id:{} userId:{}", id, userId);
 		UserSearchRequestServiceDto requestServiceDto = userPresentationMapper.toUserSearchRequestServiceDto(
 			id, userId);
@@ -78,8 +88,10 @@ public class UserController {
 		return ResponseEntity.ok(responseDto);
 	}
 
-	//slack 인증을 위한 코드 전송 요청
 	@PostMapping("/slack/confirm-code")
+	@Description(
+	"slack 인증을 위한 코드 전송 요청"
+	)
 	public ResponseEntity<Void> slackCodeRequestUser(
 		@RequestBody UserSlackCodeRequestDto userSlackCodeRequestDto) {
 		UserSlackCodeRequestServiceDto requestServiceDto = userPresentationMapper.toUserSlackCodeRequestServiceDto(
@@ -88,8 +100,10 @@ public class UserController {
 		return ResponseEntity.ok().build();
 	}
 
-	//slack 인증 코드로 인증 확인
 	@PostMapping("/slack/confirm")
+	@Description(
+		"slack 인증 코드로 인증 확인"
+	)
 	public ResponseEntity<Void> slackConfirmUser(
 		@RequestBody UserSlackConfirmRequestDto userSlackConfirmRequestDto) {
 		UserSlackConfirmRequestServiceDto requestServiceDto = userPresentationMapper.toUserSlackConfirmRequestServiceDto(

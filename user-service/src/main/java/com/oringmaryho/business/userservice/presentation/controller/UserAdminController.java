@@ -1,5 +1,6 @@
 package com.oringmaryho.business.userservice.presentation.controller;
 
+import org.springframework.context.annotation.Description;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -53,6 +54,9 @@ public class UserAdminController {
 	private final UserPresentationMapper userPresentationMapper;
 	private final PageableConfig pageableConfig;
 
+	@Description(
+		"username, password, slackId, key를 입력 받아 회원가입"
+	)
 	@PostMapping("/sign-up")
 	public ResponseEntity<Void> signUpMasterUser(
 		@RequestBody UserAdminSignUpRequestDto requestDto) {
@@ -62,6 +66,9 @@ public class UserAdminController {
 		return ResponseEntity.ok().build();
 	}
 
+	@Description(
+		"로그인했던 사용자 id를 받아 로그아웃"
+	)
 	@PostMapping("/sign-out")
 	public ResponseEntity<?> signOutUser(
 		@RequestAttribute("userId") Long userId
@@ -71,6 +78,10 @@ public class UserAdminController {
 		return ResponseEntity.ok().build();
 	}
 
+	@Description(
+		"사용자의 username, password, slackId를 받아 사용자 생성."
+			+ "사용자 role, status는 설정 불가"
+	)
 	@PostMapping()
 	public ResponseEntity<Void> createUser(
 		@RequestBody UserAdminCreateRequestDto requestDto) {
@@ -80,6 +91,9 @@ public class UserAdminController {
 		return ResponseEntity.ok().build();
 	}
 
+	@Description(
+		"모든 사용자 리스트 중 id가 일치하는 사용자 조회"
+	)
 	@GetMapping("/{id}")
 	public ResponseEntity<?> findUserMaster(@PathVariable Long id) {
 		UserAdminFindRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminFindRequestServiceDto(
@@ -87,6 +101,9 @@ public class UserAdminController {
 		return ResponseEntity.ok(userAdminService.findUserAdmin(requestServiceDto));
 	}
 
+	@Description(
+		"사용자 정보를 선택적으로 파라미터로 받아 검색하는 api"
+	)
 	@GetMapping()
 	public ResponseEntity<Page<UserAdminSearchResponseDto>> searchUsers(
 		@RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
@@ -101,6 +118,9 @@ public class UserAdminController {
 		return ResponseEntity.ok(responseDtos);
 	}
 
+	@Description(
+		"업데이트 할 사용자 정보를 파라미터로 받아 정보 갱신"
+	)
 	@PutMapping("/{id}")
 	public ResponseEntity<?> updateUserMaster(@PathVariable Long id,
 		@RequestBody UserAdminUpdateRequestDto requestDto) {
@@ -110,6 +130,9 @@ public class UserAdminController {
 		return ResponseEntity.ok(responseDto);
 	}
 
+	@Description(
+		"사용자 권한 부여"
+	)
 	@PutMapping("/{id}/grant")
 	public ResponseEntity<UserAdminGrantRoleResponseDto> grantRoleUserMaster(@PathVariable Long id,
 		@RequestBody UserAdminGrantRoleRequestDto requestDto) {
@@ -119,6 +142,9 @@ public class UserAdminController {
 		return ResponseEntity.ok(responseDto);
 	}
 
+	@Description(
+		"사용자 권한 업데이트"
+	)
 	@PutMapping("/roles/{id}")
 	public ResponseEntity<UserAdminUpdateRoleResponseDto> updateRoleUserMaster(@PathVariable Long id,
 		@RequestBody UserAdminUpdateRoleRequestDto requestDto) {
@@ -129,6 +155,9 @@ public class UserAdminController {
 		return ResponseEntity.ok(responseDto);
 	}
 
+	@Description(
+		"사용자 권한 회수(삭제)"
+	)
 	@DeleteMapping("/roles/{id}")
 	public ResponseEntity<?> deleteRoleUserMaster(@PathVariable Long id) {
 		UserAdminDeleteRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminDeleteRoleRequestServiceDto(
@@ -137,6 +166,9 @@ public class UserAdminController {
 		return ResponseEntity.ok().build();
 	}
 
+	@Description(
+		"사용자 삭제"
+	)
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deleteUserMaster(@PathVariable Long id) {
 		UserAdminDeleteRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminDeleteRequestServiceDto(
@@ -145,7 +177,9 @@ public class UserAdminController {
 		return ResponseEntity.ok().build();
 	}
 
-	//slack 인증을 위한 코드 전송 요청
+	@Description(
+		"slack 인증을 위한 코드 전송 요청"
+	)
 	@PostMapping("/slack/confirm-code")
 	public ResponseEntity<Void> slackCodeRequestUser(
 		@RequestBody UserAdminSlackCodeRequestDto requestDto) {
@@ -155,7 +189,9 @@ public class UserAdminController {
 		return ResponseEntity.ok().build();
 	}
 
-	//slack 인증 코드로 인증 확인
+	@Description(
+		"slack 인증 코드로 인증 확인"
+	)
 	@PostMapping("/slack/confirm")
 	public ResponseEntity<Void> slackConfirmUser(
 		@RequestBody UserSlackConfirmRequestDto userSlackConfirmRequestDto) {
