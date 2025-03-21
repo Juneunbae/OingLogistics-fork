@@ -131,10 +131,15 @@ public class DeliveryAdminService {
     public Page<DeliveryResponseServiceDto> GetDeliveriesBySearch(Long userId,
                                                                   UserRoleType userRole,
                                                                   DeliverySearchRequestServiceDto requestServiceDto) {
-        // TODO 2. userId로 배송 담당자 id 조회
-        // TODO 3. 엄체 담당자인 경우 userId로 담당 업체 id 조회
+        DeliveryManagerType type = null;
+        if (requestServiceDto.managerId() != null) {
+            DeliveryManager manager = deliveryRepository.findManagerByIdAndIsDeleted(requestServiceDto.managerId())
+                    .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
+            type = manager.getType();
+        }
+        // TODO 엄체 담당자인 경우 userId로 담당 업체 id 조회
 
-        DeliverySearchCriteria criteria = createDeliverySearchCriteria(userId, requestServiceDto, userRole);
+        DeliverySearchCriteria criteria = createDeliverySearchCriteria(userId, userRole, requestServiceDto, type);
         Page<Delivery> deliveries = deliveryRepository.searchDelivery(
                 criteria,
                 requestServiceDto.customPageable());
@@ -158,10 +163,14 @@ public class DeliveryAdminService {
     public Page<DeliveryRouteResponseServiceDto> GetDeliveryRoutesBySearch(Long userId,
                                                                            UserRoleType userRole,
                                                                            DeliveryRouteSearchRequestServiceDto requestServiceDto) {
-        // TODO 2. userId로 배송 담당자 id 조회
-        // TODO 3. 엄체 담당자인 경우 userId로 담당 업체 id 조회
-
-        DeliveryRouteSearchCriteria criteria = createDeliveryRouteSearchCriteria(userId, requestServiceDto, userRole);
+        DeliveryManagerType type = null;
+        if (requestServiceDto.managerId() != null) {
+            DeliveryManager manager = deliveryRepository.findManagerByIdAndIsDeleted(requestServiceDto.managerId())
+                    .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
+            type = manager.getType();
+        }
+        // TODO 엄체 담당자인 경우 userId로 담당 업체 id 조회
+        DeliveryRouteSearchCriteria criteria = createDeliveryRouteSearchCriteria(userId, userRole, requestServiceDto, type);
         Page<DeliveryRoute> routes = deliveryRepository.searchRoute(
                 criteria,
                 requestServiceDto.customPageable());
@@ -197,26 +206,34 @@ public class DeliveryAdminService {
     }
 
     // 배송 조회 검색 조건 생성 (admin)
-    private DeliverySearchCriteria createDeliverySearchCriteria(Long userId, DeliverySearchRequestServiceDto requestServiceDto, UserRoleType userRole) {
+    private DeliverySearchCriteria createDeliverySearchCriteria(
+            Long userId,
+            UserRoleType userRole,
+            DeliverySearchRequestServiceDto requestServiceDto,
+            DeliveryManagerType type) {
         return DeliverySearchCriteria.builder()
                 .userId(userId)
                 .hubId(requestServiceDto.hubId())
-                .companyId(requestServiceDto.companyId())   // TODO 담당 업체 id
-                .managerId(requestServiceDto.managerId())   // TODO 배송 담당자 id
-                .managerType(DeliveryManagerType.fromUserRoleType(userRole))
+                .companyId(requestServiceDto.companyId())
+                .managerId(requestServiceDto.managerId())   // 배송 담당자 id
+                .managerType(DeliveryManagerType.fromUserRoleType(userRole))    // TODO type으로 변경
                 .isDeleted(requestServiceDto.isDeleted() == null ? null:  // 전체 조회
                         requestServiceDto.isDeleted() ?  Boolean.TRUE : Boolean.FALSE)  // 필터 조건이 들어올 경우 해당하는 결과만 조회
                 .build();
     }
 
     // 배송 경로 조회 검색 조건 생성 (admin)
-    private DeliveryRouteSearchCriteria createDeliveryRouteSearchCriteria(Long userId, DeliveryRouteSearchRequestServiceDto requestServiceDto, UserRoleType userRole) {
+    private DeliveryRouteSearchCriteria createDeliveryRouteSearchCriteria(
+            Long userId,
+            UserRoleType userRole,
+            DeliveryRouteSearchRequestServiceDto requestServiceDto,
+            DeliveryManagerType type) {
         return DeliveryRouteSearchCriteria.builder()
                 .userId(userId)
                 .hubId(requestServiceDto.hubId())
-                .companyId(requestServiceDto.companyId())   // TODO 담당 업체 id
-                .managerId(requestServiceDto.managerId())   // TODO 배송 담당자 id
-                .managerType(DeliveryManagerType.fromUserRoleType(userRole))
+                .companyId(requestServiceDto.companyId())
+                .managerId(requestServiceDto.managerId())   // 배송 담당자 id
+                .managerType(DeliveryManagerType.fromUserRoleType(userRole))    // TODO type으로 변경
                 .isDeleted(requestServiceDto.isDeleted() == null ? null:  // 전체 조회
                         requestServiceDto.isDeleted() ?  Boolean.TRUE : Boolean.FALSE)  // 필터 조건이 들어올 경우 해당하는 결과만 조회
                 .build();
