@@ -1020,7 +1020,7 @@ public class DeliveryServiceTest {
                 receiver2,
                 receiverSlackId2,
                 null,
-                null
+                userId2
         );
         DeliveryUpdateResponseServiceDto responseDto = new DeliveryUpdateResponseServiceDto(
                 deliveryId1

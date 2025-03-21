@@ -23,6 +23,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class DeliveryAdminService {
@@ -70,10 +72,14 @@ public class DeliveryAdminService {
         Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
-        DeliveryManager newManager = deliveryRepository.findManagerByIdAndIsDeleted(requestServiceDto.managerId())
-                .orElseThrow(() -> new DeliveryException(ErrorCode.MANGER_NOT_FOUND));
+        DeliveryManager manager = delivery.getManager();
+        // manager
+        if (requestServiceDto.managerId() != null) {
+            // TODO managerId로 user쪽에 실제 존재하는 '업체 배송 담당자'인지 확인 요청 & updateManager() 필드 값 수정
+            manager.updateManager(requestServiceDto.managerId(), "slackId", UUID.randomUUID(), UUID.randomUUID());
+        }
 
-        delivery.update(requestServiceDto.receiver(), requestServiceDto.receiverSlackId(), requestServiceDto.address(), newManager);
+        delivery.update(requestServiceDto.receiver(), requestServiceDto.receiverSlackId(), requestServiceDto.address(), manager);
         return deliveryApplicationMapper.toUpdateResponseServiceDto(delivery.getId());
     }
 
