@@ -25,6 +25,7 @@ import com.oingmaryho.business.hubservice.domain.Address;
 import com.oingmaryho.business.hubservice.domain.Hub;
 import com.oingmaryho.business.hubservice.domain.repository.HubRepository;
 import com.oingmaryho.business.hubservice.domain.service.HubCreateService;
+import com.oingmaryho.business.hubservice.domain.service.HubRouteInitService;
 
 @ExtendWith(MockitoExtension.class)
 class HubAdminServiceTest {
@@ -34,6 +35,9 @@ class HubAdminServiceTest {
 
 	@Mock
 	private HubCreateService hubCreateService;
+
+	@Mock
+	private HubRouteInitService hubRouteInitService;
 
 	@Mock
 	private HubRepository hubRepository;

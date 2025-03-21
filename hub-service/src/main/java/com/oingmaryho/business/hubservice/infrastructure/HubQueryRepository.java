@@ -2,6 +2,7 @@ package com.oingmaryho.business.hubservice.infrastructure;
 
 import static com.oingmaryho.business.hubservice.domain.QHub.*;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -64,6 +65,13 @@ public class HubQueryRepository {
 			)
 			.fetchOne()
 		);
+	}
+
+	public List<Hub> findAllActiveHubs() {
+		return queryFactory
+			.selectFrom(hub)
+			.where(eqIsDeleted(Boolean.FALSE))
+			.fetch();
 	}
 
 	private BooleanExpression eqId(UUID id) {

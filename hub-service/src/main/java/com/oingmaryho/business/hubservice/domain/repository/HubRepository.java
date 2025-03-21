@@ -1,5 +1,6 @@
 package com.oingmaryho.business.hubservice.domain.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,4 +20,6 @@ public interface HubRepository {
 	Page<Hub> findDynamicQuery(HubSearchCriteria criteria, Pageable pageable);
 
 	Optional<Hub> findActiveHubById(UUID id);
+
+	List<Hub> findAllActiveHubs();
 }
