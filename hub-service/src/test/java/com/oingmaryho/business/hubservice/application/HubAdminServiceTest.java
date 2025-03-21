@@ -24,12 +24,16 @@ import com.oingmaryho.business.hubservice.application.dto.response.HubUpdateResp
 import com.oingmaryho.business.hubservice.domain.Address;
 import com.oingmaryho.business.hubservice.domain.Hub;
 import com.oingmaryho.business.hubservice.domain.repository.HubRepository;
+import com.oingmaryho.business.hubservice.domain.service.HubCreateService;
 
 @ExtendWith(MockitoExtension.class)
 class HubAdminServiceTest {
 
 	@InjectMocks
 	private HubAdminService hubAdminService;
+
+	@Mock
+	private HubCreateService hubCreateService;
 
 	@Mock
 	private HubRepository hubRepository;
@@ -42,22 +46,23 @@ class HubAdminServiceTest {
 	void hub_create_test() {
 		// Given
 		HubCreateRequestServiceDto requestDto = new HubCreateRequestServiceDto(
-			"허브 이름", "허브 주소", 1.0, 2.0, 1L
+			"허브 이름", "허브 주소", 1L
 		);
 
 		Hub unsavedHub = Hub.builder()
 			.name(requestDto.name())
-			.address(new Address(requestDto.address(), requestDto.latitude(), requestDto.longitude()))
+			.address(new Address(requestDto.address(), 1.0, 1.0))
 			.managerId(requestDto.managerId())
 			.build();
 		Hub savedHub = Hub.builder()
 			.id(UUID.randomUUID())
 			.name(requestDto.name())
-			.address(new Address(requestDto.address(), requestDto.latitude(), requestDto.longitude()))
+			.address(new Address(requestDto.address(), 1.0, 1.0))
 			.managerId(requestDto.managerId())
 			.build();
 
-		when(mapper.toHub(requestDto)).thenReturn(unsavedHub);
+		when(hubCreateService.createHub(requestDto.name(), requestDto.address(), requestDto.managerId()))
+			.thenReturn(unsavedHub);
 		when(hubRepository.save(unsavedHub)).thenReturn(savedHub);
 		when(mapper.toHubCreateResponseServiceDto(savedHub)).thenReturn(new HubCreateResponseServiceDto(savedHub.getId()));
 
@@ -66,7 +71,6 @@ class HubAdminServiceTest {
 
 		// Then
 		// 호출 검증
-		verify(mapper, times(1)).toHub(requestDto);
 		verify(hubRepository, times(1)).save(unsavedHub);
 		verify(mapper, times(1)).toHubCreateResponseServiceDto(savedHub);
 		// 응답값 검증

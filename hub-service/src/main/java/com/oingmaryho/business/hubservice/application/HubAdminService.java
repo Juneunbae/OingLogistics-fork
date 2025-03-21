@@ -23,6 +23,7 @@ import com.oingmaryho.business.hubservice.domain.Address;
 import com.oingmaryho.business.hubservice.domain.Hub;
 import com.oingmaryho.business.hubservice.domain.HubSearchCriteria;
 import com.oingmaryho.business.hubservice.domain.repository.HubRepository;
+import com.oingmaryho.business.hubservice.domain.service.HubCreateService;
 import com.oingmaryho.business.hubservice.exception.ErrorCode;
 import com.oingmaryho.business.hubservice.exception.HubException;
 
@@ -32,13 +33,18 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class HubAdminService {
 
+	private final HubCreateService hubCreateService;
 	private final HubRepository hubRepository;
 	private final HubApplicationMapper mapper;
 
 	// TODO : Auditing 추가하기
 	@Transactional
 	public HubCreateResponseServiceDto createHub(HubCreateRequestServiceDto requestDto) {
-		Hub hub = mapper.toHub(requestDto);
+		Hub hub = hubCreateService.createHub(
+			requestDto.name(),
+			requestDto.address(),
+			requestDto.managerId()
+		);
 
 		Hub savedHub = hubRepository.save(hub);
 		return mapper.toHubCreateResponseServiceDto(savedHub);
