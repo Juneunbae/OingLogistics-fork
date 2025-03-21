@@ -29,7 +29,7 @@ public class CompanyFeignClientController {
 	@GetMapping("/{id}")
 	public ResponseEntity<CompanyDetailsSearchResponseDto> getCompanyById(@PathVariable UUID id) {
 		CompanyDetailsSearchRequestServiceDto requestServiceDto = companyPresentationMapper.toDetailsSearchServiceDto(id);
-		CompanyDetailsSearchResponseServiceDto responseServiceDto = companyFeignService.getCompanyById(requestServiceDto);
+		CompanyDetailsSearchResponseServiceDto responseServiceDto = companyFeignService.getCompany(requestServiceDto);
 		CompanyDetailsSearchResponseDto responseDto = companyPresentationMapper.toDetailsSearchResponseDto(responseServiceDto);
 		return ResponseEntity.ok(responseDto);
 	}

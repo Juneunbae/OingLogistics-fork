@@ -19,7 +19,7 @@ public class CompanyFeignService {
 	private final CompanyRepository companyRepository;
 	private final CompanyApplicationMapper companyApplicationMapper;
 
-	public CompanyDetailsSearchResponseServiceDto getCompanyById(CompanyDetailsSearchRequestServiceDto requestDto) {
+	public CompanyDetailsSearchResponseServiceDto getCompany(CompanyDetailsSearchRequestServiceDto requestDto) {
 		Company company = companyRepository.findByIdAndIsDeletedFalse(requestDto.id())
 			.orElseThrow(() -> new CompanyException(ErrorCode.NOT_FOUND));
 		return companyApplicationMapper.toResponseDto(company);

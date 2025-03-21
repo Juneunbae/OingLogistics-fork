@@ -18,9 +18,10 @@ public class ProductFeignClientService {
 	private final ProductRepository productRepository;
 	private final ProductApplicationMapper productApplicationMapper;
 
-	public ProductDetailsSearchResponseServiceDto getProductDetails(ProductDetailsSearchRequestServiceDto requestDto) {
+	public ProductDetailsSearchResponseServiceDto getProduct(ProductDetailsSearchRequestServiceDto requestDto) {
 		Product product = productRepository.findByIdAndIsDeletedFalse(requestDto.id())
 			.orElseThrow(() -> new ProductException(ErrorCode.NOT_FOUND));
 		return productApplicationMapper.toResponseDto(product);
 	}
 }
+
