@@ -204,7 +204,14 @@ public class DeliveryService {
             UserRoleType userRole,
             DeliverySearchRequestServiceDto requestServiceDto) {
 
-        DeliverySearchCriteria criteria = createDeliverySearchCriteria(userId, requestServiceDto, userRole);
+        DeliveryManagerType type = null;
+        if (requestServiceDto.managerId() != null) {
+            DeliveryManager manager = deliveryRepository.findManagerByIdAndIsDeleted(requestServiceDto.managerId())
+                    .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
+            type = manager.getType();
+        }
+        // TODO 엄체 담당자인 경우 userId로 담당 업체 id 조회
+        DeliverySearchCriteria criteria = createDeliverySearchCriteria(userId, userRole, requestServiceDto, type);
         Page<Delivery> deliveries = deliveryRepository.searchDelivery(
                 criteria,
                 requestServiceDto.customPageable());
@@ -268,7 +275,14 @@ public class DeliveryService {
             UserRoleType userRole,
             DeliveryRouteSearchRequestServiceDto requestServiceDto) {
 
-        DeliveryRouteSearchCriteria criteria = createDeliveryRouteSearchCriteria(userId, requestServiceDto, userRole);
+        DeliveryManagerType type = null;
+        if (requestServiceDto.managerId() != null) {
+            DeliveryManager manager = deliveryRepository.findManagerByIdAndIsDeleted(requestServiceDto.managerId())
+                    .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
+            type = manager.getType();
+        }
+        // TODO 엄체 담당자인 경우 userId로 담당 업체 id 조회
+        DeliveryRouteSearchCriteria criteria = createDeliveryRouteSearchCriteria(userId, userRole, requestServiceDto, type);
         Page<DeliveryRoute> routes = deliveryRepository.searchRoute(
                 criteria,
                 requestServiceDto.customPageable());
@@ -344,15 +358,16 @@ public class DeliveryService {
     // 배송 조회 검색 조건 생성 (일반 사용자)
     private DeliverySearchCriteria createDeliverySearchCriteria(
             Long userId,
+            UserRoleType userRole,
             DeliverySearchRequestServiceDto requestServiceDto,
-            UserRoleType userRole) {
+            DeliveryManagerType type) {
 
         return DeliverySearchCriteria.builder()
                 .userId(userId)
                 .hubId(requestServiceDto.hubId())
-                .companyId(requestServiceDto.companyId())   // 담당 업체 id
+                .companyId(requestServiceDto.companyId())
                 .managerId(requestServiceDto.managerId())   // 배송 담당자 id
-                .managerType(DeliveryManagerType.fromUserRoleType(userRole))
+                .managerType(DeliveryManagerType.fromUserRoleType(userRole))    // TODO type으로 변경
                 .isDeleted(Boolean.FALSE)   // 삭제되지 않은 데이터만 조회
                 .build();
     }
@@ -360,15 +375,16 @@ public class DeliveryService {
     // 배송 경로 조회 검색 조건 생성 (일반 사용자)
     private DeliveryRouteSearchCriteria createDeliveryRouteSearchCriteria(
             Long userId,
+            UserRoleType userRole,
             DeliveryRouteSearchRequestServiceDto requestServiceDto,
-            UserRoleType userRole) {
+            DeliveryManagerType type) {
 
         return DeliveryRouteSearchCriteria.builder()
                 .userId(userId)
                 .hubId(requestServiceDto.hubId())
-                .companyId(requestServiceDto.companyId())   // 담당 업체 id
+                .companyId(requestServiceDto.companyId())
                 .managerId(requestServiceDto.managerId())   // 배송 담당자 id
-                .managerType(DeliveryManagerType.fromUserRoleType(userRole))
+                .managerType(DeliveryManagerType.fromUserRoleType(userRole))    // TODO type으로 변경
                 .isDeleted(Boolean.FALSE)   // 삭제되지 않은 데이터만 조회
                 .build();
     }
