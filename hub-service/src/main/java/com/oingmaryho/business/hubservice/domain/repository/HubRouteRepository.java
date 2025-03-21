@@ -1,5 +1,6 @@
 package com.oingmaryho.business.hubservice.domain.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,4 +17,8 @@ public interface HubRouteRepository {
 	Optional<HubRoute> findById(UUID id);
 
 	Page<HubRoute> findDynamicQuery(HubRouteSearchCriteria criteria, Pageable pageable);
+
+	Optional<HubRoute> findByDepartureHubIdAndArriveHubId(UUID departureHubId, UUID arriveHubId);
+
+	List<HubRoute> findAllByIsDeletedFalse();
 }

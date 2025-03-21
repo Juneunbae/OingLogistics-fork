@@ -1,5 +1,6 @@
 package com.oingmaryho.business.hubservice.infrastructure;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,5 +34,15 @@ public class HubRouteRepositoryImpl implements HubRouteRepository {
 	@Override
 	public Page<HubRoute> findDynamicQuery(HubRouteSearchCriteria criteria, Pageable pageable) {
 		return hubRouteQueryRepository.findDynamicQuery(criteria, pageable);
+	}
+
+	@Override
+	public Optional<HubRoute> findByDepartureHubIdAndArriveHubId(UUID departureHubId, UUID arriveHubId) {
+		return hubRouteJpaRepository.findByDepartureHubIdAndArriveHubId(departureHubId, arriveHubId);
+	}
+
+	@Override
+	public List<HubRoute> findAllByIsDeletedFalse() {
+		return hubRouteJpaRepository.findAllByIsDeletedFalse();
 	}
 }
