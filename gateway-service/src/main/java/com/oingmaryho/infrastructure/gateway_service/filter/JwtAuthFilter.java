@@ -16,6 +16,9 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 
+import com.oingmaryho.infrastructure.gateway_service.exception.ErrorCode;
+import com.oingmaryho.infrastructure.gateway_service.exception.GatewayException;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -57,15 +60,17 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
 		String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-		//todo: 토큰 반환 및 저장 시 베어러 붙이기
 		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
 			log.warn("JWT 토큰이 없습니다.");
-			return onError(exchange, "JWT 토큰이 필요합니다.", HttpStatus.UNAUTHORIZED);
+			throw new GatewayException(ErrorCode.JWT_NOT_FOUND);
 		}
 
-		String token = authHeader.substring(7);
-
 		try {
+			String token = authHeader;
+			if (authHeader.startsWith("Bearer ")) {
+				token = token.substring(7);
+			}
+
 			// JWT 검증
 			Claims claims = validateToken(token);
 			log.info("JWT 검증 성공: {}", claims);
@@ -73,8 +78,7 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 			// 블랙리스트에 있는지 확인
 			if (isTokenBlacklisted(token)) {
 				log.error("JWT가 블랙리스트에 존재합니다.");
-				//todo: gateway 커스텀 에러 적용하기
-				return onError(exchange, "JWT가 블랙리스트에 존재합니다.", HttpStatus.UNAUTHORIZED);
+				throw new GatewayException(ErrorCode.JWT_BLACKLISTED);
 			}
 
 			// JWT 검증 후 사용자 정보 헤더 추가
@@ -86,13 +90,13 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
 		} catch (ExpiredJwtException e) {
 			log.error("JWT 만료됨: {}", e.getMessage());
-			return onError(exchange, "JWT가 만료되었습니다.", HttpStatus.UNAUTHORIZED);
+			throw new GatewayException(ErrorCode.JWT_EXPIRED);
 		} catch (UnsupportedJwtException | MalformedJwtException | SignatureException e) {
 			log.error("잘못된 JWT: {}", e.getMessage());
-			return onError(exchange, "잘못된 JWT입니다.", HttpStatus.UNAUTHORIZED);
+			throw new GatewayException(ErrorCode.WRONG_JWT);
 		} catch (Exception e) {
 			log.error("JWT 검증 중 오류 발생: {}", e.getMessage());
-			return onError(exchange, "JWT 검증 실패", HttpStatus.UNAUTHORIZED);
+			throw new GatewayException(ErrorCode.JWT_VERIFIED_FAIL);
 		}
 	}
 
@@ -119,6 +123,6 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
 	@Override
 	public int getOrder() {
-		return -1; // 필터 우선순위 설정 (낮을수록 먼저 실행됨)
+		return -1; // 필터 우선순위 설정 (낮을수록 먼저 실행)
 	}
 }

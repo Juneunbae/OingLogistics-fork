@@ -27,8 +27,8 @@ public class UserFeignClientController {
 	private final UserPresentationMapper userPresentationMapper;
 
 	@Description("FeignClient - role 별 user 검색 리스트")
-	@GetMapping
-	public ResponseEntity<List<User>> userServiceGetByRole(
+	@GetMapping("/role")
+	public ResponseEntity<List<User>> userFeignServiceGetByRole(
 		@RequestParam(name = "role") UserRoleType role,
 		@RequestParam(name = "isDeleted", required = false) Boolean isDeleted) {
 		UsersRequestServiceDto usersRequestServiceDto = userPresentationMapper.toUsersRequestServiceDto(role, isDeleted);
@@ -37,8 +37,8 @@ public class UserFeignClientController {
 	}
 
 	@Description("FeignClient - 배송 서비스에서 요청, 배송 담당자 별 user 검색 리스트")
-	@GetMapping
-	public ResponseEntity<Map<UserRoleType, List<User>>> userServiceGetByRole(
+	@GetMapping("/delivery-role")
+	public ResponseEntity<Map<UserRoleType, List<User>>> userFeignServiceGetByDeliveryRole(
 		@RequestParam(name = "isDeleted", required = false) Boolean isDeleted) {
 		UserFromDeliveryRequestServiceDto usersRequestServiceDto = userPresentationMapper.toUserFromDeliveryRequestServiceDto(isDeleted);
 
