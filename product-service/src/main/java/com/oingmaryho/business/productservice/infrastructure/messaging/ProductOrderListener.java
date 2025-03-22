@@ -1,19 +1,20 @@
 package com.oingmaryho.business.productservice.infrastructure.messaging;
 
+import java.io.IOException;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.oingmaryho.business.productservice.application.dto.request.ProductQueueRequestDto;
-import com.oingmaryho.business.productservice.application.dto.response.ProductQueueResponseDto;
 import com.oingmaryho.business.productservice.domain.Product;
 import com.oingmaryho.business.productservice.domain.repository.ProductRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -23,26 +24,34 @@ public class ProductOrderListener {
 
 	@RabbitListener(queues = "queueProduct")
 	@Transactional
-	public ProductQueueResponseDto handleQueueProduct(ProductQueueRequestDto event) {
+	public String handleQueueProduct(String event) throws IOException {
+		ObjectMapper objectMapper = new ObjectMapper();
+		ProductQueueRequestDto requestDto = objectMapper.readValue(event, ProductQueueRequestDto.class);
 
-		Optional<Product> optional = productRepository.findByIdAndIsDeletedFalse(event.productId());
+		log.info("Received message: {}", requestDto);
+
+		Optional<Product> optional = productRepository.findByIdAndIsDeletedFalse(requestDto.productId());
 		if (optional.isEmpty()) {
-			return new ProductQueueResponseDto(404);
+			log.warn("Product not found: {}", requestDto.productId());
+			return objectMapper.writeValueAsString(Integer.toString(HttpStatus.NOT_FOUND.value()));
 		}
 
 		Product product = optional.get();
 
-		if (product.getStock() < event.quantity()) {
-			return new ProductQueueResponseDto(400);
+		if (product.getStock() < requestDto.quantity()) {
+			log.warn("Insufficient stock: product={}, requested={}", product.getStock(), requestDto.quantity());
+			return objectMapper.writeValueAsString(Integer.toString(HttpStatus.BAD_REQUEST.value()));
 		}
 
-		product.decreaseStock(event.quantity());
+		product.decreaseStock(requestDto.quantity());
 
 		if (product.getStock() <= 100) {
 			int replenishAmount = 1000 - product.getStock();
 			product.increaseStock(replenishAmount);
+			log.info("Replenished stock: product={}, amount={}", product.getId(), replenishAmount);
 		}
 
-		return new ProductQueueResponseDto(200);
+		log.info("Message processed successfully: {}", requestDto);
+		return objectMapper.writeValueAsString(Integer.toString(HttpStatus.OK.value()));
 	}
 }
