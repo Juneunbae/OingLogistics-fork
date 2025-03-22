@@ -29,7 +29,7 @@ public class UserFeignClientController {
 	private final UserPresentationMapper userPresentationMapper;
 
 	@Description("FeignClient - role 별 user 검색 리스트")
-	@GetMapping("/role")
+	@GetMapping()
 	public ResponseEntity<List<User>> userFeignServiceGetByRole(
 		@RequestParam(name = "role") UserRoleType role,
 		@RequestParam(name = "isDeleted", required = false) Boolean isDeleted) {
