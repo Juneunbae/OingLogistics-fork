@@ -78,6 +78,10 @@ public class Order extends BaseEntity {
         this.totalPrice -= totalPrice;
     }
 
+    public void inputTotalPrice(Integer totalPrice) {
+        this.totalPrice = totalPrice;
+    }
+
     public void addOrderDetail(List<OrderDetail> orderDetails) {
         this.orderDetails = orderDetails;
     }

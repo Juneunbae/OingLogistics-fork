@@ -1,16 +1,17 @@
 package com.oingmaryho.business.orderservice.application.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oingmaryho.business.orderservice.application.dto.mapper.OrderApplicationMapper;
 import com.oingmaryho.business.orderservice.application.dto.request.*;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.response.ProductQueueResponseDto;
 import com.oingmaryho.business.orderservice.application.service.feignclient.CompanyClient;
 import com.oingmaryho.business.orderservice.application.service.feignclient.ProductClient;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
 import com.oingmaryho.business.orderservice.domain.OrderSearchCriteria;
 import com.oingmaryho.business.orderservice.domain.Status;
+import com.oingmaryho.business.orderservice.domain.repository.OrderRepository;
 import com.oingmaryho.business.orderservice.exception.ErrorCode;
 import com.oingmaryho.business.orderservice.exception.OrderException;
 import com.oingmaryho.business.orderservice.infrastructure.OrderJPARepository;
@@ -29,6 +30,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -41,6 +43,7 @@ public class OrderAdminService {
     private final CompanyClient companyClient;
     private final ProductClient productClient;
     private final RabbitTemplate rabbitTemplate;
+    private final OrderRepository orderRepository;
     private final OrderJPARepository orderJPARepository;
     private final OrderQueryRepository orderQueryRepository;
     private final OrderApplicationMapper orderApplicationMapper;
@@ -116,6 +119,7 @@ public class OrderAdminService {
             .requesterName(requestCompanyInfo.name())
             .status(Status.ORDERING)
             .requests(create.requests())
+            .totalPrice(totalPrice)
             .isDeleted(false)
             .build();
 
@@ -135,18 +139,22 @@ public class OrderAdminService {
                 orderDetail.quantity()
             );
 
-            // product id + quantity 를 queueProduct 큐에 보내줌
             Object response = rabbitTemplate.convertSendAndReceive(queueProduct, QueueRequest);
+            log.info("성공");
 
             if (response == null) {
                 rabbitTemplate.convertAndSend(queueErrProduct, QueueRequest);
                 throw new OrderException(ErrorCode.PRODUCT_SERVER_ERROR);
             }
 
-            ProductQueueResponseDto responseDto = (ProductQueueResponseDto) response;
+            try {
+                String responseString = new String((byte[]) response, StandardCharsets.UTF_8);
+                ObjectMapper objectMapper = new ObjectMapper();
+                int statusCode = objectMapper.readValue(responseString, Integer.class);
 
-            if (responseDto.statusCode() != 200) {
-                throw new OrderException(ErrorCode.PRODUCT_OUT_OF_STOCK);
+                log.info(String.valueOf(statusCode));
+            } catch (Exception e) {
+                log.error(e.getMessage());
             }
 
             totalPrice += (productInfo.price() * orderDetail.quantity());
@@ -165,8 +173,10 @@ public class OrderAdminService {
             details.add(detail);
         }
 
-        order.updateTotalPrice(totalPrice);
+        order.inputTotalPrice(totalPrice);
         order.addOrderDetail(details);
+
+        orderRepository.save(order);
     }
 
     @Transactional
