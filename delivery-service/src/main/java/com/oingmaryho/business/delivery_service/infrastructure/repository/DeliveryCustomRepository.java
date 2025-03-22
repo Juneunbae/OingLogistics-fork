@@ -19,6 +19,4 @@ public interface DeliveryCustomRepository {
     Optional<DeliveryRoute> findRouteById(UUID routeId);    // admin용
     Optional<DeliveryRoute> findRouteByIdAndIsDeleted(UUID routeId);
 
-    Optional<DeliveryManager> findManagerById(UUID managerId);  // admin용
-    Optional<DeliveryManager> findManagerByIdAndIsDeleted(UUID managerId);
 }

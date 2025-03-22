@@ -1,6 +1,7 @@
 package com.oingmaryho.business.delivery_service.domain.criteria;
 
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryManagerType;
+import com.oingmaryho.business.delivery_service.domain.type.DeliveryRouteStatus;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,11 +14,13 @@ import java.util.UUID;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class DeliveryRouteSearchCriteria {
 
-    private final Long userId;
-    private final UUID hubId;
+    private final UUID routeId;
+    private final UUID deliveryId;
+    private final UUID departureHubId;
+    private final UUID arriveHubId;
     private final UUID companyId;
-    private final UUID managerId;
-    private final DeliveryManagerType managerType;
+    private final Long managerId;
+    private final DeliveryRouteStatus status;
     private final Boolean isDeleted;
 
 }

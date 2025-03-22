@@ -1,10 +1,12 @@
 package com.oingmaryho.business.delivery_service.domain.criteria;
 
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryManagerType;
+import com.oingmaryho.business.delivery_service.domain.type.DeliveryStatus;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.data.domain.Pageable;
 
 import java.util.UUID;
 
@@ -13,11 +15,12 @@ import java.util.UUID;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class DeliverySearchCriteria {
 
-    private final Long userId;
+    private final UUID id;
+    private final UUID orderId;
     private final UUID hubId;
     private final UUID companyId;
-    private final UUID managerId;
-    private final DeliveryManagerType managerType;
+    private final DeliveryStatus status;
+    private final Long managerId;
     private final Boolean isDeleted;
 
 }

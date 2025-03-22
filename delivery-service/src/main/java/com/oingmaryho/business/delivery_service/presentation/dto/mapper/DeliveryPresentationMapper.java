@@ -32,7 +32,7 @@ public interface DeliveryPresentationMapper {
 
     DeliveryRouteDetailRequestServiceDto toRouteDetailServiceDto(UUID id);
 
-    @Mapping(target = "id", source = "id")
+    @Mapping(target = "deliveryId", source = "id")
     @Mapping(target = "customPageable", source = "customPageable")
     DeliveryRouteSearchRequestServiceDto toRouteSearchServiceDto(UUID id,DeliveryRouteSearchRequestDto searchDto, Pageable customPageable);
 
