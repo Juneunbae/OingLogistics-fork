@@ -24,7 +24,6 @@ import com.oingmaryho.business.hubservice.domain.Hub;
 import com.oingmaryho.business.hubservice.domain.HubSearchCriteria;
 import com.oingmaryho.business.hubservice.domain.repository.HubRepository;
 import com.oingmaryho.business.hubservice.domain.service.HubCreateService;
-import com.oingmaryho.business.hubservice.domain.service.HubRouteInitService;
 import com.oingmaryho.business.hubservice.exception.ErrorCode;
 import com.oingmaryho.business.hubservice.exception.HubException;
 
@@ -35,7 +34,6 @@ import lombok.RequiredArgsConstructor;
 public class HubAdminService {
 
 	private final HubCreateService hubCreateService;
-	private final HubRouteInitService hubRouteInitService;
 	private final HubRepository hubRepository;
 	private final HubApplicationMapper mapper;
 
@@ -49,7 +47,6 @@ public class HubAdminService {
 		);
 
 		Hub savedHub = hubRepository.save(hub);
-		hubRouteInitService.initHubRoute(savedHub); // TODO : 응답 시간 단축을 위한 비동기 처리 고려
 		return mapper.toHubCreateResponseServiceDto(savedHub);
 	}
 

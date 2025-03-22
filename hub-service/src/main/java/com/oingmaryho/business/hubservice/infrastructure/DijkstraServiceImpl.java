@@ -30,11 +30,12 @@ public class DijkstraServiceImpl implements ShortestPathService {
 
 	static {
 		HUB_CONNECTIONS = new HashMap<>();
-		HUB_CONNECTIONS.put("경기남부", new HashSet<>(Arrays.asList("경기북부", "서울", "인천", "강원도", "경상북도", "대전", "대구")));
-		HUB_CONNECTIONS.put("대전",
-			new HashSet<>(Arrays.asList("충청남도", "충청북도", "세종", "전라북도", "광주", "전라남도", "경기남부", "대구")));
-		HUB_CONNECTIONS.put("대구", new HashSet<>(Arrays.asList("경상북도", "경상남도", "부산", "울산", "경기남부", "대전")));
-		HUB_CONNECTIONS.put("경상북도", new HashSet<>(Arrays.asList("경기남부", "대구")));
+		HUB_CONNECTIONS.put("경기 남부 센터",
+			new HashSet<>(Arrays.asList("경기 북부 센터", "서울특별시 센터", "인천광역시 센터", "강원도특별자치도 센터", "경상북도 센터", "대전광역시 센터", "대구")));
+		HUB_CONNECTIONS.put("대전광역시 센터",
+			new HashSet<>(Arrays.asList("충청남도 센터", "충청북도 센터", "세종특별자치시 센터", "전북특별자치도 센터", "광주광역시 센터", "전라남도 센터", "경기 남부 센터", "대구광역시 센터")));
+		HUB_CONNECTIONS.put("대구광역시 센터", new HashSet<>(Arrays.asList("경상북도 센터", "경상남도 센터", "부산광역시 센터", "울산광역시 센터", "경기 남부 센터", "대전광역시 센터")));
+		HUB_CONNECTIONS.put("경상북도 센터", new HashSet<>(Arrays.asList("경기 남부 센터", "대구광역시 센터")));
 	}
 
 	//SSSP 알고리즘

@@ -36,12 +36,7 @@ public class HubRouteAdminService {
 
 	@Transactional
 	public HubRouteCreateResponseServiceDto createHubRoute(HubRouteCreateRequestServiceDto requestDto) {
-		HubRoute hubRoute = hubRouteCreateService.createHubRoute(
-			requestDto.departureHubId(),
-			requestDto.arriveHubId(),
-			requestDto.hubToHubTime(),
-			requestDto.distance()
-		);
+		HubRoute hubRoute = hubRouteCreateService.createHubRoute(requestDto.departureHubId(), requestDto.arriveHubId());
 
 		HubRoute savedHubRoute = hubRouteRepository.save(hubRoute);
 		return mapper.toHubRouteCreateResponseServiceDto(savedHubRoute);
