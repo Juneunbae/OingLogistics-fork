@@ -32,7 +32,7 @@ public class Delivery extends BaseEntity {
     private UUID departureHubId;
 
     @Column(nullable = false)
-    private UUID destinationHubId;
+    private UUID arriveHubId;
 
     @Column(nullable = false)
     private String address;
@@ -43,7 +43,7 @@ public class Delivery extends BaseEntity {
     @Column(nullable = false)
     private String receiverSlackId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
     private DeliveryManager manager; // 업체 배송 담당자 userId
 

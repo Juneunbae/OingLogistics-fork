@@ -3,6 +3,7 @@ package com.oingmaryho.business.delivery_service.application.service;
 import com.oingmaryho.business.delivery_service.application.dto.mapper.DeliveryApplicationMapper;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
+import com.oingmaryho.business.delivery_service.application.feign.*;
 import com.oingmaryho.business.delivery_service.domain.criteria.DeliveryRouteSearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.criteria.DeliverySearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.entity.Delivery;
@@ -14,12 +15,15 @@ import com.oingmaryho.business.delivery_service.domain.type.DeliveryStatus;
 import com.oingmaryho.business.delivery_service.domain.type.UserRoleType;
 import com.oingmaryho.business.delivery_service.exception.DeliveryException;
 import com.oingmaryho.business.delivery_service.exception.ErrorCode;
+import com.oingmaryho.business.delivery_service.infrastructure.repository.DeliveryManagerRepository;
 import com.oingmaryho.business.delivery_service.infrastructure.repository.DeliveryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,15 +34,26 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DeliveryService {
 
+    private final CompanyClient companyClient;
+    private final HubClient hubClient;
+    private final UserClient userClient;
     private final DeliveryRepository deliveryRepository;
+    private final DeliveryManagerRepository deliveryManagerRepository;
     private final DeliveryApplicationMapper deliveryApplicationMapper;
 
+
+    /**
+     * 배송 수정 - 허브 관리자
+     * @param userId 사용자 id
+     * @param userRole 사용자 권한
+     * @param requestServiceDto 배송 수정 request
+     * @return 배송 수정 response
+     */
     @Transactional
     @Caching(evict = {
             @CacheEvict(cacheNames = "delivery", key = "#requestServiceDto.id()"),
             @CacheEvict(cacheNames = "deliveries", allEntries = true)
     })
-
     public DeliveryUpdateResponseServiceDto updateDelivery(
             Long userId,
             UserRoleType userRole,
@@ -47,50 +62,54 @@ public class DeliveryService {
         Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
+        // 허브 관리자 : 본인이 담당하는 허브의 배송인 지 유효성 검사
         if (userRole == UserRoleType.HUB_MANAGER) {
-            // TODO hub 쪽에 HUB_MANAGER 소속 허브 id 조회 -> hubId
-            // delivery.getManager().getHubId() != hubId -> throw DeliveryException(ErrorCode.UNAUTHORIZED)
-        }
+            ResponseEntity<HubSearchResponseDto> response = hubClient.getHubByManagerId(userId);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                HubSearchResponseDto hubDto = response.getBody();
+                UUID hubId = hubDto.id();
 
-        if (userRole == UserRoleType.COMPANY_DELIVERY_MANAGER) {
-            // 업체 배송 담당자가 담당하는 배송이 아닌 경우
-            if (!Objects.equals(delivery.getManager().getManagerId(), userId)) {
-                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
-            }
-
-            // 업체 배송 담당자가 업체 배송 담당자를 수정하려는 경우
-            if (requestServiceDto.managerId() != null) {
-                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+                // 허브 관리자의 담당 허브와 배송 출발 허브가 다를 경우
+                if (delivery.getDepartureHubId() != hubId) {
+                    throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+                }
+            } else {
+                throw new DeliveryException(ErrorCode.HUB_NOT_FOUND);
             }
         }
 
-        if (userRole == UserRoleType.HUB_DELIVERY_MANAGER) {
-            boolean flag = delivery.getRoutes().stream()
-                    .anyMatch(route -> route.getManager().getManagerId().equals(userId));
-
-            // 허브 배송 담당자가 담당하는 배송이 아닌 경우
-            if (!flag) {
-                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
-            }
-
-            // 허브 배송 담당자가 업체 배송 담당자를 수정하려는 경우
-            if (requestServiceDto.managerId() != null) {
-                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+        // managerId로 user 쪽에 수정하려는 manager가 '업체 배송 담당자'인지 유효성 검사
+        ResponseEntity<UserRoleType> userResponse = userClient.getUserRoleById(requestServiceDto.managerId());
+        if (userResponse.getStatusCode().is2xxSuccessful() && userResponse.getBody() != null) {
+            if (!userResponse.getBody().equals(UserRoleType.COMPANY_DELIVERY_MANAGER)) {
+                throw new DeliveryException(ErrorCode.BAD_REQUEST);
             }
         }
 
-        DeliveryManager manager = delivery.getManager();
-        // manager
-        if (requestServiceDto.managerId() != null) {
-            // TODO managerId로 user쪽에 실제 존재하는 '업체 배송 담당자'인지 확인 요청 & updateManager() 필드 값 수정
-            manager.updateManager(requestServiceDto.managerId(), "slackId", UUID.randomUUID(), UUID.randomUUID());
+        // managerId로 DeliveryManager 쪽에 수정하려는 manager가 '업체 배송 담당자'인지 유효성 검사
+        DeliveryManager newManager = deliveryManagerRepository.findByManagerIdAndIsDeletedFalse(requestServiceDto.managerId())
+                .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
+        if (!newManager.getType().equals(DeliveryManagerType.COMPANY_DELIVERY_MANAGER)) {
+            throw new DeliveryException(ErrorCode.BAD_REQUEST);
         }
 
-        delivery.update(requestServiceDto.receiver(), requestServiceDto.receiverSlackId(), requestServiceDto.address(), manager);
+        // 수정하려는 manager가 배송의 마지막 허브에 속한 배송 담당자가 아닌 경우
+        if (!newManager.getHubId().equals(delivery.getArriveHubId())) {
+            throw new DeliveryException(ErrorCode.BAD_REQUEST);
+        }
+
+        delivery.update(requestServiceDto.receiver(), requestServiceDto.receiverSlackId(), requestServiceDto.address(), newManager);
         return deliveryApplicationMapper.toUpdateResponseServiceDto(delivery.getId());
 
     }
 
+    /**
+     * 배송 상태 수정 - 허브 관리자, 허브 배송 담당자, 업체 배송 담당자
+     * @param userId 사용자 id
+     * @param userRole 사용자 권한
+     * @param requestServiceDto 배송 상태 수정 request
+     * @return 배송 상태 수정 response
+     */
     @Transactional
     @Caching(evict = {
             @CacheEvict(cacheNames = "delivery", key = "#requestServiceDto.id()"),
@@ -104,33 +123,53 @@ public class DeliveryService {
         Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
+        // 허브 관리자 : 본인이 담당하는 허브의 배송인 지 유효성 검사
         if (userRole == UserRoleType.HUB_MANAGER) {
-            // TODO hub 쪽에 HUB_MANAGER 소속 허브 id 조회 -> hubId
-            // delivery.getManager().getHubId() != hubId -> throw DeliveryException(ErrorCode.UNAUTHORIZED)
+            ResponseEntity<HubSearchResponseDto> response = hubClient.getHubByManagerId(userId);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                HubSearchResponseDto hubDto = response.getBody();
+                UUID hubId = hubDto.id();
+
+                // 허브 관리자의 담당 허브와 배송 출발 허브가 다를 경우
+                if (delivery.getDepartureHubId() != hubId) {
+                    throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+                }
+            } else {
+                throw new DeliveryException(ErrorCode.HUB_NOT_FOUND);
+            }
         }
 
+        // 업체 배송 담당자 : 본인이 담당하는 배송인 지 유효성 검사
         if (userRole == UserRoleType.COMPANY_DELIVERY_MANAGER) {
-            // 업체 배송 담당자가 담당하는 배송이 아닌 경우
-            if (!Objects.equals(delivery.getManager().getManagerId(), userId)) {
+            // 담당하는 배송이 아닌 경우
+            if (!delivery.getManager().getManagerId().equals(userId)) {
                 throw new DeliveryException(ErrorCode.UNAUTHORIZED);
             }
         }
 
+        // 허브 배송 담당자 : 본인이 담당하는 배송인 지 유효성 검사
         if (userRole == UserRoleType.HUB_DELIVERY_MANAGER) {
             boolean flag = delivery.getRoutes().stream()
                     .anyMatch(route -> route.getManager().getManagerId().equals(userId));
-
-            // 허브 배송 담당자가 담당하는 배송이 아닌 경우
+            // 담당하는 배송이 아닌 경우
             if (!flag) {
                 throw new DeliveryException(ErrorCode.UNAUTHORIZED);
             }
-
         }
+
+        // TODO 고민: 배송 상태와 변경하려는 상태가 같은 경우를 예외로 처리해야 할까?
 
         delivery.updateStatus(requestServiceDto.status());
         return deliveryApplicationMapper.toUpdateStatusResponseServiceDto(delivery.getId());
     }
 
+
+    /**
+     * 배송 삭제 - 허브 관리자
+     * @param userId 사용자 id
+     * @param userRole 사용자 권한
+     * @param requestServiceDto 삭제 request
+     */
     @Transactional
     @Caching(evict = {
             @CacheEvict(cacheNames = "delivery", key = "#requestServiceDto.id()"),
@@ -143,11 +182,16 @@ public class DeliveryService {
 
         Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
-
-        deliveryRepository.delete(delivery);
-
+        delivery.softDelete(userId);
     }
 
+    /**
+     * 배송 상세 조회 - 허브 관리자, 허브 배송 담당자, 업체 배송 담당자, 업체 담당자
+     * @param userId 사용자 id
+     * @param userRole 사용자 권한
+     * @param requestServiceDto 배송 상세 조회 request
+     * @return 배송 상세 조회 response
+     */
     @Transactional(readOnly =true)
     @Cacheable(cacheNames = "delivery", key = "#requestServiceDto.id()")
     public DeliveryResponseServiceDto GetDeliveryDetail(
@@ -158,45 +202,64 @@ public class DeliveryService {
         Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
+        // 허브 관리자 : 본인이 담당하는 허브의 배송인 지 유효성 검사
         if (userRole == UserRoleType.HUB_MANAGER) {
-            // TODO hub 쪽에 HUB_MANAGER 소속 허브 id 조회 -> hubId
-            UUID hubId = UUID.randomUUID();
-            boolean flag = delivery.getRoutes().stream()
-                    .anyMatch(route -> route.getDepartureHubId().equals(hubId));
+            ResponseEntity<HubSearchResponseDto> response = hubClient.getHubByManagerId(userId);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                HubSearchResponseDto hubDto = response.getBody();
+                UUID hubId = hubDto.id();
 
-            // 허브 배송 담당자가 담당하는 배송이 아닌 경우
-            if (!flag) {
-                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+                // 허브 관리자의 담당 허브와 배송 출발 허브가 다를 경우
+                if (delivery.getDepartureHubId() != hubId) {
+                    throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+                }
+            } else {
+                throw new DeliveryException(ErrorCode.HUB_NOT_FOUND);
             }
 
         }
 
+        // 업체 배송 담당자 : 본인이 담당하는 배송인 지 유효성 검사
         if (userRole == UserRoleType.COMPANY_DELIVERY_MANAGER) {
-            // 업체 배송 담당자가 담당하는 배송이 아닌 경우
-            if (!Objects.equals(delivery.getManager().getManagerId(), userId)) {
+            // 담당하는 배송이 아닌 경우
+            if (!delivery.getManager().getManagerId().equals(userId)) {
                 throw new DeliveryException(ErrorCode.UNAUTHORIZED);
             }
         }
 
+        // 허브 배송 담당자 : 본인이 담당하는 배송인 지 유효성 검사
         if (userRole == UserRoleType.HUB_DELIVERY_MANAGER) {
             boolean flag = delivery.getRoutes().stream()
                     .anyMatch(route -> route.getManager().getManagerId().equals(userId));
-
-            // 허브 배송 담당자가 담당하는 배송이 아닌 경우
+            // 담당하는 배송이 아닌 경우
             if (!flag) {
                 throw new DeliveryException(ErrorCode.UNAUTHORIZED);
             }
-
         }
 
+        // 업체 담당자 : 본인이 담당하는 업체의 배송인 지 유효성 검사
         if (userRole == UserRoleType.COMPANY_MANAGER) {
-            // TODO company 쪽에 userId로 담당 업체 id를 조회 -> companyId
-            // delivery.getManager().getCompanyId() != companyId -> throw DeliveryException(ErrorCode.UNAUTHORIZED)
+            ResponseEntity<CompanyDetailsSearchResponseDto> companyResponse = companyClient.getCompanyByManagerId(userId);
+            if (companyResponse.getStatusCode().is2xxSuccessful() && companyResponse.getBody() != null) {
+                CompanyDetailsSearchResponseDto companyDto = companyResponse.getBody();
+                UUID companyId = companyDto.id();
+                // 담당하는 업체의 배송이 아닌 경우
+                if (!delivery.getManager().getCompanyId().equals(companyId)) {
+                    throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+                }
+            }
         }
 
         return deliveryApplicationMapper.toDeliveryResponseServiceDto(delivery);
     }
 
+    /**
+     * 배송 검색 - 허브 관리자, 허브 배송 담당자, 업체 배송 담당자, 업체 담당자
+     * @param userId 사용자 id
+     * @param userRole 사용자 권한
+     * @param requestServiceDto 배송 검색 request
+     * @return 배송 검색 response
+     */
     @Transactional(readOnly =true)
     @Cacheable(cacheNames = "deliveries")
     public Page<DeliveryResponseServiceDto> GetDeliveriesBySearch(
@@ -204,14 +267,52 @@ public class DeliveryService {
             UserRoleType userRole,
             DeliverySearchRequestServiceDto requestServiceDto) {
 
-        DeliveryManagerType type = null;
-        if (requestServiceDto.managerId() != null) {
-            DeliveryManager manager = deliveryRepository.findManagerByIdAndIsDeleted(requestServiceDto.managerId())
-                    .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
-            type = manager.getType();
+        UUID hubId = null;
+        UUID companyId = null;
+
+        // 허브 관리자 : 본인이 담당하는 허브 id 조회
+        if (userRole == UserRoleType.HUB_MANAGER) {
+            ResponseEntity<HubSearchResponseDto> response = hubClient.getHubByManagerId(userId);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                HubSearchResponseDto hubDto = response.getBody();
+                hubId = hubDto.id();
+            } else {
+                throw new DeliveryException(ErrorCode.HUB_NOT_FOUND);
+            }
+
         }
-        // TODO 엄체 담당자인 경우 userId로 담당 업체 id 조회
-        DeliverySearchCriteria criteria = createDeliverySearchCriteria(userId, userRole, requestServiceDto, type);
+
+        // 업체 담당자 : 본인이 담당하는 업체 id 조회
+        if (userRole == UserRoleType.COMPANY_MANAGER) {
+            ResponseEntity<CompanyDetailsSearchResponseDto> companyResponse = companyClient.getCompanyByManagerId(userId);
+            if (companyResponse.getStatusCode().is2xxSuccessful() && companyResponse.getBody() != null) {
+                CompanyDetailsSearchResponseDto companyDto = companyResponse.getBody();
+                companyId = companyDto.id();
+            }
+        }
+
+        DeliverySearchCriteria criteria = null;
+
+        if (userRole.equals(UserRoleType.HUB_DELIVERY_MANAGER) || userRole.equals(UserRoleType.COMPANY_DELIVERY_MANAGER)) {
+            // 허브 배송 담당자, 업체 배송 담당자는 managerId 값에 본인 userId를 넣어 조회
+            criteria = createDeliverySearchCriteria(
+                    requestServiceDto.orderId(),
+                    requestServiceDto.hubId(),
+                    requestServiceDto.companyId(),
+                    requestServiceDto.status(),
+                    userId
+            );
+        } else {
+            // 허브 관리자, 업체 담당자는 본인이 담당하는 허브, 업체 id를 넣어 조회
+            criteria = createDeliverySearchCriteria(
+                    requestServiceDto.orderId(),
+                    hubId,
+                    companyId,
+                    requestServiceDto.status(),
+                    requestServiceDto.managerId()
+            );
+        }
+
         Page<Delivery> deliveries = deliveryRepository.searchDelivery(
                 criteria,
                 requestServiceDto.customPageable());
@@ -219,6 +320,13 @@ public class DeliveryService {
         return deliveries.map(deliveryApplicationMapper::toDeliveryResponseServiceDto);
     }
 
+    /**
+     * 배송 경로 상세 조회
+     * @param userId 사용자 id
+     * @param userRole 사용자 권한
+     * @param requestServiceDto 배송 경로 상세 조회 request
+     * @return 배송 경로 상세 조회 response
+     */
     @Transactional(readOnly =true)
     @Cacheable(cacheNames = "route", key = "#requestServiceDto.id()")
     public DeliveryRouteResponseServiceDto GetDeliveryRouteDetail(
@@ -229,22 +337,40 @@ public class DeliveryService {
         DeliveryRoute route = deliveryRepository.findRouteByIdAndIsDeleted(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.ROUTE_NOT_FOUND));
 
+        // 허브 관리자 : 본인이 담당하는 허브에서 출발하는 배송 경로인 지 유효성 검사
         if (userRole == UserRoleType.HUB_MANAGER) {
-            // TODO hub 쪽에 HUB_MANAGER 소속 허브 id 조회 -> hubId
-            UUID hubId = UUID.randomUUID();
-            // 허브 관리자가 담당하는 허브에서 출발하는 배송 경로가 아닌 경우
-            if (!route.getDepartureHubId().equals(hubId)) {
-                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+            ResponseEntity<HubSearchResponseDto> response = hubClient.getHubByManagerId(userId);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                HubSearchResponseDto hubDto = response.getBody();
+                UUID hubId = hubDto.id();
+
+                // 허브 관리자의 담당하는 허브에서 출발하는 배송 경로가 아닌 경우
+                if (route.getDepartureHubId() != hubId) {
+                    throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+                }
+            } else {
+                throw new DeliveryException(ErrorCode.HUB_NOT_FOUND);
             }
         }
 
-        if (userRole == UserRoleType.COMPANY_DELIVERY_MANAGER) {
-            // 업체 배송 담당자가 출발하는 허브와 배송 경로의 목적지 허브가 다른 경우
-            if (!route.getDestinationHubId().equals(route.getDelivery().getManager().getHubId())) {
-                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
-            }
-        }
+//        // 허브 배송 담당자 : 본인이 담당하는 배송 경로의 배송에 속한 배송 경로인 지 유효성 검사
+//        if (userRole == UserRoleType.HUB_DELIVERY_MANAGER) {
+//            boolean flag = route.getDelivery().getRoutes().stream()
+//                    .anyMatch(r -> r.getManager().getManagerId().equals(userId));
+//            if (!flag) {
+//                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+//            }
+//        }
+//
+//        // 업체 배송 담당자 : 본인이 담당하는 배송에 속한 배송 경로인 지 유효성 검사
+//        if (userRole == UserRoleType.COMPANY_DELIVERY_MANAGER) {
+//            // 업체 배송 담당자가 출발하는 허브와 배송 경로의 목적지 허브가 다른 경우
+//            if (!route.getDelivery().getManager().getManagerId().equals(userId)) {
+//                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+//            }
+//        }
 
+        // 허브 배송 담당자 : 본인이 담당하는 배송 경로인 지 유효성 검사
         if (userRole == UserRoleType.HUB_DELIVERY_MANAGER) {
             // 허브 배송 담당자가 출발하는 허브와 배송 경로의 출발지 허브가 다른 경우
             if (!route.getDepartureHubId().equals(route.getManager().getHubId())) {
@@ -252,22 +378,38 @@ public class DeliveryService {
             }
         }
 
-        if (userRole == UserRoleType.COMPANY_MANAGER) {
-            // TODO company 쪽에 userId로 담당 업체 id를 조회 -> companyId
-            UUID companyId = UUID.randomUUID();
-            // 업체 담당자가 담당하는 업체 배송 담당자와 관련한 배송 경로가 아닌 경우
-            // if (!route.getDelivery().getManager().getCompanyId().equals(companyId)) {
-                //throw new DeliveryException(ErrorCode.UNAUTHORIZED);
-            // }
+        // 업체 배송 담당자 : 본인이 담당하는 배송의 마지막 배송 경로인 지 유효성 검사
+        if (userRole == UserRoleType.COMPANY_DELIVERY_MANAGER) {
             // 업체 배송 담당자가 출발하는 허브와 배송 경로의 목적지 허브가 다른 경우
-            if (!route.getDestinationHubId().equals(route.getDelivery().getManager().getHubId())) {
+            if (!route.getArriveHubId().equals(route.getDelivery().getManager().getHubId())) {
                 throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+            }
+        }
+
+        // 업체 담당자 : 본인이 담당하는 업체의 배송에 속한 배송 경로인 지 유효성 검사
+        if (userRole == UserRoleType.COMPANY_MANAGER) {
+            ResponseEntity<CompanyDetailsSearchResponseDto> companyResponse = companyClient.getCompanyByManagerId(userId);
+            if (companyResponse.getStatusCode().is2xxSuccessful() && companyResponse.getBody() != null) {
+                CompanyDetailsSearchResponseDto companyDto = companyResponse.getBody();
+                UUID companyId = companyDto.id();
+
+                // 담당하는 업체의 배송에 속하는 배송 경로가 아닌 경우
+                if (!route.getDelivery().getManager().getCompanyId().equals(companyId)) {
+                    throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+                }
             }
         }
 
         return deliveryApplicationMapper.toRouteResponseServiceDto(route);
     }
 
+    /**
+     * 배송 경로 검색 - 허브 관리자, 허브 배송 담당자, 업체 배송 담당자, 업체 담당자
+     * @param userId 사용자 id
+     * @param userRole 사용자 권한
+     * @param requestServiceDto 배송 경로 검색 request
+     * @return 배송 경로 검색 response
+     */
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = "routes")
     public Page<DeliveryRouteResponseServiceDto> GetDeliveryRoutesBySearch(
@@ -275,14 +417,55 @@ public class DeliveryService {
             UserRoleType userRole,
             DeliveryRouteSearchRequestServiceDto requestServiceDto) {
 
-        DeliveryManagerType type = null;
-        if (requestServiceDto.managerId() != null) {
-            DeliveryManager manager = deliveryRepository.findManagerByIdAndIsDeleted(requestServiceDto.managerId())
-                    .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
-            type = manager.getType();
+        UUID hubId = null;
+        UUID companyId = null;
+
+        // 허브 관리자 : 본인이 담당하는 허브 id 조회
+        if (userRole == UserRoleType.HUB_MANAGER) {
+            ResponseEntity<HubSearchResponseDto> response = hubClient.getHubByManagerId(userId);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                HubSearchResponseDto hubDto = response.getBody();
+                hubId = hubDto.id();
+            } else {
+                throw new DeliveryException(ErrorCode.HUB_NOT_FOUND);
+            }
+
         }
-        // TODO 엄체 담당자인 경우 userId로 담당 업체 id 조회
-        DeliveryRouteSearchCriteria criteria = createDeliveryRouteSearchCriteria(userId, userRole, requestServiceDto, type);
+
+        // 업체 담당자 : 본인이 담당하는 업체 id 조회
+        if (userRole == UserRoleType.COMPANY_MANAGER) {
+            ResponseEntity<CompanyDetailsSearchResponseDto> companyResponse = companyClient.getCompanyByManagerId(userId);
+            if (companyResponse.getStatusCode().is2xxSuccessful() && companyResponse.getBody() != null) {
+                CompanyDetailsSearchResponseDto companyDto = companyResponse.getBody();
+                companyId = companyDto.id();
+            }
+        }
+
+        DeliveryRouteSearchCriteria criteria = null;
+        if (userRole.equals(UserRoleType.HUB_DELIVERY_MANAGER) || userRole.equals(UserRoleType.COMPANY_DELIVERY_MANAGER)) {
+            // 허브 배송 담당자, 업체 배송 담당자는 managerId 값에 본인 userId를 넣어 조회
+            criteria = createDeliveryRouteSearchCriteria(
+                    requestServiceDto.routeId(),
+                    requestServiceDto.deliveryId(),
+                    requestServiceDto.departureHubId(),
+                    requestServiceDto.arriveHubId(),
+                    requestServiceDto.companyId(),
+                    userId,
+                    requestServiceDto.status()
+            );
+        } else {
+            // 허브 관리자, 업체 담당자는 본인이 담당하는 허브, 업체 id를 넣어 조회
+            criteria = createDeliveryRouteSearchCriteria(
+                    requestServiceDto.routeId(),
+                    requestServiceDto.deliveryId(),
+                    hubId,
+                    requestServiceDto.arriveHubId(),
+                    companyId,
+                    requestServiceDto.managerId(),
+                    requestServiceDto.status()
+            );
+        }
+
         Page<DeliveryRoute> routes = deliveryRepository.searchRoute(
                 criteria,
                 requestServiceDto.customPageable());
@@ -304,22 +487,40 @@ public class DeliveryService {
         DeliveryRoute route = deliveryRepository.findRouteByIdAndIsDeleted(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.ROUTE_NOT_FOUND));
 
+        // 허브 관리자 : 본인이 담당하는 허브에서 출발하는 배송 경로인 지 유효성 검사
         if (userRole == UserRoleType.HUB_MANAGER) {
-            // TODO hub 쪽에 HUB_MANAGER 소속 허브 id 조회 -> hubId
-            UUID hubId = UUID.randomUUID();
-            // 허브 관리자가 담당하는 허브에서 출발하는 배송 경로가 아닌 경우
-            if (!route.getDepartureHubId().equals(hubId)) {
-                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+            ResponseEntity<HubSearchResponseDto> response = hubClient.getHubByManagerId(userId);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                HubSearchResponseDto hubDto = response.getBody();
+                UUID hubId = hubDto.id();
+
+                // 허브 관리자의 담당하는 허브에서 출발하는 배송 경로가 아닌 경우
+                if (route.getDepartureHubId() != hubId) {
+                    throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+                }
+            } else {
+                throw new DeliveryException(ErrorCode.HUB_NOT_FOUND);
             }
         }
 
-        if (userRole == UserRoleType.COMPANY_DELIVERY_MANAGER) {
-            // 업체 배송 담당자가 출발하는 허브와 배송 경로의 목적지 허브가 다른 경우
-            if (!route.getDestinationHubId().equals(route.getDelivery().getManager().getHubId())) {
-                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
-            }
-        }
+//        // 허브 배송 담당자 : 본인이 담당하는 배송 경로의 배송에 속한 배송 경로인 지 유효성 검사
+//        if (userRole == UserRoleType.HUB_DELIVERY_MANAGER) {
+//            boolean flag = route.getDelivery().getRoutes().stream()
+//                    .anyMatch(r -> r.getManager().getManagerId().equals(userId));
+//            if (!flag) {
+//                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+//            }
+//        }
+//
+//        // 업체 배송 담당자 : 본인이 담당하는 배송에 속한 배송 경로인 지 유효성 검사
+//        if (userRole == UserRoleType.COMPANY_DELIVERY_MANAGER) {
+//            // 업체 배송 담당자가 출발하는 허브와 배송 경로의 목적지 허브가 다른 경우
+//            if (!route.getDelivery().getManager().getManagerId().equals(userId)) {
+//                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+//            }
+//        }
 
+        // 허브 배송 담당자 : 본인이 담당하는 배송 경로인 지 유효성 검사
         if (userRole == UserRoleType.HUB_DELIVERY_MANAGER) {
             // 허브 배송 담당자가 출발하는 허브와 배송 경로의 출발지 허브가 다른 경우
             if (!route.getDepartureHubId().equals(route.getManager().getHubId())) {
@@ -327,26 +528,30 @@ public class DeliveryService {
             }
         }
 
-        if (userRole == UserRoleType.COMPANY_MANAGER) {
-            // TODO company 쪽에 userId로 담당 업체 id를 조회 -> companyId
-            UUID companyId = UUID.randomUUID();
-            // 업체 담당자가 담당하는 업체 배송 담당자와 관련한 배송 경로가 아닌 경우
-            // if (!route.getDelivery().getManager().getCompanyId().equals(companyId)) {
-            //throw new DeliveryException(ErrorCode.UNAUTHORIZED);
-            // }
+        // 업체 배송 담당자 : 본인이 담당하는 배송의 마지막 배송 경로인 지 유효성 검사
+        if (userRole == UserRoleType.COMPANY_DELIVERY_MANAGER) {
             // 업체 배송 담당자가 출발하는 허브와 배송 경로의 목적지 허브가 다른 경우
-            if (!route.getDestinationHubId().equals(route.getDelivery().getManager().getHubId())) {
+            if (!route.getArriveHubId().equals(route.getDelivery().getManager().getHubId())) {
                 throw new DeliveryException(ErrorCode.UNAUTHORIZED);
             }
         }
 
         route.changeStatus(requestServiceDto.status());
 
-        if (route.getStatus() == DeliveryRouteStatus.HUB_ARRIVED) { // 목적지 허브 도착 상태로 변경 시도하는 경우
+        if (route.getStatus() == DeliveryRouteStatus.HUB_MOVING) {         // 허브 이동중 상태로 변경 시도하는 경우
             Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(route.getDelivery().getId())
                     .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
-            if (delivery.getDestinationHubId() == route.getDestinationHubId()) {    // 경로 상 목적지 허브가 배송 목적지 허브와 같으면 배송 상태 변경
+            if (delivery.getArriveHubId() == route.getArriveHubId()) {      // 경로 상 출발지 허브가 배송 출발지 허브와 같으면 배송 상태 변경
+                delivery.updateStatus(DeliveryStatus.HUB_MOVING);
+            }
+        }
+
+        if (route.getStatus() == DeliveryRouteStatus.HUB_ARRIVED) {         // 목적지 허브 도착 상태로 변경 시도하는 경우
+            Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(route.getDelivery().getId())
+                    .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
+
+            if (delivery.getArriveHubId() == route.getArriveHubId()) {      // 경로 상 목적지 허브가 배송 목적지 허브와 같으면 배송 상태 변경
                 delivery.updateStatus(DeliveryStatus.HUB_ARRIVED);
             }
         }
@@ -357,34 +562,41 @@ public class DeliveryService {
 
     // 배송 조회 검색 조건 생성 (일반 사용자)
     private DeliverySearchCriteria createDeliverySearchCriteria(
-            Long userId,
-            UserRoleType userRole,
-            DeliverySearchRequestServiceDto requestServiceDto,
-            DeliveryManagerType type) {
+            UUID orderId,
+            UUID hubId,
+            UUID companyId,
+            DeliveryStatus status,
+            Long managerId) {
 
         return DeliverySearchCriteria.builder()
-                .userId(userId)
-                .hubId(requestServiceDto.hubId())
-                .companyId(requestServiceDto.companyId())
-                .managerId(requestServiceDto.managerId())   // 배송 담당자 id
-                .managerType(DeliveryManagerType.fromUserRoleType(userRole))    // TODO type으로 변경
+                .orderId(orderId)
+                .hubId(hubId)
+                .companyId(companyId)
+                .status(status)
+                .managerId(managerId)       // 배송 담당자 id (Long)
                 .isDeleted(Boolean.FALSE)   // 삭제되지 않은 데이터만 조회
                 .build();
     }
 
     // 배송 경로 조회 검색 조건 생성 (일반 사용자)
     private DeliveryRouteSearchCriteria createDeliveryRouteSearchCriteria(
-            Long userId,
-            UserRoleType userRole,
-            DeliveryRouteSearchRequestServiceDto requestServiceDto,
-            DeliveryManagerType type) {
+            UUID routeId,
+            UUID deliveryId,
+            UUID departureHubId,
+            UUID arriveHubId,
+            UUID companyId,
+            Long managerId,
+            DeliveryRouteStatus status) {
+
 
         return DeliveryRouteSearchCriteria.builder()
-                .userId(userId)
-                .hubId(requestServiceDto.hubId())
-                .companyId(requestServiceDto.companyId())
-                .managerId(requestServiceDto.managerId())   // 배송 담당자 id
-                .managerType(DeliveryManagerType.fromUserRoleType(userRole))    // TODO type으로 변경
+                .routeId(routeId)
+                .deliveryId(deliveryId)
+                .departureHubId(departureHubId)
+                .arriveHubId(arriveHubId)
+                .companyId(companyId)
+                .managerId(managerId)       // 배송 담당자 id (Long)
+                .status(status)
                 .isDeleted(Boolean.FALSE)   // 삭제되지 않은 데이터만 조회
                 .build();
     }

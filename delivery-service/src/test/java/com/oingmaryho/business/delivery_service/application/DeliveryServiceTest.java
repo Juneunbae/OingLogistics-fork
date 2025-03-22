@@ -3,6 +3,9 @@ package com.oingmaryho.business.delivery_service.application;
 import com.oingmaryho.business.delivery_service.application.dto.mapper.DeliveryApplicationMapper;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
+import com.oingmaryho.business.delivery_service.application.feign.CompanyClient;
+import com.oingmaryho.business.delivery_service.application.feign.HubClient;
+import com.oingmaryho.business.delivery_service.application.feign.UserClient;
 import com.oingmaryho.business.delivery_service.application.service.DeliveryService;
 import com.oingmaryho.business.delivery_service.domain.entity.Delivery;
 import com.oingmaryho.business.delivery_service.domain.entity.DeliveryManager;
@@ -11,6 +14,7 @@ import com.oingmaryho.business.delivery_service.domain.type.DeliveryManagerType;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryRouteStatus;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryStatus;
 import com.oingmaryho.business.delivery_service.domain.type.UserRoleType;
+import com.oingmaryho.business.delivery_service.infrastructure.repository.DeliveryManagerRepository;
 import com.oingmaryho.business.delivery_service.infrastructure.repository.DeliveryRepository;
 import com.oingmaryho.business.delivery_service.utils.PageableUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,7 +45,19 @@ public class DeliveryServiceTest {
     private DeliveryService deliveryService;
 
     @Mock
+    private CompanyClient companyClient;
+
+    @Mock
+    private HubClient hubClient;
+
+    @Mock
+    private UserClient userClient;
+
+    @Mock
     private DeliveryRepository deliveryRepository;
+
+    @Mock
+    private DeliveryManagerRepository deliveryManagerRepository;
 
     @Mock
     private DeliveryApplicationMapper mapper;
@@ -201,7 +217,7 @@ public class DeliveryServiceTest {
                 .status(deliveryStatus1)
                 .orderId(orderId1)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId2)
+                .arriveHubId(hubId2)
                 .address(address1)
                 .receiver(receiver1)
                 .receiverSlackId(receiverSlackId1)
@@ -242,7 +258,7 @@ public class DeliveryServiceTest {
                         DeliveryResponseServiceDto::id,
                         DeliveryResponseServiceDto::status,
                         DeliveryResponseServiceDto::departureHubId,
-                        DeliveryResponseServiceDto::destinationHubId,
+                        DeliveryResponseServiceDto::arriveHubId,
                         DeliveryResponseServiceDto::address,
                         DeliveryResponseServiceDto::receiver,
                         DeliveryResponseServiceDto::receiverSlackId,
@@ -294,7 +310,7 @@ public class DeliveryServiceTest {
                 .status(deliveryStatus1)
                 .orderId(orderId1)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId2)
+                .arriveHubId(hubId2)
                 .address(address1)
                 .receiver(receiver1)
                 .receiverSlackId(receiverSlackId1)
@@ -307,7 +323,7 @@ public class DeliveryServiceTest {
                 .delivery(delivery)
                 .sequence(1)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId2)
+                .arriveHubId(hubId2)
                 .status(routeStatus1)
                 .estimatedDistance(12.1234)
                 .estimatedTime(1)
@@ -350,7 +366,7 @@ public class DeliveryServiceTest {
                         DeliveryResponseServiceDto::id,
                         DeliveryResponseServiceDto::status,
                         DeliveryResponseServiceDto::departureHubId,
-                        DeliveryResponseServiceDto::destinationHubId,
+                        DeliveryResponseServiceDto::arriveHubId,
                         DeliveryResponseServiceDto::address,
                         DeliveryResponseServiceDto::receiver,
                         DeliveryResponseServiceDto::receiverSlackId,
@@ -379,7 +395,10 @@ public class DeliveryServiceTest {
         //given
         Pageable pageable = PageableUtils.customPageable(1, 10, null, null);
         DeliverySearchRequestServiceDto requestDto = new DeliverySearchRequestServiceDto(
+                null,
+                null,
                 hubId1,
+                companyId1,
                 null,
                 null,
                 Boolean.FALSE,
@@ -411,7 +430,7 @@ public class DeliveryServiceTest {
                 .status(deliveryStatus1)
                 .orderId(orderId1)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId2)
+                .arriveHubId(hubId2)
                 .address(address1)
                 .receiver(receiver1)
                 .receiverSlackId(receiverSlackId1)
@@ -423,7 +442,7 @@ public class DeliveryServiceTest {
                 .status(deliveryStatus2)
                 .orderId(orderId2)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId3)
+                .arriveHubId(hubId3)
                 .address(address1)
                 .receiver(receiver1)
                 .receiverSlackId(receiverSlackId1)
@@ -484,6 +503,9 @@ public class DeliveryServiceTest {
                 null,
                 null,
                 null,
+                null,
+                null,
+                null,
                 Boolean.FALSE,
                 pageable
         );
@@ -516,7 +538,7 @@ public class DeliveryServiceTest {
                 .status(deliveryStatus1)
                 .orderId(orderId1)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId2)
+                .arriveHubId(hubId2)
                 .address(address1)
                 .receiver(receiver1)
                 .receiverSlackId(receiverSlackId1)
@@ -529,7 +551,7 @@ public class DeliveryServiceTest {
                 .delivery(delivery1)
                 .sequence(1)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId2)
+                .arriveHubId(hubId2)
                 .status(routeStatus1)
                 .estimatedDistance(12.1234)
                 .estimatedTime(1)
@@ -577,6 +599,9 @@ public class DeliveryServiceTest {
                 null,
                 null,
                 null,
+                null,
+                null,
+                null,
                 Boolean.FALSE,
                 pageable
         );
@@ -597,7 +622,7 @@ public class DeliveryServiceTest {
                 .status(deliveryStatus1)
                 .orderId(orderId1)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId2)
+                .arriveHubId(hubId2)
                 .address(address1)
                 .receiver(receiver1)
                 .receiverSlackId(receiverSlackId1)
@@ -609,7 +634,7 @@ public class DeliveryServiceTest {
                 .status(deliveryStatus2)
                 .orderId(orderId2)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId3)
+                .arriveHubId(hubId3)
                 .address(address1)
                 .receiver(receiver1)
                 .receiverSlackId(receiverSlackId1)
@@ -668,7 +693,10 @@ public class DeliveryServiceTest {
         Pageable pageable = PageableUtils.customPageable(1, 10, null, null);
         DeliverySearchRequestServiceDto requestDto = new DeliverySearchRequestServiceDto(
                 null,
+                null,
+                null,
                 companyId1,
+                null,
                 null,
                 Boolean.FALSE,
                 pageable
@@ -701,7 +729,7 @@ public class DeliveryServiceTest {
                 .status(deliveryStatus1)
                 .orderId(orderId1)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId2)
+                .arriveHubId(hubId2)
                 .address(address1)
                 .receiver(receiver1)
                 .receiverSlackId(receiverSlackId1)
@@ -713,7 +741,7 @@ public class DeliveryServiceTest {
                 .status(deliveryStatus1)
                 .orderId(orderId2)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId3)
+                .arriveHubId(hubId3)
                 .address(address1)
                 .receiver(receiver1)
                 .receiverSlackId(receiverSlackId1)
@@ -796,7 +824,7 @@ public class DeliveryServiceTest {
                 .status(deliveryStatus1)
                 .orderId(orderId1)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId2)
+                .arriveHubId(hubId2)
                 .address(address1)
                 .receiver(receiver1)
                 .receiverSlackId(receiverSlackId1)
@@ -809,7 +837,7 @@ public class DeliveryServiceTest {
                 .delivery(delivery)
                 .sequence(1)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId2)
+                .arriveHubId(hubId2)
                 .status(routeStatus1)
                 .estimatedDistance(12.1234)
                 .estimatedTime(1)
@@ -857,7 +885,7 @@ public class DeliveryServiceTest {
                         DeliveryRouteResponseServiceDto::deliveryId,
                         DeliveryRouteResponseServiceDto::sequence,
                         DeliveryRouteResponseServiceDto::departureHubId,
-                        DeliveryRouteResponseServiceDto::destinationHubId,
+                        DeliveryRouteResponseServiceDto::arriveHubId,
                         DeliveryRouteResponseServiceDto::status,
                         DeliveryRouteResponseServiceDto::estimatedDistance,
                         DeliveryRouteResponseServiceDto::estimatedTime,
@@ -886,7 +914,10 @@ public class DeliveryServiceTest {
         //given
         Pageable pageable = PageableUtils.customPageable(1, 10, null, null);
         DeliveryRouteSearchRequestServiceDto requestDto = new DeliveryRouteSearchRequestServiceDto(
+                null,
                 deliveryId1,
+                null,
+                null,
                 null,
                 null,
                 null,
@@ -932,7 +963,7 @@ public class DeliveryServiceTest {
                 .status(deliveryStatus1)
                 .orderId(orderId1)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId3)
+                .arriveHubId(hubId3)
                 .address(address1)
                 .receiver(receiver1)
                 .receiverSlackId(receiverSlackId1)
@@ -945,7 +976,7 @@ public class DeliveryServiceTest {
                 .delivery(delivery)
                 .sequence(1)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId2)
+                .arriveHubId(hubId2)
                 .status(routeStatus1)
                 .estimatedDistance(12.1234)
                 .estimatedTime(1)
@@ -958,7 +989,7 @@ public class DeliveryServiceTest {
                 .delivery(delivery)
                 .sequence(2)
                 .departureHubId(hubId2)
-                .destinationHubId(hubId3)
+                .arriveHubId(hubId3)
                 .status(routeStatus1)
                 .estimatedDistance(22.1234)
                 .estimatedTime(2)
@@ -1027,7 +1058,18 @@ public class DeliveryServiceTest {
                 .slackId(companyDeliveryManagerSlackId1)
                 .hubId(hubId1)
                 .companyId(companyId1)
-                .managerId(userId1)
+                .managerId(userId2)
+                .type(managerType2)
+                .sequence(1)
+                .build();
+
+        // 업체 배송 담당자
+        DeliveryManager manager2 = DeliveryManager.builder()
+                .id(companyDeliveryManagerId2)
+                .slackId(companyDeliveryManagerSlackId2)
+                .hubId(hubId1)
+                .companyId(companyId2)
+                .managerId(userId3)
                 .type(managerType2)
                 .sequence(1)
                 .build();
@@ -1037,7 +1079,7 @@ public class DeliveryServiceTest {
                 .status(deliveryStatus1)
                 .orderId(orderId1)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId3)
+                .arriveHubId(hubId3)
                 .address(address1)
                 .receiver(receiver1)
                 .receiverSlackId(receiverSlackId1)
@@ -1049,7 +1091,7 @@ public class DeliveryServiceTest {
                 receiver2,
                 receiverSlackId2,
                 null,
-                userId2
+                userId3
         );
         DeliveryUpdateResponseServiceDto responseDto = new DeliveryUpdateResponseServiceDto(
                 deliveryId1
@@ -1060,6 +1102,9 @@ public class DeliveryServiceTest {
 
         when(deliveryRepository.findByIdAndIsDeletedFalse(deliveryId1))
                 .thenReturn(Optional.of(delivery));
+
+        when(deliveryManagerRepository.findByManagerIdAndIsDeletedFalse(userId3))
+                .thenReturn(Optional.of(manager2));
 
         //when
         DeliveryUpdateResponseServiceDto result = deliveryService.updateDelivery(   // 마스터 시도
@@ -1098,7 +1143,7 @@ public class DeliveryServiceTest {
                 .status(deliveryStatus1)
                 .orderId(orderId1)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId3)
+                .arriveHubId(hubId3)
                 .address(address1)
                 .receiver(receiver1)
                 .receiverSlackId(receiverSlackId1)
@@ -1156,7 +1201,7 @@ public class DeliveryServiceTest {
                 .status(deliveryStatus1)
                 .orderId(orderId1)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId3)
+                .arriveHubId(hubId3)
                 .address(address1)
                 .receiver(receiver1)
                 .receiverSlackId(receiverSlackId1)
@@ -1178,8 +1223,9 @@ public class DeliveryServiceTest {
         );
 
         //then
-        verify(deliveryRepository, times(1))
-                .delete(any(Delivery.class));
+        assertThat(delivery.getIsDeleted()).isTrue();
+        assertThat(delivery.getDeletedBy()).isEqualTo(userId5);
+        assertThat(delivery.getDeletedAt()).isNotNull();
     }
 
     @Test
@@ -1213,7 +1259,7 @@ public class DeliveryServiceTest {
                 .status(deliveryStatus1)
                 .orderId(orderId1)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId2)
+                .arriveHubId(hubId2)
                 .address(address1)
                 .receiver(receiver1)
                 .receiverSlackId(receiverSlackId1)
@@ -1226,7 +1272,7 @@ public class DeliveryServiceTest {
                 .delivery(delivery)
                 .sequence(1)
                 .departureHubId(hubId1)
-                .destinationHubId(hubId2)
+                .arriveHubId(hubId2)
                 .status(routeStatus2)
                 .estimatedDistance(12.1234)
                 .estimatedTime(1)
