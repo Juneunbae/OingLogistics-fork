@@ -4,6 +4,6 @@ import java.util.UUID;
 
 public record HubPathRequestServiceDto(
 	UUID departureHubId,
-	UUID arriveHubId
+	String arriveAddress
 ) {
 }

@@ -35,6 +35,13 @@ public class HubService {
 	}
 
 	@Transactional(readOnly = true)
+	public HubSearchResponseServiceDto getHubByManagerId(HubsSearchRequestServiceDto requestDto) {
+		Hub hub = hubRepository.findAllByManagerIdAndIsDeletedFalse(requestDto.managerId())
+			.orElseThrow(() -> new HubException(ErrorCode.NOT_FOUND_HUB));
+		return mapper.toHubSearchResponseServiceDto(hub);
+	}
+
+	@Transactional(readOnly = true)
 	@Cacheable(cacheNames = "hubs")
 	public Page<HubSearchResponseServiceDto> searchHubs(HubsSearchRequestServiceDto requestDto, Pageable pageable) {
 		Page<Hub> hubs = hubRepository.findDynamicQuery(createHubSearchCriteria(requestDto), pageable);

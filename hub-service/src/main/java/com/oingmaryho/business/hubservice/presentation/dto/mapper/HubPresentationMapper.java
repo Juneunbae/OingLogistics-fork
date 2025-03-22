@@ -6,6 +6,7 @@ import org.mapstruct.Mapper;
 
 import com.oingmaryho.business.hubservice.application.dto.request.HubCreateRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubDeleteRequestServiceDto;
+import com.oingmaryho.business.hubservice.application.dto.request.HubPathRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubSearchRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubUpdateRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubsSearchAdminRequestServiceDto;
@@ -15,6 +16,7 @@ import com.oingmaryho.business.hubservice.application.dto.response.HubSearchAdmi
 import com.oingmaryho.business.hubservice.application.dto.response.HubSearchResponseServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubUpdateResponseServiceDto;
 import com.oingmaryho.business.hubservice.presentation.dto.request.HubCreateRequestDto;
+import com.oingmaryho.business.hubservice.presentation.dto.request.HubPathRequestDto;
 import com.oingmaryho.business.hubservice.presentation.dto.request.HubSearchAdminRequestDto;
 import com.oingmaryho.business.hubservice.presentation.dto.request.HubSearchRequestDto;
 import com.oingmaryho.business.hubservice.presentation.dto.request.HubUpdateRequestDto;
@@ -45,4 +47,6 @@ public interface HubPresentationMapper {
 	HubUpdateResponseDto toHubUpdateResponseDto(HubUpdateResponseServiceDto dto);
 
 	HubDeleteRequestServiceDto toHubDeleteRequestServiceDto(UUID id);
+
+	HubPathRequestServiceDto toHubPathRequestServiceDto(HubPathRequestDto dto);
 }

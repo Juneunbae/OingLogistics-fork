@@ -22,4 +22,6 @@ public interface HubRepository {
 	Optional<Hub> findActiveHubById(UUID id);
 
 	List<Hub> findAllActiveHubs();
+
+	Optional<Hub> findAllByManagerIdAndIsDeletedFalse(Long managerId);
 }
