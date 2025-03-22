@@ -28,7 +28,7 @@ public class DeliveryRoute extends BaseEntity {
     private UUID departureHubId;
 
     @Column(nullable = false)
-    private UUID destinationHubId;
+    private UUID arriveHubId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -44,7 +44,7 @@ public class DeliveryRoute extends BaseEntity {
     private Double actualDistance;
     private Integer actualTime;
 
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
     private DeliveryManager manager; // 허브 배송 담당자 id
 

@@ -3,6 +3,8 @@ package com.oingmaryho.business.delivery_service.presentation.controller;
 import com.oingmaryho.business.delivery_service.application.service.DeliveryAdminService;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
+import com.oingmaryho.business.delivery_service.domain.type.DeliveryRouteStatus;
+import com.oingmaryho.business.delivery_service.domain.type.DeliveryStatus;
 import com.oingmaryho.business.delivery_service.domain.type.UserRoleType;
 import com.oingmaryho.business.delivery_service.utils.PageableUtils;
 import com.oingmaryho.business.delivery_service.presentation.dto.mapper.DeliveryPresentationMapper;
@@ -126,9 +128,12 @@ public class DeliveryAdminController {
             @RequestParam(value = "size", required = false, defaultValue = "10") Integer size,
             @RequestParam(value = "sortDirection", required = false, defaultValue = "DESC") String sortDirection,
             @RequestParam(value = "by", required = false) String by,
+            @RequestParam(value = "id", required = false) UUID id,
+            @RequestParam(value = "orderId", required = false) UUID orderId,
             @RequestParam(value = "hubId", required = false) UUID hubId,
             @RequestParam(value = "companyId", required = false) UUID companyId,
-            @RequestParam(value = "managerId", required = false) UUID managerId,
+            @RequestParam(value = "status", required = false) DeliveryStatus status,
+            @RequestParam(value = "managerId", required = false) Long managerId,
             @RequestParam(value = "isDeleted", required = false) Boolean isDeleted) {
 
         Long userId = (Long) request.getAttribute("userId");
@@ -136,7 +141,15 @@ public class DeliveryAdminController {
 
         // 권한 체크
 
-        DeliverySearchRequestDto requestDto = new DeliverySearchRequestDto(hubId, companyId, managerId, isDeleted);
+        DeliverySearchRequestDto requestDto = new DeliverySearchRequestDto(
+                id,
+                orderId,
+                hubId,
+                companyId,
+                status,
+                managerId,
+                isDeleted);
+
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
 
         DeliverySearchRequestServiceDto requestServiceDto = deliveryPresentationMapper.toSearchServiceDto(requestDto, customPageable);
@@ -176,17 +189,26 @@ public class DeliveryAdminController {
             @RequestParam(value = "size", required = false, defaultValue = "10") Integer size,
             @RequestParam(value = "sortDirection", required = false, defaultValue = "DESC") String sortDirection,
             @RequestParam(value = "by", required = false) String by,
-            @RequestParam(value = "hubId", required = false) UUID hubId,
+            @RequestParam(value = "routeId", required = false) UUID routeId,
+            @RequestParam(value = "departureHubId", required = false) UUID departureHubId,
+            @RequestParam(value = "arriveHubId", required = false) UUID arriveHubId,
             @RequestParam(value = "companyId", required = false) UUID companyId,
-            @RequestParam(value = "managerId", required = false) UUID managerId,
-            @RequestParam(value = "isDeleted", required = false) Boolean isDeleted) {
+            @RequestParam(value = "managerId", required = false) Long managerId,
+            @RequestParam(value = "status", required = false) DeliveryRouteStatus status) {
 
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
 
         // 권한 체크
+        DeliveryRouteSearchRequestDto requestDto = new DeliveryRouteSearchRequestDto(
+                routeId,
+                departureHubId,
+                arriveHubId,
+                companyId,
+                managerId,
+                status,
+                Boolean.FALSE);
 
-        DeliveryRouteSearchRequestDto requestDto = new DeliveryRouteSearchRequestDto(hubId, companyId, managerId, isDeleted);
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
 
         DeliveryRouteSearchRequestServiceDto requestServiceDto = deliveryPresentationMapper.toRouteSearchServiceDto(id, requestDto, customPageable);

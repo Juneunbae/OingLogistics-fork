@@ -3,6 +3,8 @@ package com.oingmaryho.business.delivery_service.presentation.controller;
 import com.oingmaryho.business.delivery_service.application.service.DeliveryService;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
+import com.oingmaryho.business.delivery_service.domain.type.DeliveryRouteStatus;
+import com.oingmaryho.business.delivery_service.domain.type.DeliveryStatus;
 import com.oingmaryho.business.delivery_service.domain.type.UserRoleType;
 import com.oingmaryho.business.delivery_service.presentation.dto.request.*;
 import com.oingmaryho.business.delivery_service.utils.PageableUtils;
@@ -117,21 +119,32 @@ public class DeliveryController {
             @RequestParam(value = "size", required = false, defaultValue = "10") Integer size,
             @RequestParam(value = "sortDirection", required = false, defaultValue = "DESC") String sortDirection,
             @RequestParam(value = "by", required = false) String by,
+            @RequestParam(value = "id", required = false) UUID id,
+            @RequestParam(value = "orderId", required = false) UUID orderId,
             @RequestParam(value = "hubId", required = false) UUID hubId,
             @RequestParam(value = "companyId", required = false) UUID companyId,
-            @RequestParam(value = "managerId", required = false) UUID managerId) {
+            @RequestParam(value = "status", required = false) DeliveryStatus status,
+            @RequestParam(value = "managerId", required = false) Long managerId) {
 
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
 
         // 권한 체크
 
-        DeliverySearchRequestDto requestDto = new DeliverySearchRequestDto(hubId, companyId, managerId, Boolean.FALSE);
+        DeliverySearchRequestDto requestDto = new DeliverySearchRequestDto(
+                id,
+                orderId,
+                hubId,
+                companyId,
+                status,
+                managerId,
+                Boolean.FALSE);
+
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
 
         DeliverySearchRequestServiceDto requestServiceDto = deliveryPresentationMapper.toSearchServiceDto(requestDto, customPageable);
         Page<DeliveryResponseServiceDto> responseServiceDtos = deliveryService.GetDeliveriesBySearch(
-                userId,
+                1L,
                 UserRoleType.HUB_DELIVERY_MANAGER,
                 requestServiceDto);
 
@@ -167,18 +180,28 @@ public class DeliveryController {
             @RequestParam(value = "size", required = false, defaultValue = "10") Integer size,
             @RequestParam(value = "sortDirection", required = false, defaultValue = "DESC") String sortDirection,
             @RequestParam(value = "by", required = false) String by,
-            @RequestParam(value = "hubId", required = false) UUID hubId,
+            @RequestParam(value = "routeId", required = false) UUID routeId,
+            @RequestParam(value = "departureHubId", required = false) UUID departureHubId,
+            @RequestParam(value = "arriveHubId", required = false) UUID arriveHubId,
             @RequestParam(value = "companyId", required = false) UUID companyId,
-            @RequestParam(value = "managerId", required = false) UUID managerId) {
+            @RequestParam(value = "managerId", required = false) Long managerId,
+            @RequestParam(value = "status", required = false) DeliveryRouteStatus status) {
 
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
 
         // 권한 체크
 
-        DeliveryRouteSearchRequestDto requestDto = new DeliveryRouteSearchRequestDto(hubId, companyId, managerId, Boolean.FALSE);
-        Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
+        DeliveryRouteSearchRequestDto requestDto = new DeliveryRouteSearchRequestDto(
+                routeId,
+                departureHubId,
+                arriveHubId,
+                companyId,
+                managerId,
+                status,
+                Boolean.FALSE);
 
+        Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
         DeliveryRouteSearchRequestServiceDto requestServiceDto = deliveryPresentationMapper.toRouteSearchServiceDto(id, requestDto, customPageable);
         Page<DeliveryRouteResponseServiceDto> responseServiceDtos = deliveryService.GetDeliveryRoutesBySearch(
                 userId,

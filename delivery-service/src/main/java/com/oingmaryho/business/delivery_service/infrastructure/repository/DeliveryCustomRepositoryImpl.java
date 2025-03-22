@@ -4,8 +4,11 @@ import com.oingmaryho.business.delivery_service.domain.criteria.DeliveryRouteSea
 import com.oingmaryho.business.delivery_service.domain.criteria.DeliverySearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.entity.*;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryManagerType;
+import com.oingmaryho.business.delivery_service.domain.type.DeliveryRouteStatus;
+import com.oingmaryho.business.delivery_service.domain.type.DeliveryStatus;
 import com.oingmaryho.business.delivery_service.utils.QueryDslUtils;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -38,32 +41,21 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
     public Page<Delivery> searchDelivery(DeliverySearchCriteria criteria,
                                          Pageable pageable) {
 
+        UUID id = criteria.getId();
+        UUID orderId = criteria.getOrderId();
         UUID hubId = criteria.getHubId();
         UUID companyId = criteria.getCompanyId();
-        UUID managerId = criteria.getManagerId();
-        DeliveryManagerType managerType = criteria.getManagerType();
+        DeliveryStatus status = criteria.getStatus();
+        Long managerId = criteria.getManagerId();
         Boolean isDeleted = criteria.getIsDeleted();
 
-        if (hubId != null) {        // 허브 관리자가 허브 id로 조회
-            builder.and(qDelivery.departureHubId.eq(hubId));
-        }
-
-        if (companyId != null) {    // 업체 관리자가 업체 id로 조회
-            builder.and(qDelivery.manager.companyId.eq(companyId));
-        }
-
-        if (managerId != null && managerType != null) {
-            if (managerType.equals(DeliveryManagerType.HUB_DELIVERY_MANAGER)) {         // 허브 배송 담당자인 경우
-                builder.and(qDeliveryRoute.manager.id.eq(managerId));
-            }
-            if (managerType.equals(DeliveryManagerType.COMPANY_DELIVERY_MANAGER)) {     // 업체 배송 담당자인 경우
-                builder.and(qDelivery.manager.id.eq(managerId));
-            }
-        }
-
-        if (isDeleted != null) {
-            builder.and(qDelivery.isDeleted.eq(isDeleted));
-        }
+        builder.and(eqId(id))
+                .and(eqOrderId(orderId))
+                .and(eqHubId(hubId))
+                .and(eqCompanyId(companyId))
+                .and(eqStatus(status))
+                .and(eqManagerId(managerId))
+                .and(eqIsDeleted(isDeleted));
 
         // 조회 쿼리
         List<Delivery> deliveries = queryFactory.selectDistinct(qDelivery)
@@ -92,6 +84,56 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
 
     }
 
+    private BooleanExpression eqId(UUID id) {
+        if (id == null) {
+            return null;
+        }
+        return qDelivery.id.eq(id);
+    }
+
+    private BooleanExpression eqOrderId(UUID orderId) {
+        if (orderId == null) {
+            return null;
+        }
+        return qDelivery.orderId.eq(orderId);
+    }
+
+    private BooleanExpression eqHubId(UUID hubId) {
+        if (hubId == null) {
+            return null;
+        }
+        return qDelivery.departureHubId.eq(hubId);
+    }
+
+    private BooleanExpression eqCompanyId(UUID companyId) {
+        if (companyId == null) {
+            return null;
+        }
+        return qDelivery.manager.companyId.eq(companyId);
+    }
+
+    private BooleanExpression eqStatus(DeliveryStatus status) {
+        if (status == null) {
+            return null;
+        }
+        return qDelivery.status.eq(status);
+    }
+
+    private BooleanExpression eqManagerId(Long managerId) {
+        if (managerId == null) {
+            return null;
+        }
+        return qDelivery.manager.managerId.eq(managerId);
+    }
+
+    private BooleanExpression eqIsDeleted(Boolean isDeleted) {
+        if (isDeleted == null) {
+            return null;
+        }
+        return qDelivery.isDeleted.eq(isDeleted);
+    }
+
+
     /**
      * 배송 경로 검색
      * @param criteria 검색 조건
@@ -102,33 +144,47 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
     public Page<DeliveryRoute> searchRoute(DeliveryRouteSearchCriteria criteria,
                                            Pageable pageable) {
 
-        UUID hubId = criteria.getHubId();
+        UUID routeId = criteria.getRouteId();
+        UUID deliveryId = criteria.getDeliveryId();
+        UUID departureHubId = criteria.getDepartureHubId();
+        UUID arriveHubId = criteria.getArriveHubId();
         UUID companyId = criteria.getCompanyId();
-        UUID managerId = criteria.getManagerId();
-        DeliveryManagerType managerType = criteria.getManagerType();
+        Long managerId = criteria.getManagerId();
+        DeliveryRouteStatus status = criteria.getStatus();
         Boolean isDeleted = criteria.getIsDeleted();
 
-        if (hubId != null) {        // 허브 관리자가 허브 id로 조회
-            builder.and(qDeliveryRoute.departureHubId.eq(hubId));
+
+        if (routeId != null) {
+            builder.and(qDeliveryRoute.id.eq(routeId));
         }
 
-        if (companyId != null) {    // 업체 관리자가 업체 id로 조회
+        if (deliveryId != null) {
+            builder.and(qDeliveryRoute.delivery.id.eq(deliveryId));
+        }
+
+        if (departureHubId != null) {
+            builder.and(qDeliveryRoute.departureHubId.eq(departureHubId));
+        }
+
+        if (arriveHubId != null) {
+            builder.and(qDeliveryRoute.arriveHubId.eq(arriveHubId));
+        }
+
+        if (companyId != null) {
             builder.and(qDeliveryRoute.manager.companyId.eq(companyId));
         }
 
-        if (managerId != null && managerType != null) {
-
-            if (managerType.equals(DeliveryManagerType.HUB_DELIVERY_MANAGER)) {         // 허브 배송 담당자인 경우
-                builder.and(qDeliveryRoute.manager.id.eq(managerId));
-            }
-            if (managerType.equals(DeliveryManagerType.COMPANY_DELIVERY_MANAGER)) {     // 업체 배송 담당자인 경우
-                builder.and(qDeliveryRoute.delivery.manager.id.eq(managerId));
-            }
-
+        if (managerId != null) {
+            builder.and(qDeliveryRoute.manager.managerId.eq(managerId));
         }
 
+        if (status != null) {
+            builder.and(qDeliveryRoute.status.eq(status));
+        }
+
+
         if (isDeleted != null) {
-            builder.and(qDelivery.isDeleted.eq(isDeleted));
+            builder.and(qDeliveryRoute.isDeleted.eq(isDeleted));
         }
 
         // 조회 쿼리
@@ -157,7 +213,6 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
                 total != null ? total : 0L);
 
     }
-
 
     /**
      * 배송 경로 조회 (admin)
@@ -192,37 +247,4 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
         );
     }
 
-    /**
-     * 배송 담당자 조회 (admin)
-     * @param managerId 배송 담당자 id
-     */
-    @Override
-    public Optional<DeliveryManager> findManagerById(UUID managerId) {
-        return Optional.ofNullable(
-                queryFactory
-                        .selectFrom(qDeliveryManager)
-                        .where(
-                                qDeliveryManager.id.eq(managerId)
-                        )
-                        .fetchOne()
-        );
-    }
-
-    /**
-     * 배송 담당자 조회
-     * @param managerId 배송 담당자 id
-     */
-    @Override
-    public Optional<DeliveryManager> findManagerByIdAndIsDeleted(UUID managerId) {
-        return Optional.ofNullable(
-                queryFactory
-                        .selectFrom(qDeliveryManager)
-                        .where(
-                                qDeliveryManager.id.eq(managerId),
-                                qDeliveryRoute.isDeleted.eq(false)
-                        )
-                        .fetchOne()
-        );
-
-    }
 }

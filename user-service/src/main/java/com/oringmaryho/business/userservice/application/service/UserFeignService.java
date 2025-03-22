@@ -14,8 +14,10 @@ import com.oringmaryho.business.userservice.application.dto.request.UsersRequest
 import com.oringmaryho.business.userservice.domain.User;
 import com.oringmaryho.business.userservice.domain.UserRoleType;
 import com.oringmaryho.business.userservice.domain.repository.CustomUserRepository;
+import com.oringmaryho.business.userservice.domain.repository.UserRepository;
 import com.oringmaryho.business.userservice.exception.ErrorCode;
 import com.oringmaryho.business.userservice.exception.UserException;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserFromDeliveryGetRoleRequestServiceDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class UserFeignService {
 	private final CustomUserRepository customUserRepository;
+	private final UserRepository userRepository;
 
 	@Description(
 		"권한과 삭제 여부를 받아(삭제 여부는 선택) 권한의 모든 사용자를 검색"
@@ -46,4 +49,13 @@ public class UserFeignService {
 			));
 	}
 
+	@Description(
+		"배송 서비스에서 user id를 받아 해당하는 유저의 role을 반환하는 메서드"
+	)
+	public UserRoleType userFeignServiceGetRole(UserFromDeliveryGetRoleRequestServiceDto requestServiceDto) {
+		User user = userRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		return user.getRole();
+	}
 }

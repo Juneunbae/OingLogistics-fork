@@ -21,50 +21,50 @@ public class UserCheckInterceptor implements HandlerInterceptor {
 
         log.info("user preHandle");
 
-        String userId = request.getHeader("X-User-Id");
-
-        if (userId == null) {
-            return false;    // TODO throw Exception
-        }
-
-        if (!redisTemplate.hasKey("user:info:" + userId)) {
-            return false;    // TODO throw Exception
-        }
-
-        Map<Object, Object> userInfo = redisTemplate.opsForHash().entries("user:info:" + userId);
-
-        if (userInfo.isEmpty()) {
-            return false;    // TODO throw Exception
-        }
-
-        if (!userInfo.containsKey("status")) {
-            return false;   // TODO throw Exception
-        }
-
-        if (!userInfo.get("status").toString().equals(UserConfirmStatus.CONFIRMED.toString())) {
-            return false;   // TODO throw Exception
-        }
-
-        // 사용자 정보를 request에 주입
-        request.setAttribute("userId", userId);
-
-        if (!userInfo.containsKey("username")) {
-            return false;   // TODO throw Exception
-        }
-
-        request.setAttribute("username", userInfo.get("username"));
-
-        if (!userInfo.containsKey("slackId")) {
-            return false;   // TODO throw Exception
-        }
-
-        request.setAttribute("slackId", userInfo.get("slackId"));
-
-        if (!userInfo.containsKey("role")) {
-            return false;   // TODO throw Exception
-        }
-
-        request.setAttribute("role", userInfo.get("role"));
+//        String userId = request.getHeader("X-User-Id");
+//
+//        if (userId == null) {
+//            return false;    // TODO throw Exception
+//        }
+//
+//        if (!redisTemplate.hasKey("user:info:" + userId)) {
+//            return false;    // TODO throw Exception
+//        }
+//
+//        Map<Object, Object> userInfo = redisTemplate.opsForHash().entries("user:info:" + userId);
+//
+//        if (userInfo.isEmpty()) {
+//            return false;    // TODO throw Exception
+//        }
+//
+//        if (!userInfo.containsKey("status")) {
+//            return false;   // TODO throw Exception
+//        }
+//
+//        if (!userInfo.get("status").toString().equals(UserConfirmStatus.CONFIRMED.toString())) {
+//            return false;   // TODO throw Exception
+//        }
+//
+//        // 사용자 정보를 request에 주입
+//        request.setAttribute("userId", userId);
+//
+//        if (!userInfo.containsKey("username")) {
+//            return false;   // TODO throw Exception
+//        }
+//
+//        request.setAttribute("username", userInfo.get("username"));
+//
+//        if (!userInfo.containsKey("slackId")) {
+//            return false;   // TODO throw Exception
+//        }
+//
+//        request.setAttribute("slackId", userInfo.get("slackId"));
+//
+//        if (!userInfo.containsKey("role")) {
+//            return false;   // TODO throw Exception
+//        }
+//
+//        request.setAttribute("role", userInfo.get("role"));
 
         return true;
 
