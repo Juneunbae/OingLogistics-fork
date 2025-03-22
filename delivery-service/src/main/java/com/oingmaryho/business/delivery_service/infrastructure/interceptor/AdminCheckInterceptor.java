@@ -20,22 +20,22 @@ public class AdminCheckInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         log.info("admin preHandle");
-
-        if (request.getAttribute("status") == null) {
-            return false;    // TODO throw Exception
-        }
-
-        if (!request.getAttribute("status").toString().equals(UserConfirmStatus.CONFIRMED.toString())) {
-            return false;   // TODO throw Exception
-        }
-
-        if (request.getAttribute("role") == null) {
-            return false;   // TODO throw Exception
-        }
-
-        if (!request.getAttribute("role").toString().equals(UserRoleType.MASTER.toString())) {
-            return false;   // TODO throw Exception
-        }
+//
+//        if (request.getAttribute("status") == null) {
+//            return false;    // TODO throw Exception
+//        }
+//
+//        if (!request.getAttribute("status").toString().equals(UserConfirmStatus.CONFIRMED.toString())) {
+//            return false;   // TODO throw Exception
+//        }
+//
+//        if (request.getAttribute("role") == null) {
+//            return false;   // TODO throw Exception
+//        }
+//
+//        if (!request.getAttribute("role").toString().equals(UserRoleType.MASTER.toString())) {
+//            return false;   // TODO throw Exception
+//        }
 
         return true;
 

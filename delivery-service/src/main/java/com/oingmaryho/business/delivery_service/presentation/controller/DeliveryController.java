@@ -126,10 +126,10 @@ public class DeliveryController {
             @RequestParam(value = "status", required = false) DeliveryStatus status,
             @RequestParam(value = "managerId", required = false) Long managerId) {
 
-//        Long userId = (Long) request.getAttribute("userId");
-//        UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
-//
-//        // 권한 체크
+        Long userId = (Long) request.getAttribute("userId");
+        UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
+
+        // 권한 체크
 
         DeliverySearchRequestDto requestDto = new DeliverySearchRequestDto(
                 id,
@@ -191,7 +191,6 @@ public class DeliveryController {
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
 
         // 권한 체크
-
 
         DeliveryRouteSearchRequestDto requestDto = new DeliveryRouteSearchRequestDto(
                 routeId,

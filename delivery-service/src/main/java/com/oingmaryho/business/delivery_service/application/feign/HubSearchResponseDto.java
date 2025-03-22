@@ -8,5 +8,5 @@ public record HubSearchResponseDto(
         String address,
         Double latitude,
         Double longitude,
-        Long managerId
-){}
+        Long managerId){
+}

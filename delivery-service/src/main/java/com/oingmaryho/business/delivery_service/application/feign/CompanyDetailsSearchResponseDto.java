@@ -8,5 +8,5 @@ public record CompanyDetailsSearchResponseDto(
         Long managerId,
         String type,
         UUID manageHubId,
-        String address
-) { }
+        String address){
+}

@@ -11,6 +11,5 @@ public record DeliveryRouteSearchRequestDto(
         UUID companyId,
         Long managerId,
         DeliveryRouteStatus status,
-        Boolean isDeleted
-){
+        Boolean isDeleted){
 }

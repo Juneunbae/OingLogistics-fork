@@ -6,6 +6,5 @@ public record HubRouteSearchResponseDto(
         UUID departureHubId,
         UUID arriveHubId,
         Integer hubToHubTime,
-        Double distance
-) {
+        Double distance){
 }
