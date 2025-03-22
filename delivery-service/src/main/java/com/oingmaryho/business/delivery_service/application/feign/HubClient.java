@@ -15,6 +15,6 @@ public interface HubClient {
     ResponseEntity<HubSearchResponseDto> getHub(@PathVariable UUID id);
 
     @GetMapping("/hub-service/path")
-    ResponseEntity<List<HubRouteSearchResponseDto>> getPath(HubPathRequestDto requestDto);
+    ResponseEntity<List<HubPathResponseDto>> getPath(HubPathRequestDto requestDto);
 
 }

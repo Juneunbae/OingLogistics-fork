@@ -3,15 +3,11 @@ package com.oingmaryho.business.delivery_service.application.service;
 import com.oingmaryho.business.delivery_service.application.dto.mapper.DeliveryApplicationMapper;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
-import com.oingmaryho.business.delivery_service.application.feign.HubClient;
-import com.oingmaryho.business.delivery_service.application.feign.HubPathRequestDto;
-import com.oingmaryho.business.delivery_service.application.feign.HubRouteSearchResponseDto;
 import com.oingmaryho.business.delivery_service.domain.criteria.DeliveryRouteSearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.criteria.DeliverySearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.entity.Delivery;
 import com.oingmaryho.business.delivery_service.domain.entity.DeliveryManager;
 import com.oingmaryho.business.delivery_service.domain.entity.DeliveryRoute;
-import com.oingmaryho.business.delivery_service.domain.type.DeliveryManagerType;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryRouteStatus;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryStatus;
 import com.oingmaryho.business.delivery_service.domain.type.UserRoleType;
@@ -23,12 +19,9 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -176,7 +169,7 @@ public class DeliveryAdminService {
             DeliveryRouteDetailRequestServiceDto requestServiceDto) {
 
         DeliveryRoute route = deliveryRepository.findRouteById(requestServiceDto.id())
-                .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
+                .orElseThrow(() -> new DeliveryException(ErrorCode.ROUTE_NOT_FOUND));
 
         return deliveryApplicationMapper.toRouteResponseServiceDto(route);
     }

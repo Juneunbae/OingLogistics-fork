@@ -14,8 +14,6 @@ import java.util.UUID;
 public interface DeliveryCustomRepository {
     Page<Delivery> searchDelivery(DeliverySearchCriteria criteria, Pageable pageable);
     Page<DeliveryRoute> searchRoute(DeliveryRouteSearchCriteria criteria, Pageable pageable);
-
-
     Optional<DeliveryRoute> findRouteById(UUID routeId);    // admin용
     Optional<DeliveryRoute> findRouteByIdAndIsDeleted(UUID routeId);
 
