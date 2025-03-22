@@ -2,6 +2,7 @@ package com.oringmaryho.business.userservice.presentation.controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.context.annotation.Description;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import com.oringmaryho.business.userservice.domain.User;
 import com.oringmaryho.business.userservice.domain.UserRoleType;
 import com.oringmaryho.business.userservice.presentation.dto.mapper.UserPresentationMapper;
 import com.oringmaryho.business.userservice.application.dto.request.UsersRequestServiceDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.UserFromDeliveryGetRoleRequestServiceDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -44,4 +46,15 @@ public class UserFeignClientController {
 
 		return ResponseEntity.ok(userFeignService.userServiceToDeliveryServiceMap(usersRequestServiceDto));
 	}
+
+	@Description("FeignClient - 배송 서비스에서 요청, User Id를 받아 user role 조회 api")
+	@GetMapping("/role")
+	public ResponseEntity<UserRoleType> userFeignServiceGetRoleById(
+		@RequestParam(name = "id", required = true) Long id
+	){
+		UserFromDeliveryGetRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserFromDeliveryGetRoleRequestServiceDto(id);
+
+		return ResponseEntity.ok(userFeignService.userFeignServiceGetRole(requestServiceDto));
+	}
+
 }
