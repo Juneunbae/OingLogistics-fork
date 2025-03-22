@@ -3,6 +3,7 @@ package com.oingmaryho.business.orderservice.application.dto.mapper;
 import com.oingmaryho.business.orderservice.application.dto.request.OrderDetailUpdateRequestServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.request.OrderTotalPriceUpdateRequestServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.request.OrderUpdateRequestServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.request.ProductQueueRequestDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
@@ -15,7 +16,7 @@ import java.util.UUID;
 
 @Mapper(componentModel = "spring")
 public interface OrderApplicationMapper {
-//    @Mapping(target = "id", source = "order.id")
+    //    @Mapping(target = "id", source = "order.id")
 //    @Mapping(target = "recipientId", source = "order.recipientId")
 //    @Mapping(target = "recipientName", source = "order.recipientName")
 //    @Mapping(target = "status", source = "order.status")
@@ -38,4 +39,6 @@ public interface OrderApplicationMapper {
     OrderUpdateRequestServiceDto toOrderUpdateDto(String requests, Integer totalPrice);
 
     OrderTotalPriceUpdateRequestServiceDto toOrderTotalPriceUpdateRequestDto(Integer totalPrice);
+
+    ProductQueueRequestDto toProductQueueRequestDto(UUID productId, Integer quantity);
 }
