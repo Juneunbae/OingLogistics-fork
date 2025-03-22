@@ -50,4 +50,9 @@ public class HubRepositoryImpl implements HubRepository {
 	public List<Hub> findAllActiveHubs() {
 		return hubQueryRepository.findAllActiveHubs();
 	}
+
+	@Override
+	public Optional<Hub> findAllByManagerIdAndIsDeletedFalse(Long managerId) {
+		return hubJpaRepository.findAllByManagerIdAndIsDeletedFalse(managerId);
+	}
 }
