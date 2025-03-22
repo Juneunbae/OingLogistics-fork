@@ -29,12 +29,12 @@ public class OrderDetail extends BaseEntity {
     @Column(
         nullable = false
     )
-    private UUID requesterId;
+    private UUID recipientId;
 
     @Column(
         length = 30
     )
-    private String requesterName;
+    private String recipientName;
 
     private UUID deliveryId;
 

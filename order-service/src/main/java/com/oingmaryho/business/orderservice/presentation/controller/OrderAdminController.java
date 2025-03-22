@@ -4,6 +4,7 @@ import com.oingmaryho.business.orderservice.application.dto.request.*;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.service.OrderAdminService;
 import com.oingmaryho.business.orderservice.presentation.dto.mapper.OrderPresentationMapper;
+import com.oingmaryho.business.orderservice.presentation.dto.request.OrderCreateRequestDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderUpdateRequestDto;
 import com.oingmaryho.business.orderservice.utils.PageableUtils;
 import jakarta.validation.constraints.Min;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -49,6 +51,22 @@ public class OrderAdminController {
         Page<OrderResponseServiceDto> response = orderAdminService.getOrders(ordersRequestServiceDto);
 
         return ResponseEntity.ok(response.map(orderPresentationMapper::toOrderResponseServiceDto));
+    }
+
+    @Description(
+        "마스터 - 주문 생성"
+    )
+    @PostMapping
+    public ResponseEntity<?> createOrder(@RequestBody OrderCreateRequestDto orderCreateRequestDto) {
+        List<OrderDetailCreateRequestServiceDto> orderCreateRequestServiceDto = orderCreateRequestDto.orderDetailCreateDto().stream().map(
+            orderPresentationMapper::toOrderDetailCreateRequestServiceDto
+        ).toList();
+
+        OrderCreateRequestServiceDto create = orderPresentationMapper.toOrderCreateRequestServiceDto(
+            orderCreateRequestDto, orderCreateRequestServiceDto
+        );
+        orderAdminService.createOrder(create);
+        return ResponseEntity.ok().build();
     }
 
     @Description(

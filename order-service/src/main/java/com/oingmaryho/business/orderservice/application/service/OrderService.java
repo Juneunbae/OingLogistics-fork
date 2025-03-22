@@ -4,6 +4,7 @@ import com.oingmaryho.business.orderservice.application.dto.mapper.OrderApplicat
 import com.oingmaryho.business.orderservice.application.dto.request.*;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.service.feignclient.ProductClient;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
 import com.oingmaryho.business.orderservice.exception.ErrorCode;
@@ -28,6 +29,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderService {
     private final CacheManager cacheManager;
+    private final ProductClient productClient;
     private final OrderJPARepository orderJPARepository;
     private final OrderApplicationMapper orderApplicationMapper;
 
@@ -117,9 +119,8 @@ public class OrderService {
         log.info("주문: {}, 상세 주문: {}, 삭제 완료", order.getId(), orderDetail.getId());
 
         Integer orderDetailPrice = (orderDetail.getQuantity() * orderDetail.getPrice());
-        OrderTotalPriceUpdateRequestServiceDto updateDto = orderApplicationMapper.toOrderTotalPriceUpdateRequestDto(orderDetailPrice);
 
-        order.updateTotalPrice(updateDto);
+        order.updateTotalPrice(orderDetailPrice);
 
         evictCache(order);
     }

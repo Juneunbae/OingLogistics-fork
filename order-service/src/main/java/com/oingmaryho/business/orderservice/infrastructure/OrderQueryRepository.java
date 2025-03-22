@@ -38,14 +38,14 @@ public class OrderQueryRepository implements CustomOrderRepository {
         }
 
         if (criteria.getRecipientName() != null && !criteria.getRecipientName().isEmpty()) {
-            conditions.and(order.recipientName.likeIgnoreCase("%" + criteria.getRecipientName() + "%"));
+            conditions.and(orderDetail.recipientName.likeIgnoreCase("%" + criteria.getRecipientName() + "%"));
         } else {
             // recipientName이 없을 경우에는 해당 조건을 무시하도록 처리
-            conditions.and(order.recipientName.isNull().or(order.recipientName.isNotNull()));
+            conditions.and(orderDetail.recipientName.isNull().or(orderDetail.recipientName.isNotNull()));
         }
 
         if (criteria.getRequesterName() != null && !criteria.getRequesterName().isEmpty()) {
-            conditions.and(orderDetail.requesterName.likeIgnoreCase("%" + criteria.getRequesterName() + "%"));
+            conditions.and(order.requesterName.likeIgnoreCase("%" + criteria.getRequesterName() + "%"));
         }
 
         JPAQuery<Order> query = queryFactory
