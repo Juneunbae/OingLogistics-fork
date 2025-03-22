@@ -18,11 +18,11 @@ public class ProductSearchCriteria {
 	private final UUID companyID;
 	private final String companyName;
 
-	private final Long minPrice;
-	private final Long maxPrice;
+	private final Integer minPrice;
+	private final Integer maxPrice;
 
-	private final Long minStock;
-	private final Long maxStock;
+	private final Integer minStock;
+	private final Integer maxStock;
 
 	private final Boolean isDeleted;
 }

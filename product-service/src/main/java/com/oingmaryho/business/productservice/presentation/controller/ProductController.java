@@ -68,10 +68,10 @@ public class ProductController {
 		@RequestParam(name = "manageHubId", required = false) UUID manageHubId,
 		@RequestParam(name = "companyId", required = false) UUID companyId,
 		@RequestParam(name = "companyName", required = false) String companyName,
-		@RequestParam(name = "minPrice", required = false) Long minPrice,
-		@RequestParam(name = "maxPrice", required = false) Long maxPrice,
-		@RequestParam(name = "minStock", required = false) Long minStock,
-		@RequestParam(name = "maxStock", required = false) Long maxStock
+		@RequestParam(name = "minPrice", required = false) Integer minPrice,
+		@RequestParam(name = "maxPrice", required = false) Integer maxPrice,
+		@RequestParam(name = "minStock", required = false) Integer minStock,
+		@RequestParam(name = "maxStock", required = false) Integer maxStock
 	){
 		// TODO: userId, role 받아오기
 		Pageable pageable = PageableUtils.customPageable(page, size, sortDirection, by);

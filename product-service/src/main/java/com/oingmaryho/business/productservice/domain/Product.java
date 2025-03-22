@@ -48,12 +48,12 @@ public class Product extends BaseEntity {
 	private UUID manageHubId;
 
 	@Column(nullable = false)
-	private Long stock;
+	private Integer stock;
 
 	@Column(nullable = false)
-	private Long price;
+	private Integer price;
 
-	public void update(String companyName, String name, Long price, Long stock) {
+	public void update(String companyName, String name, Integer price, Integer stock) {
 		Optional.ofNullable(companyName)
 			.filter(c -> !c.isBlank())
 			.ifPresentOrElse(
@@ -84,4 +84,23 @@ public class Product extends BaseEntity {
 				this.stock = value;
 			});
 	}
+
+	public void updateStock(Integer newStock) {
+		if (newStock < 0) {
+			throw new ProductException(ErrorCode.OUT_OF_STOCK);
+		}
+		this.stock = newStock;
+	}
+
+	public void increaseStock(Integer quantity) {
+		if (quantity < 0) throw new IllegalArgumentException("추가 수량은 음수일 수 없습니다.");
+		this.stock += quantity;
+	}
+
+	public void decreaseStock(Integer quantity) {
+		if (quantity <= 0) throw new IllegalArgumentException("차감 수량은 0보다 커야 합니다.");
+		if (this.stock < quantity) throw new IllegalStateException("재고 부족");
+		this.stock -= quantity;
+	}
+
 }
