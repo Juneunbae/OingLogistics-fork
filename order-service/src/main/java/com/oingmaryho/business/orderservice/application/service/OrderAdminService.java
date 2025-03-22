@@ -5,6 +5,7 @@ import com.oingmaryho.business.orderservice.application.dto.mapper.OrderApplicat
 import com.oingmaryho.business.orderservice.application.dto.request.*;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.event.OrderEvent;
 import com.oingmaryho.business.orderservice.application.service.feignclient.CompanyClient;
 import com.oingmaryho.business.orderservice.application.service.feignclient.ProductClient;
 import com.oingmaryho.business.orderservice.domain.Order;
@@ -24,6 +25,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -39,11 +41,13 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class OrderAdminService {
+    private final OrderEvent orderEvent;
     private final CacheManager cacheManager;
     private final CompanyClient companyClient;
     private final ProductClient productClient;
     private final RabbitTemplate rabbitTemplate;
     private final OrderRepository orderRepository;
+    private final ApplicationEventPublisher publisher;
     private final OrderJPARepository orderJPARepository;
     private final OrderQueryRepository orderQueryRepository;
     private final OrderApplicationMapper orderApplicationMapper;
@@ -177,6 +181,7 @@ public class OrderAdminService {
         order.addOrderDetail(details);
 
         orderRepository.save(order);
+        publisher.publishEvent(order);
     }
 
     @Transactional

@@ -85,4 +85,8 @@ public class Order extends BaseEntity {
     public void addOrderDetail(List<OrderDetail> orderDetails) {
         this.orderDetails = orderDetails;
     }
+
+    public void successOrder(Status status) {
+        this.status = status;
+    }
 }
