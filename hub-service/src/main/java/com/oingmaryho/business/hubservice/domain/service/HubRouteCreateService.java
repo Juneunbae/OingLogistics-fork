@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.oingmaryho.business.hubservice.domain.Hub;
 import com.oingmaryho.business.hubservice.domain.HubRoute;
 import com.oingmaryho.business.hubservice.domain.RouteInfo;
 import com.oingmaryho.business.hubservice.domain.repository.HubRepository;
@@ -17,13 +18,14 @@ import lombok.RequiredArgsConstructor;
 public class HubRouteCreateService {
 
 	private final HubRepository hubRepository;
+	private final GeoSpatialService geoSpatialService;
 
-	public HubRoute createHubRoute(UUID departureHubId, UUID arriveHubId, Integer hubToHubTime, Double distance) {
+	public HubRoute createHubRoute(UUID departureHubId, UUID arriveHubId) {
 		validateHubRoute(departureHubId, arriveHubId);
-		validateHub(departureHubId);
-		validateHub(arriveHubId);
 
-		RouteInfo routeInfo = new RouteInfo(hubToHubTime, distance);
+		Hub departureHub = findHubById(departureHubId);
+		Hub arriveHub = findHubById(arriveHubId);
+		RouteInfo routeInfo = geoSpatialService.getRouteInfo(departureHub.getAddress(), arriveHub.getAddress());
 
 		return HubRoute.builder()
 			.departureHubId(departureHubId)
@@ -38,9 +40,8 @@ public class HubRouteCreateService {
 		}
 	}
 
-	private void validateHub(UUID hubId) {
-		if(!hubRepository.existsById(hubId)) {
-			throw new HubException(ErrorCode.NOT_FOUND_HUB);
-		}
+	private Hub findHubById(UUID hubId) {
+		return hubRepository.findActiveHubById(hubId)
+			.orElseThrow(() -> new HubException(ErrorCode.NOT_FOUND_HUB));
 	}
 }

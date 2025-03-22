@@ -23,6 +23,9 @@ class HubRouteCreateServiceTest {
 	private HubRouteCreateService hubRouteCreateService;
 
 	@Mock
+	private GeoSpatialService geoSpatialService;
+
+	@Mock
 	private HubRepository hubRepository;
 
 	@DisplayName("출발지와 목적지가 같으면 허브 이동 경로를 생성할 수 없다.")
@@ -33,7 +36,7 @@ class HubRouteCreateServiceTest {
 
 		// When & Then
 		assertThatThrownBy(() -> hubRouteCreateService
-				.createHubRoute(hubId, hubId, 1, 1.0))
+				.createHubRoute(hubId, hubId))
 			.isInstanceOf(HubException.class)
 			.hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_HUB_ROUTE);
 
@@ -46,17 +49,14 @@ class HubRouteCreateServiceTest {
 		UUID nonExistHubId = UUID.randomUUID();
 		UUID validHubId = UUID.randomUUID();
 
-		when(hubRepository.existsById(nonExistHubId)).thenReturn(false);
-		when(hubRepository.existsById(validHubId)).thenReturn(true);
-
 		// When & Then
 		assertThatThrownBy(() -> hubRouteCreateService
-				.createHubRoute(nonExistHubId, validHubId, 1, 1.0))
+				.createHubRoute(nonExistHubId, validHubId))
 			.isInstanceOf(HubException.class)
 			.hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND_HUB);
 
 		assertThatThrownBy(() -> hubRouteCreateService
-			.createHubRoute(validHubId, nonExistHubId, 1, 1.0))
+			.createHubRoute(validHubId, nonExistHubId))
 			.isInstanceOf(HubException.class)
 			.hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND_HUB);
 	}

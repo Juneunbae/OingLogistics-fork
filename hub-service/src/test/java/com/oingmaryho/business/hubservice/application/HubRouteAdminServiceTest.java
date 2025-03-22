@@ -49,27 +49,25 @@ class HubRouteAdminServiceTest {
 		UUID arriveHubId = UUID.randomUUID();
 
 		HubRouteCreateRequestServiceDto requestDto = new HubRouteCreateRequestServiceDto(
-			departureHubId, arriveHubId, 1, 1.0
+			departureHubId, arriveHubId
 		);
 
 		HubRoute unsavedHubRoute = HubRoute.builder()
 			.departureHubId(departureHubId)
 			.arriveHubId(arriveHubId)
-			.routeInfo(new RouteInfo(requestDto.hubToHubTime(), requestDto.distance()))
+			.routeInfo(new RouteInfo(1, 1.0))
 			.build();
 
 		HubRoute savedHubRoute = HubRoute.builder()
 			.id(UUID.randomUUID())
 			.departureHubId(departureHubId)
 			.arriveHubId(arriveHubId)
-			.routeInfo(new RouteInfo(requestDto.hubToHubTime(), requestDto.distance()))
+			.routeInfo(new RouteInfo(1, 1.0))
 			.build();
 
 		when(hubRouteCreateService.createHubRoute(
 			requestDto.departureHubId(),
-			requestDto.arriveHubId(),
-			requestDto.hubToHubTime(),
-			requestDto.distance()
+			requestDto.arriveHubId()
 		)).thenReturn(unsavedHubRoute);
 		when(hubRouteRepository.save(unsavedHubRoute)).thenReturn(savedHubRoute);
 		when(mapper.toHubRouteCreateResponseServiceDto(savedHubRoute))
@@ -82,9 +80,7 @@ class HubRouteAdminServiceTest {
 		// 호출 검증
 		verify(hubRouteCreateService, times(1)).createHubRoute(
 			requestDto.departureHubId(),
-			requestDto.arriveHubId(),
-			requestDto.hubToHubTime(),
-			requestDto.distance()
+			requestDto.arriveHubId()
 		);
 		verify(hubRouteRepository, times(1)).save(unsavedHubRoute);
 		verify(mapper, times(1)).toHubRouteCreateResponseServiceDto(savedHubRoute);

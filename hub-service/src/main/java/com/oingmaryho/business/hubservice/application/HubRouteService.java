@@ -4,9 +4,11 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.oingmaryho.business.hubservice.application.dto.mapper.HubRouteApplicationMapper;
 import com.oingmaryho.business.hubservice.application.dto.request.HubPathRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteSearchResponseServiceDto;
 import com.oingmaryho.business.hubservice.domain.Hub;
+import com.oingmaryho.business.hubservice.domain.HubRoute;
 import com.oingmaryho.business.hubservice.domain.service.HubInfoService;
 import com.oingmaryho.business.hubservice.domain.service.HubPathService;
 
@@ -18,10 +20,13 @@ public class HubRouteService {
 
 	private final HubPathService hubPathService;
 	private final HubInfoService hubInfoService;
+	private final HubRouteApplicationMapper mapper;
 
 	public List<HubRouteSearchResponseServiceDto> getOptimalHubPath(HubPathRequestServiceDto requestDto) {
 		Hub nearestHub = hubInfoService.getNearestHubFromAddress(requestDto.arriveAddress());
-		hubPathService.getOptimalHubPath(requestDto.departureHubId(), nearestHub.getId());
-		return null;
+		List<HubRoute> response = hubPathService.getOptimalHubPath(requestDto.departureHubId(), nearestHub.getId());
+		return response.stream()
+			.map(mapper::toHubRouteSearchResponseServiceDto)
+			.toList();
 	}
 }

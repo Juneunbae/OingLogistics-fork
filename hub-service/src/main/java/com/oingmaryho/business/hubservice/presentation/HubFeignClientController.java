@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.oingmaryho.business.hubservice.application.HubRouteService;
 import com.oingmaryho.business.hubservice.application.HubService;
+import com.oingmaryho.business.hubservice.application.dto.response.HubRouteSearchResponseServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubSearchResponseServiceDto;
 import com.oingmaryho.business.hubservice.presentation.dto.mapper.HubPresentationMapper;
+import com.oingmaryho.business.hubservice.presentation.dto.mapper.HubRoutePresentationMapper;
 import com.oingmaryho.business.hubservice.presentation.dto.request.HubPathRequestDto;
 import com.oingmaryho.business.hubservice.presentation.dto.request.HubSearchRequestDto;
 import com.oingmaryho.business.hubservice.presentation.dto.response.HubRouteSearchResponseDto;
@@ -27,14 +29,15 @@ public class HubFeignClientController {
 
 	private final HubService hubService;
 	private final HubRouteService hubRouteService;
-	private final HubPresentationMapper mapper;
+	private final HubPresentationMapper hubMapper;
+	private final HubRoutePresentationMapper routeMapper;
 
 	@GetMapping
 	public ResponseEntity<HubSearchResponseDto> getHubById(@RequestParam(value = "managerId") Long managerId) {
 		HubSearchRequestDto requestDto =
 			new HubSearchRequestDto(null, null, null, null, null, managerId);
-		HubSearchResponseServiceDto responseDto = hubService.getHubByManagerId(mapper.toHubsSearchRequestServiceDto(requestDto));
-		return ResponseEntity.ok(mapper.toHubSearchResponseDto(responseDto));
+		HubSearchResponseServiceDto responseDto = hubService.getHubByManagerId(hubMapper.toHubsSearchRequestServiceDto(requestDto));
+		return ResponseEntity.ok(hubMapper.toHubSearchResponseDto(responseDto));
 	}
 
 	@GetMapping("/path")
@@ -43,7 +46,11 @@ public class HubFeignClientController {
 		@RequestParam(value = "arriveAddress") String arriveAddress
 	) {
 		HubPathRequestDto requestDto = new HubPathRequestDto(departureHubId, arriveAddress);
-		hubRouteService.getOptimalHubPath(mapper.toHubPathRequestServiceDto(requestDto));
-		return null;
+		List<HubRouteSearchResponseServiceDto> responseDto = hubRouteService
+			.getOptimalHubPath(routeMapper.toHubPathRequestServiceDto(requestDto));
+
+		return ResponseEntity.ok(responseDto.stream()
+			.map(routeMapper::toHubRouteSearchResponseDto)
+			.toList());
 	}
 }

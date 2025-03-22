@@ -4,8 +4,6 @@ import java.util.UUID;
 
 public record HubRouteCreateRequestServiceDto(
 	UUID departureHubId,
-	UUID arriveHubId,
-	Integer hubToHubTime,
-	Double distance
+	UUID arriveHubId
 ) {
 }
