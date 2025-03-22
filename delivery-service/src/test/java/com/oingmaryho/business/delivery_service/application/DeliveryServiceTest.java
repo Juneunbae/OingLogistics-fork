@@ -3,6 +3,9 @@ package com.oingmaryho.business.delivery_service.application;
 import com.oingmaryho.business.delivery_service.application.dto.mapper.DeliveryApplicationMapper;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
+import com.oingmaryho.business.delivery_service.application.feign.CompanyClient;
+import com.oingmaryho.business.delivery_service.application.feign.HubClient;
+import com.oingmaryho.business.delivery_service.application.feign.UserClient;
 import com.oingmaryho.business.delivery_service.application.service.DeliveryService;
 import com.oingmaryho.business.delivery_service.domain.entity.Delivery;
 import com.oingmaryho.business.delivery_service.domain.entity.DeliveryManager;
@@ -40,6 +43,15 @@ public class DeliveryServiceTest {
     private static final Logger log = LoggerFactory.getLogger(DeliveryServiceTest.class);
     @InjectMocks
     private DeliveryService deliveryService;
+
+    @Mock
+    private CompanyClient companyClient;
+
+    @Mock
+    private HubClient hubClient;
+
+    @Mock
+    private UserClient userClient;
 
     @Mock
     private DeliveryRepository deliveryRepository;
@@ -1211,8 +1223,9 @@ public class DeliveryServiceTest {
         );
 
         //then
-        verify(deliveryRepository, times(1))
-                .delete(any(Delivery.class));
+        assertThat(delivery.getIsDeleted()).isTrue();
+        assertThat(delivery.getDeletedBy()).isEqualTo(userId5);
+        assertThat(delivery.getDeletedAt()).isNotNull();
     }
 
     @Test

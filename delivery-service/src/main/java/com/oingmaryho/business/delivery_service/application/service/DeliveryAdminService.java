@@ -3,22 +3,29 @@ package com.oingmaryho.business.delivery_service.application.service;
 import com.oingmaryho.business.delivery_service.application.dto.mapper.DeliveryApplicationMapper;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
+import com.oingmaryho.business.delivery_service.application.feign.CompanyClient;
+import com.oingmaryho.business.delivery_service.application.feign.HubClient;
+import com.oingmaryho.business.delivery_service.application.feign.HubSearchResponseDto;
+import com.oingmaryho.business.delivery_service.application.feign.UserClient;
 import com.oingmaryho.business.delivery_service.domain.criteria.DeliveryRouteSearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.criteria.DeliverySearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.entity.Delivery;
 import com.oingmaryho.business.delivery_service.domain.entity.DeliveryManager;
 import com.oingmaryho.business.delivery_service.domain.entity.DeliveryRoute;
+import com.oingmaryho.business.delivery_service.domain.type.DeliveryManagerType;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryRouteStatus;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryStatus;
 import com.oingmaryho.business.delivery_service.domain.type.UserRoleType;
 import com.oingmaryho.business.delivery_service.exception.DeliveryException;
 import com.oingmaryho.business.delivery_service.exception.ErrorCode;
+import com.oingmaryho.business.delivery_service.infrastructure.repository.DeliveryManagerRepository;
 import com.oingmaryho.business.delivery_service.infrastructure.repository.DeliveryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,8 +35,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DeliveryAdminService {
 
-//    private final HubClient hubClient;
+    private final CompanyClient companyClient;
+    private final HubClient hubClient;
+    private final UserClient userClient;
     private final DeliveryRepository deliveryRepository;
+    private final DeliveryManagerRepository deliveryManagerRepository;
     private final DeliveryApplicationMapper deliveryApplicationMapper;
 
 
@@ -73,21 +83,35 @@ public class DeliveryAdminService {
             @CacheEvict(cacheNames = "delivery", key = "#requestServiceDto.id()"),
             @CacheEvict(cacheNames = "deliveries", allEntries = true)
     })
-    public DeliveryUpdateResponseServiceDto updateDelivery(Long userId,
-                                                           UserRoleType userRole,
-                                                           DeliveryUpdateRequestServiceDto requestServiceDto) {
+    public DeliveryUpdateResponseServiceDto updateDelivery(
+            Long userId,
+            UserRoleType userRole,
+            DeliveryUpdateRequestServiceDto requestServiceDto) {
 
         Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
-        DeliveryManager manager = delivery.getManager();
-        // manager
-        if (requestServiceDto.managerId() != null) {
-            // TODO managerId로 user쪽에 실제 존재하는 '업체 배송 담당자'인지 확인 요청 & updateManager() 필드 값 수정
-            manager.updateManager(requestServiceDto.managerId(), "slackId", UUID.randomUUID(), UUID.randomUUID());
+        // managerId로 user 쪽에 수정하려는 manager가 '업체 배송 담당자'인지 유효성 검사
+        ResponseEntity<UserRoleType> userResponse = userClient.getUserRoleById(requestServiceDto.managerId());
+        if (userResponse.getStatusCode().is2xxSuccessful() && userResponse.getBody() != null) {
+            if (!userResponse.getBody().equals(UserRoleType.COMPANY_DELIVERY_MANAGER)) {
+                throw new DeliveryException(ErrorCode.BAD_REQUEST);
+            }
         }
 
-        delivery.update(requestServiceDto.receiver(), requestServiceDto.receiverSlackId(), requestServiceDto.address(), manager);
+        // managerId로 DeliveryManager 쪽에 수정하려는 manager가 '업체 배송 담당자'인지 유효성 검사
+        DeliveryManager newManager = deliveryManagerRepository.findByManagerIdAndIsDeletedFalse(requestServiceDto.managerId())
+                .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
+        if (!newManager.getType().equals(DeliveryManagerType.COMPANY_DELIVERY_MANAGER)) {
+            throw new DeliveryException(ErrorCode.BAD_REQUEST);
+        }
+
+        // 수정하려는 manager가 배송의 마지막 허브에 속한 배송 담당자가 아닌 경우
+        if (!newManager.getHubId().equals(delivery.getArriveHubId())) {
+            throw new DeliveryException(ErrorCode.BAD_REQUEST);
+        }
+
+        delivery.update(requestServiceDto.receiver(), requestServiceDto.receiverSlackId(), requestServiceDto.address(), newManager);
         return deliveryApplicationMapper.toUpdateResponseServiceDto(delivery.getId());
     }
 
@@ -103,6 +127,8 @@ public class DeliveryAdminService {
 
         Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
+
+        // TODO 고민: 배송 상태와 변경하려는 상태가 같은 경우를 예외로 처리해야 할까?
 
         delivery.updateStatus(requestServiceDto.status());
         return deliveryApplicationMapper.toUpdateStatusResponseServiceDto(delivery.getId());
@@ -120,8 +146,7 @@ public class DeliveryAdminService {
 
         Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
-
-        deliveryRepository.delete(delivery);
+        delivery.softDelete(userId);
 
     }
 
@@ -215,11 +240,20 @@ public class DeliveryAdminService {
 
         route.changeStatus(requestServiceDto.status());
 
-        if (route.getStatus() == DeliveryRouteStatus.HUB_ARRIVED) { // 목적지 허브 도착 상태로 변경 시도하는 경우
-            Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
+        if (route.getStatus() == DeliveryRouteStatus.HUB_MOVING) {         // 허브 이동중 상태로 변경 시도하는 경우
+            Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(route.getDelivery().getId())
                     .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
-            if (delivery.getArriveHubId() == route.getArriveHubId()) {    // 경로 상 목적지 허브가 배송 목적지 허브와 같으면 배송 상태 변경
+            if (delivery.getArriveHubId() == route.getArriveHubId()) {      // 경로 상 출발지 허브가 배송 출발지 허브와 같으면 배송 상태 변경
+                delivery.updateStatus(DeliveryStatus.HUB_MOVING);
+            }
+        }
+
+        if (route.getStatus() == DeliveryRouteStatus.HUB_ARRIVED) {         // 목적지 허브 도착 상태로 변경 시도하는 경우
+            Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(route.getDelivery().getId())
+                    .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
+
+            if (delivery.getArriveHubId() == route.getArriveHubId()) {      // 경로 상 목적지 허브가 배송 목적지 허브와 같으면 배송 상태 변경
                 delivery.updateStatus(DeliveryStatus.HUB_ARRIVED);
             }
         }
