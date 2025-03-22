@@ -1,5 +1,6 @@
 package com.oingmaryho.business.hubservice.infrastructure;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -43,5 +44,10 @@ public class HubRepositoryImpl implements HubRepository {
 	@Override
 	public Optional<Hub> findActiveHubById(UUID id) {
 		return hubQueryRepository.findActiveHubById(id);
+	}
+
+	@Override
+	public List<Hub> findAllActiveHubs() {
+		return hubQueryRepository.findAllActiveHubs();
 	}
 }
