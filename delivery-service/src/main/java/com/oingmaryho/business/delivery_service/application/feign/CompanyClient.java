@@ -10,11 +10,11 @@ import java.util.UUID;
 
 @FeignClient(name = "company-service")
 public interface CompanyClient {
-    @GetMapping("/companies/{id}")
+    @GetMapping("company-service/companies/{id}")
     ResponseEntity<CompanyDetailsSearchResponseDto> getCompanyId(
             @PathVariable UUID id);
 
-    @GetMapping("/companies/{id}")
+    @GetMapping("company-service/companies/{id}")
     ResponseEntity<CompanyDetailsSearchResponseDto> getCompanyByManagerId(
             @RequestParam("managerId") Long managerId);
 }

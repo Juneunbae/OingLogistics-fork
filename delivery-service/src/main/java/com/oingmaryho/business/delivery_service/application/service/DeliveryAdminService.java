@@ -18,6 +18,7 @@ import com.oingmaryho.business.delivery_service.exception.ErrorCode;
 import com.oingmaryho.business.delivery_service.infrastructure.repository.DeliveryManagerRepository;
 import com.oingmaryho.business.delivery_service.infrastructure.repository.DeliveryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -33,6 +34,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DeliveryAdminService {
 
     private final CompanyClient companyClient;
@@ -56,55 +58,59 @@ public class DeliveryAdminService {
                 .map(ResponseEntity::getBody)
                 .orElseThrow(() -> new DeliveryException(ErrorCode.HUB_ROUTE_NOT_FOUND));
 
-        Delivery delivery = Delivery.builder()
-                .departureHubId(hubRoutes.get(0).departureHubId())
-                .arriveHubId(hubRoutes.get(hubRoutes.size()-1).arriveHubId())
-                .address(requestServiceDto.address())
-                .receiver(requestServiceDto.receiver())
-                .receiverSlackId(requestServiceDto.receiverSlackId())
-                .build();
-
-        // 각 배송 경로에 허브 배송 담당자 배정
-        for (HubPathResponseDto route : hubRoutes) {
-            int routeSequence = 1;      // 배송 경로 상 순번
-            int hubDeliveryManagerSequence = 0;    // TODO Redis에서 조회 (key: hub:delivery:sequence)
-
-            DeliveryManager hubDeliveryManager = deliveryManagerRepository.findByTypeAndSequence(
-                            DeliveryManagerType.HUB_DELIVERY_MANAGER, hubDeliveryManagerSequence % 10)
-                    .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
-
-            hubDeliveryManagerSequence++;
-            DeliveryRoute deliveryRoute = DeliveryRoute.builder()
-                    .delivery(delivery)
-                    .sequence(routeSequence)
-                    .departureHubId(route.departureHubId())
-                    .arriveHubId(route.arriveHubId())
-                    .status(DeliveryRouteStatus.HUB_WAITING)
-                    .estimatedDistance(route.distance())
-                    .estimatedTime(route.hubToHubTime())
-                    .manager(hubDeliveryManager)
-                    .build();
-
-            routeSequence++;
-
-            // 배송 엔티티에 배송 경로 양방향 설정
-            deliveryRoute.addRoute(delivery);
+        for (int i = 0; i < hubRoutes.size(); i++) {
+            log.info("route{} : departureId({}) arriveId({}) time({}) dist({})", i, hubRoutes.get(i).departureHubId(), hubRoutes.get(i).arriveHubId(), hubRoutes.get(i).hubToHubTime(), hubRoutes.get(i).distance());
         }
 
-        // 배송에 업체 배송 담당자 배정
-        int companyDeliveryManagerSequence = 0; // TODO Redis에서 조회 (key: company:delivery:sequence:{hubId})
-        DeliveryManager companyDeliveryManager = deliveryManagerRepository.findByHubIdAndTypeAndSequence(
-                        delivery.getArriveHubId(), DeliveryManagerType.COMPANY_DELIVERY_MANAGER, companyDeliveryManagerSequence % 10)
-                .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
-
-        delivery.update(null,null,null,companyDeliveryManager);
-
-
-        // 배송 저장
-        Delivery savedDelivery = deliveryRepository.save(delivery);
+//        Delivery delivery = Delivery.builder()
+//                .departureHubId(hubRoutes.get(0).departureHubId())
+//                .arriveHubId(hubRoutes.get(hubRoutes.size()-1).arriveHubId())
+//                .address(requestServiceDto.address())
+//                .receiver(requestServiceDto.receiver())
+//                .receiverSlackId(requestServiceDto.receiverSlackId())
+//                .build();
+//
+//        // 각 배송 경로에 허브 배송 담당자 배정
+//        for (HubPathResponseDto route : hubRoutes) {
+//            int routeSequence = 1;      // 배송 경로 상 순번
+//            int hubDeliveryManagerSequence = 0;    // TODO Redis에서 조회 (key: hub:delivery:sequence)
+//
+//            DeliveryManager hubDeliveryManager = deliveryManagerRepository.findByTypeAndSequence(
+//                            DeliveryManagerType.HUB_DELIVERY_MANAGER, hubDeliveryManagerSequence % 10)
+//                    .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
+//
+//            hubDeliveryManagerSequence++;
+//            DeliveryRoute deliveryRoute = DeliveryRoute.builder()
+//                    .delivery(delivery)
+//                    .sequence(routeSequence)
+//                    .departureHubId(route.departureHubId())
+//                    .arriveHubId(route.arriveHubId())
+//                    .status(DeliveryRouteStatus.HUB_WAITING)
+//                    .estimatedDistance(route.distance())
+//                    .estimatedTime(route.hubToHubTime())
+//                    .manager(hubDeliveryManager)
+//                    .build();
+//
+//            routeSequence++;
+//
+//            // 배송 엔티티에 배송 경로 양방향 설정
+//            deliveryRoute.addRoute(delivery);
+//        }
+//
+//        // 배송에 업체 배송 담당자 배정
+//        int companyDeliveryManagerSequence = 0; // TODO Redis에서 조회 (key: company:delivery:sequence:{hubId})
+//        DeliveryManager companyDeliveryManager = deliveryManagerRepository.findByHubIdAndTypeAndSequence(
+//                        delivery.getArriveHubId(), DeliveryManagerType.COMPANY_DELIVERY_MANAGER, companyDeliveryManagerSequence % 10)
+//                .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
+//
+//        delivery.update(null,null,null,companyDeliveryManager);
+//
+//
+//        // 배송 저장
+//        Delivery savedDelivery = deliveryRepository.save(delivery);
 
         // 배송 id 반환
-        return deliveryApplicationMapper.toCreationResponseServiceDto(savedDelivery.getId());
+        return deliveryApplicationMapper.toCreationResponseServiceDto(UUID.randomUUID());
 
     }
 

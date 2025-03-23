@@ -1,4 +1,4 @@
-package com.oingmaryho.business.delivery_service.infrastructure.interceptor;
+package com.oingmaryho.business.delivery_service.presentation.interceptor;
 
 import com.oingmaryho.business.delivery_service.domain.type.UserConfirmStatus;
 import com.oingmaryho.business.delivery_service.domain.type.UserRoleType;
