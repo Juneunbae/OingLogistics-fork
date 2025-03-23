@@ -121,7 +121,7 @@ public class CompanyController {
 
 	@Description("일반 - 업체 삭제")
 	@RequiredRoles({UserRoleType.HUB_MANAGER})
-	@DeleteMapping("/api/v1/companies/{id}")
+	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteCompany(
 		@PathVariable UUID id,
 		HttpServletRequest request
