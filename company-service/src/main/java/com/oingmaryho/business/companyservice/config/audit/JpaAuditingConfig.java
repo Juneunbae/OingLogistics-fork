@@ -1,6 +1,4 @@
-package com.oingmaryho.business.productservice.config;
-
-import java.util.Optional;
+package com.oingmaryho.business.companyservice.config.audit;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,6 +6,8 @@ import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+
+import java.util.Optional;
 
 @EnableJpaAuditing
 @Configuration
@@ -22,8 +22,7 @@ public class JpaAuditingConfig {
 			if (attributes == null) {
 				return Optional.empty();
 			}
-
-			String userId = attributes.getRequest().getHeader("userId");
+			String userId = attributes.getRequest().getHeader("X-User-Id");
 
 			if (userId != null) {
 				try {

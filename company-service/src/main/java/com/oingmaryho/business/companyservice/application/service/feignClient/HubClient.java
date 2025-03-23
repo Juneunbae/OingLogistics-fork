@@ -11,7 +11,7 @@ import com.oingmaryho.business.companyservice.presentation.dto.response.HubSearc
 @FeignClient(name = "hub-service")
 public interface HubClient {
 
-	@GetMapping("/hub-service/hubs")
+	@GetMapping("/hub-service")
 	Optional<HubSearchResponseDto> isManagerOfHub(
 		@RequestParam("managerId") Long managerId
 	);

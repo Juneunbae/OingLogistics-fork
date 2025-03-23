@@ -3,11 +3,14 @@ package com.oingmaryho.business.companyservice.application.service;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.oingmaryho.business.common.domain.type.UserRoleType;
 import com.oingmaryho.business.companyservice.application.dto.mapper.CompanyApplicationMapper;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyCreateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDeleteRequestServiceDto;
@@ -19,6 +22,7 @@ import com.oingmaryho.business.companyservice.application.dto.response.CompanyDe
 import com.oingmaryho.business.companyservice.application.dto.response.CompanySearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyUpdateResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.service.feignClient.HubClient;
+import com.oingmaryho.business.companyservice.config.cache.CacheType;
 import com.oingmaryho.business.companyservice.domain.Company;
 import com.oingmaryho.business.companyservice.domain.CompanySearchCriteria;
 import com.oingmaryho.business.companyservice.domain.repository.CompanyRepository;
@@ -27,7 +31,6 @@ import com.oingmaryho.business.companyservice.exception.CompanyException;
 import com.oingmaryho.business.companyservice.exception.ErrorCode;
 import com.oingmaryho.business.companyservice.presentation.dto.response.HubSearchResponseDto;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -55,6 +58,7 @@ public class CompanyService {
 		return new CompanyCreateResponseServiceDto(savedCompany.getId());
 	}
 
+	@Cacheable(value = CacheType.COMPANY_CACHE, key = "#requestDto.id")
 	public CompanyDetailsSearchResponseServiceDto getCompanyById(CompanyDetailsSearchRequestServiceDto requestDto) {
 		Company company = companyRepository.findByIdAndIsDeletedFalse(requestDto.id())
 			.orElseThrow(() -> new CompanyException(ErrorCode.NOT_FOUND));
@@ -67,13 +71,12 @@ public class CompanyService {
 		return companies.map(companyApplicationMapper::toCompanySearchResponseServiceDto);
 	}
 
+	@CacheEvict(value = CacheType.COMPANY_CACHE, key = "#requestServiceDto.id")
 	@Transactional
-	public CompanyUpdateResponseServiceDto updateCompany(CompanyUpdateRequestServiceDto requestServiceDto) {
-		// TODO: 권한 체크(수정 권한은 허브 담당자와 업체 담당자)
-		// TODO: 공통 예외처리 코드 작성 필요
+	public CompanyUpdateResponseServiceDto updateCompany(Long requesterId, UserRoleType role,CompanyUpdateRequestServiceDto requestServiceDto) {
 		Company company = companyRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
 			.orElseThrow(() -> new CompanyException(ErrorCode.NOT_FOUND));
-
+		validateUpdatePermission(requesterId,role, company);
 		company.update(
 			requestServiceDto.name(),
 			requestServiceDto.type(),
@@ -84,6 +87,7 @@ public class CompanyService {
 		return companyApplicationMapper.toUpdateResponseDto(company.getId());
 	}
 
+	@CacheEvict(value = CacheType.COMPANY_CACHE, key = "#requestServiceDto.id")
 	@Transactional
 	public void deleteCompany(Long requesterId, CompanyDeleteRequestServiceDto requestServiceDto) {
 		Company company = companyRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
@@ -108,11 +112,30 @@ public class CompanyService {
 	}
 
 	private void validateManageHubPermission(Long requesterId, UUID targetHubId) {
+
 		HubSearchResponseDto managedHub = hubClient.isManagerOfHub(requesterId)
-			.orElseThrow(() -> new CompanyException(ErrorCode.HUB_NOT_FOUND_BY_MANAGER));
+			.orElseThrow(() -> new CompanyException(ErrorCode.HUB_NOT_FOUND));
 
 		if (!managedHub.id().equals(targetHubId)) {
 			throw new CompanyException(ErrorCode.NO_PERMISSION);
+		}
+	}
+	private void validateUpdatePermission(Long requesterId, UserRoleType role, Company company) {
+		switch (role) {
+			case HUB_MANAGER -> {
+				Optional<HubSearchResponseDto> optionalHub = hubClient.isManagerOfHub(requesterId);
+				if (optionalHub.isPresent() && optionalHub.get().id().equals(company.getManageHubId())) {
+					return;
+				}
+				throw new CompanyException(ErrorCode.NO_PERMISSION);
+			}
+			case COMPANY_MANAGER -> {
+				if (company.getManagerId().equals(requesterId)) {
+					return;
+				}
+				throw new CompanyException(ErrorCode.NO_PERMISSION);
+			}
+			default -> throw new CompanyException(ErrorCode.NO_PERMISSION);
 		}
 	}
 
