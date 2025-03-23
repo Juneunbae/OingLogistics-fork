@@ -24,6 +24,7 @@ import com.oingmaryho.business.hubservice.domain.Hub;
 import com.oingmaryho.business.hubservice.domain.HubSearchCriteria;
 import com.oingmaryho.business.hubservice.domain.repository.HubRepository;
 import com.oingmaryho.business.hubservice.domain.service.HubCreateService;
+import com.oingmaryho.business.hubservice.domain.service.HubRouteDeleteService;
 import com.oingmaryho.business.hubservice.exception.ErrorCode;
 import com.oingmaryho.business.hubservice.exception.HubException;
 
@@ -35,6 +36,7 @@ public class HubAdminService {
 
 	private final HubCreateService hubCreateService;
 	private final HubRepository hubRepository;
+	private final HubRouteDeleteService hubRouteDeleteService;
 	private final HubApplicationMapper mapper;
 
 	@Transactional
@@ -90,6 +92,7 @@ public class HubAdminService {
 	})
 	public void deleteHub(HubDeleteRequestServiceDto requestDto, Long userId) {
 		Hub hub = findHubById(requestDto.id());
+		hubRouteDeleteService.deleteHubRouteAssociatedWithHub(requestDto.id(), userId);
 		hub.softDelete(userId);
 	}
 

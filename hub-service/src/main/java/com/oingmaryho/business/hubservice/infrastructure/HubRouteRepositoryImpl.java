@@ -50,4 +50,9 @@ public class HubRouteRepositoryImpl implements HubRouteRepository {
 	public List<HubRoute> findAllByIsDeletedFalse() {
 		return hubRouteJpaRepository.findAllByIsDeletedFalse();
 	}
+
+	@Override
+	public List<HubRoute> findAllAssociatedWithHub(UUID hubId) {
+		return hubRouteQueryRepository.findAllAssociatedWithHub(hubId);
+	}
 }

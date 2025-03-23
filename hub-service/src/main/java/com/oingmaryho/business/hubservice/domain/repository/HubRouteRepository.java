@@ -23,4 +23,6 @@ public interface HubRouteRepository {
 	Optional<HubRoute> findByDepartureHubIdAndArriveHubId(UUID departureHubId, UUID arriveHubId);
 
 	List<HubRoute> findAllByIsDeletedFalse();
+
+	List<HubRoute> findAllAssociatedWithHub(UUID hubId);
 }

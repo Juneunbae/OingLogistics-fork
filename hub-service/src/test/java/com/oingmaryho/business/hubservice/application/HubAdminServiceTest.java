@@ -13,7 +13,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.oingmaryho.business.common.domain.entity.BaseEntity;
 import com.oingmaryho.business.hubservice.application.dto.mapper.HubApplicationMapper;
 import com.oingmaryho.business.hubservice.application.dto.request.HubCreateRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubDeleteRequestServiceDto;
@@ -26,6 +25,7 @@ import com.oingmaryho.business.hubservice.domain.Address;
 import com.oingmaryho.business.hubservice.domain.Hub;
 import com.oingmaryho.business.hubservice.domain.repository.HubRepository;
 import com.oingmaryho.business.hubservice.domain.service.HubCreateService;
+import com.oingmaryho.business.hubservice.domain.service.HubRouteDeleteService;
 
 @ExtendWith(MockitoExtension.class)
 class HubAdminServiceTest {
@@ -35,6 +35,9 @@ class HubAdminServiceTest {
 
 	@Mock
 	private HubCreateService hubCreateService;
+
+	@Mock
+	private HubRouteDeleteService hubRouteDeleteService;
 
 	@Mock
 	private HubRepository hubRepository;
