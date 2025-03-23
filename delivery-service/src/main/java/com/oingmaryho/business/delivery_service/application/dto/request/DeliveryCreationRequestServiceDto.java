@@ -4,7 +4,9 @@ import java.util.UUID;
 
 public record DeliveryCreationRequestServiceDto (
         UUID orderId,
+        UUID orderDetailId,
         String address,
         String receiver,
-        String receiverSlackId){
+        String receiverSlackId,
+        UUID hubId){
 }

@@ -23,6 +23,12 @@ public class Delivery extends BaseEntity {
     @Column(nullable = false)
     private UUID orderId;      // TODO 배송 생성 시 주문 id 유효성 검사
 
+    @Column(nullable = false)
+    private UUID orderDetailId;
+
+    @Column(nullable = false)
+    private UUID companyId;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default

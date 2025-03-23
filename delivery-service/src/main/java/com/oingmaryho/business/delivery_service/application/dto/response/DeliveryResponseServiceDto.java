@@ -6,6 +6,9 @@ import java.util.UUID;
 
 public record DeliveryResponseServiceDto(
         UUID id,
+        UUID orderId,
+        UUID orderDetailId,
+        UUID companyId,
         DeliveryStatus status,
         UUID departureHubId,
         UUID arriveHubId,

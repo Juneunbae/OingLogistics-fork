@@ -35,13 +35,10 @@ public class DeliveryAdminController {
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
 
-        // 권한 체크
-
         DeliveryCreationRequestServiceDto requestServiceDto = deliveryPresentationMapper.toCreationServiceDto(requestDto);
         DeliveryCreationResponseServiceDto responseServiceDto = deliveryAdminService.createDelivery(
-                userId,
-                UserRoleType.COMPANY_DELIVERY_MANAGER,
                 requestServiceDto);
+
         return ResponseEntity.ok(deliveryPresentationMapper.toCreationResponseDto(responseServiceDto));
     }
 
@@ -130,6 +127,7 @@ public class DeliveryAdminController {
             @RequestParam(value = "by", required = false) String by,
             @RequestParam(value = "id", required = false) UUID id,
             @RequestParam(value = "orderId", required = false) UUID orderId,
+            @RequestParam(value = "orderDetailId", required = false) UUID orderDetailId,
             @RequestParam(value = "hubId", required = false) UUID hubId,
             @RequestParam(value = "companyId", required = false) UUID companyId,
             @RequestParam(value = "status", required = false) DeliveryStatus status,
@@ -144,6 +142,7 @@ public class DeliveryAdminController {
         DeliverySearchRequestDto requestDto = new DeliverySearchRequestDto(
                 id,
                 orderId,
+                orderDetailId,
                 hubId,
                 companyId,
                 status,
@@ -190,6 +189,8 @@ public class DeliveryAdminController {
             @RequestParam(value = "sortDirection", required = false, defaultValue = "DESC") String sortDirection,
             @RequestParam(value = "by", required = false) String by,
             @RequestParam(value = "routeId", required = false) UUID routeId,
+            @RequestParam(value = "orderId", required = false) UUID orderId,
+            @RequestParam(value = "orderDetailId", required = false) UUID orderDetailId,
             @RequestParam(value = "departureHubId", required = false) UUID departureHubId,
             @RequestParam(value = "arriveHubId", required = false) UUID arriveHubId,
             @RequestParam(value = "companyId", required = false) UUID companyId,
@@ -202,6 +203,8 @@ public class DeliveryAdminController {
         // 권한 체크
         DeliveryRouteSearchRequestDto requestDto = new DeliveryRouteSearchRequestDto(
                 routeId,
+                orderId,
+                orderDetailId,
                 departureHubId,
                 arriveHubId,
                 companyId,

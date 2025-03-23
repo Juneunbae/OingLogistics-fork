@@ -19,10 +19,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
-	@Column(updatable = false)
+	@Column
 	private Long deletedBy;
 
-	@Column(updatable = false)
+	@Column
 	@Temporal(TemporalType.TIMESTAMP)
 	private LocalDateTime deletedAt;
 

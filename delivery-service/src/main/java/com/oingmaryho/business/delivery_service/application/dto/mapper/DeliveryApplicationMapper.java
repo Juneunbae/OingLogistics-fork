@@ -24,9 +24,8 @@ public interface DeliveryApplicationMapper {
                         DeliveryCreationRequestServiceDto requestServiceDto,
                         List<DeliveryRoute> routes);
 
-    // TODO toDeliveryRoute
-
     // Entity -> ResponseServiceDto
+    DeliveryCreationResponseServiceDto toCreationResponseServiceDto(UUID id);
     DeliveryUpdateResponseServiceDto toUpdateResponseServiceDto(UUID id);
     DeliveryUpdateStatusResponseServiceDto toUpdateStatusResponseServiceDto(UUID id);
     DeliveryRouteUpdateStatusResponseServiceDto toUpdateRouteStatusResponseServiceDto(UUID id);

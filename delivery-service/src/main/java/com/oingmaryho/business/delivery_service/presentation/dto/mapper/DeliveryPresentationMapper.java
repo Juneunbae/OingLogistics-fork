@@ -15,6 +15,10 @@ import java.util.UUID;
 public interface DeliveryPresentationMapper {
 
     // RequestServiceDto -> RequestDto
+    @Mapping(target = "receiver", source = "requestDto.requesterName")
+    @Mapping(target = "receiverSlackId", source = "requestDto.requesterSlackId")
+    @Mapping(target = "hubId", source = "requestDto.recipientHubId")
+    @Mapping(target = "address", source = "requestDto.requesterAddress")
     DeliveryCreationRequestServiceDto toCreationServiceDto(DeliveryCreationRequestDto requestDto);
 
     @Mapping(target = "id", source = "id")

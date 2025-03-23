@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "user-service")
 public interface UserClient {
 
-    @GetMapping("/users/role")
+    @GetMapping("user-service/users/role")
     ResponseEntity<UserRoleType> getUserRoleById(
             @RequestParam("id") Long id);
 
