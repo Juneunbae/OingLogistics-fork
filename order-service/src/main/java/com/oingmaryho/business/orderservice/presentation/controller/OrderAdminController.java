@@ -7,6 +7,7 @@ import com.oingmaryho.business.orderservice.presentation.dto.mapper.OrderPresent
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderCreateRequestDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderUpdateRequestDto;
 import com.oingmaryho.business.orderservice.utils.PageableUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Description;
@@ -57,14 +58,19 @@ public class OrderAdminController {
         "마스터 - 주문 생성"
     )
     @PostMapping
-    public ResponseEntity<?> createOrder(@RequestBody OrderCreateRequestDto orderCreateRequestDto) {
+    public ResponseEntity<?> createOrder(HttpServletRequest request, @RequestBody OrderCreateRequestDto orderCreateRequestDto) {
+        Long userId = (Long) request.getAttribute("userId");
+        String username = (String) request.getAttribute("username");
+        String slackId = (String) request.getAttribute("slackId");
+
         List<OrderDetailCreateRequestServiceDto> orderCreateRequestServiceDto = orderCreateRequestDto.orderDetailCreateDto().stream().map(
             orderPresentationMapper::toOrderDetailCreateRequestServiceDto
         ).toList();
 
         OrderCreateRequestServiceDto create = orderPresentationMapper.toOrderCreateRequestServiceDto(
-            orderCreateRequestDto, orderCreateRequestServiceDto
+            userId, username, slackId, orderCreateRequestDto, orderCreateRequestServiceDto
         );
+
         orderAdminService.createOrder(create);
         return ResponseEntity.ok().build();
     }
