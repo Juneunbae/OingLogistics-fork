@@ -110,9 +110,11 @@ public class CompanyController {
 		@PathVariable UUID id,
 		@RequestBody CompanyUpdateRequestDto companyUpdateRequestDto,
 		HttpServletRequest request) {
-		// TODO: userId 받아오기
+		Long userId = (Long) request.getAttribute("userId");
+		String roleStr = (String) request.getAttribute("role");
+		UserRoleType role = UserRoleType.valueOf(roleStr);
 		CompanyUpdateRequestServiceDto requestServiceDto = companyPresentationMapper.toUpdateServiceDto(id,companyUpdateRequestDto);
-		CompanyUpdateResponseServiceDto responseServiceDto = companyService.updateCompany(requestServiceDto);
+		CompanyUpdateResponseServiceDto responseServiceDto = companyService.updateCompany(userId, role, requestServiceDto);
 		CompanyUpdateResponseDto responseDto = companyPresentationMapper.toUpdateResponseDto(responseServiceDto);
 		return ResponseEntity.ok(responseDto);
 	}

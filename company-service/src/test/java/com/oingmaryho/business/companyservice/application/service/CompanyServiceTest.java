@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.oingmaryho.business.common.domain.type.UserRoleType;
 import com.oingmaryho.business.companyservice.application.dto.mapper.CompanyApplicationMapper;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyCreateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDetailsSearchRequestServiceDto;
@@ -139,14 +140,14 @@ class CompanyServiceTest {
 	@Description("업체 수정 테스트")
 	void updateCompany_DirtyChecking() {
 		CompanyUpdateRequestServiceDto requestDto = new CompanyUpdateRequestServiceDto(
-			companyId, "Updated Company Name", "Retail", 1L, FIXED_MANAGE_HUB_ID, "456 New Address"
+			companyId, "Updated Company Name", "Retail", 2L, FIXED_MANAGE_HUB_ID, "456 New Address"
 		);
 
 		when(companyRepository.findByIdAndIsDeletedFalse(companyId)).thenReturn(Optional.of(company));
 		when(companyApplicationMapper.toUpdateResponseDto(any(UUID.class)))
 			.thenReturn(new CompanyUpdateResponseServiceDto(FIXED_COMPANY_ID));
 
-		CompanyUpdateResponseServiceDto response = companyService.updateCompany(requestDto);
+		CompanyUpdateResponseServiceDto response = companyService.updateCompany(2L, UserRoleType.HUB_MANAGER,requestDto);
 
 		assertThat(company.getName()).isEqualTo("Updated Company Name");
 		assertThat(company.getAddress()).isEqualTo("456 New Address");
