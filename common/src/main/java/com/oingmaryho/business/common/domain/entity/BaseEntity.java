@@ -1,4 +1,4 @@
-package com.oingmaryho.business.common.entity;
+package com.oingmaryho.business.common.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -19,10 +19,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
-	@Column(updatable = false)
+	@Column
 	private Long deletedBy;
 
-	@Column(updatable = false)
+	@Column
 	@Temporal(TemporalType.TIMESTAMP)
 	private LocalDateTime deletedAt;
 
