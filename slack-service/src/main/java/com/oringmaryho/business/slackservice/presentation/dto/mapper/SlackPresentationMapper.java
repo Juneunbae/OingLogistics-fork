@@ -27,6 +27,6 @@ public interface SlackPresentationMapper {
 
 	SlackMessageDeleteRequestServiceDto toSlackMessageDeleteRequestServiceDto(UUID id);
 
-	SlackAdminMessageCreateRequestServiceDto toSlackAdminMessageCreateRequestServiceDto(Long id,
+	SlackAdminMessageCreateRequestServiceDto toSlackAdminMessageCreateRequestServiceDto(
 		SlackAdminMessageCreateRequestDto requestDto);
 }

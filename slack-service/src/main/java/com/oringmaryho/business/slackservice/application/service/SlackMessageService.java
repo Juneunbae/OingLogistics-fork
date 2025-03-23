@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SlackAdminMessageService {
+public class SlackMessageService {
 
 	private final DirectMessageService directMessageService;
 	private final UserClient userClient;

@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -79,11 +78,10 @@ public class SlackAdminController {
 	)
 	@PostMapping
 	public ResponseEntity<Void> createSlackMessage(
-		@RequestAttribute("userId") Long id,
 		@RequestBody SlackAdminMessageCreateRequestDto requestDto
 	) {
 		SlackAdminMessageCreateRequestServiceDto requestServiceDto = slackPresentationMapper.toSlackAdminMessageCreateRequestServiceDto(
-			id, requestDto);
+			requestDto);
 		slackAdminMessageService.createSlackMessage(requestServiceDto);
 		return ResponseEntity.ok().build();
 	}
