@@ -23,7 +23,7 @@ public class JpaAuditingConfig {
 				return Optional.empty();
 			}
 
-			String userId = attributes.getRequest().getHeader("userId");
+			String userId = attributes.getRequest().getHeader("X-User-Id");
 
 			if (userId != null) {
 				try {
