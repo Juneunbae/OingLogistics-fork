@@ -32,6 +32,11 @@ public class HubRouteRepositoryImpl implements HubRouteRepository {
 	}
 
 	@Override
+	public Optional<HubRoute> findByIdAndIsDeletedFalse(UUID id) {
+		return hubRouteJpaRepository.findByIdAndIsDeletedFalse(id);
+	}
+
+	@Override
 	public Page<HubRoute> findDynamicQuery(HubRouteSearchCriteria criteria, Pageable pageable) {
 		return hubRouteQueryRepository.findDynamicQuery(criteria, pageable);
 	}

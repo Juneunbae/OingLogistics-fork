@@ -2,6 +2,9 @@ package com.oingmaryho.business.hubservice.application;
 
 import java.util.UUID;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -43,12 +46,14 @@ public class HubRouteAdminService {
 	}
 
 	@Transactional(readOnly = true)
+	@Cacheable(value = "hubRoute", key = "'admin:' + #requestDto.id()")
 	public HubRouteSearchAdminResponseServiceDto getHubRouteById(HubRouteSearchAdminRequestServiceDto requestDto) {
 		HubRoute hubRoute = findHubRouteById(requestDto.id());
 		return mapper.toHubRouteSearchAdminResponseServiceDto(hubRoute);
 	}
 
 	@Transactional(readOnly = true)
+	@Cacheable(value = "hubRoutes")
 	public Page<HubRouteSearchAdminResponseServiceDto> searchHubRoutes(HubRoutesSearchAdminRequestServiceDto requestDto, Pageable pageable) {
 		Page<HubRoute> hubRoutes = hubRouteRepository.findDynamicQuery(createHubRouteSearchCriteria(requestDto), pageable);
 
@@ -57,6 +62,13 @@ public class HubRouteAdminService {
 
 	// TODO : Auditing 설정 추가
 	@Transactional
+	@Caching(
+		evict = {
+			@CacheEvict(value = "hubRoute", key = "#id"),
+			@CacheEvict(value = "hubRoute", key = "'admin:' + #id"),
+			@CacheEvict(value = "hubRoutes", allEntries = true)
+		}
+	)
 	public HubRouteUpdateResponseServiceDto updateHubRoute(UUID id, HubRouteUpdateRequestServiceDto requestDto) {
 		HubRoute hubRoute = findHubRouteById(id);
 
@@ -71,6 +83,13 @@ public class HubRouteAdminService {
 
 	// TODO : Auditing 설정 추가
 	@Transactional
+	@Caching(
+		evict = {
+			@CacheEvict(value = "hubRoute", key = "#requestDto.id()"),
+			@CacheEvict(value = "hubRoute", key = "'admin:' + #requestDto.id()"),
+			@CacheEvict(value = "hubRoutes", allEntries = true)
+		}
+	)
 	public void deleteHubRoute(HubRouteDeleteRequestServiceDto requestDto) {
 		HubRoute hubRoute = findHubRouteById(requestDto.id());
 		hubRoute.delete();

@@ -16,6 +16,8 @@ public interface HubRouteRepository {
 
 	Optional<HubRoute> findById(UUID id);
 
+	Optional<HubRoute> findByIdAndIsDeletedFalse(UUID id);
+
 	Page<HubRoute> findDynamicQuery(HubRouteSearchCriteria criteria, Pageable pageable);
 
 	Optional<HubRoute> findByDepartureHubIdAndArriveHubId(UUID departureHubId, UUID arriveHubId);
