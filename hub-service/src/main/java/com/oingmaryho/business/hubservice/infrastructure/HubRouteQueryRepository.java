@@ -2,6 +2,7 @@ package com.oingmaryho.business.hubservice.infrastructure;
 
 import static com.oingmaryho.business.hubservice.domain.QHubRoute.*;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -48,6 +49,18 @@ public class HubRouteQueryRepository {
 		assert total != null;
 
 		return new PageImpl<>(query.fetch(), pageable, total);
+	}
+
+	public List<HubRoute> findAllAssociatedWithHub(UUID hubId) {
+		BooleanBuilder conditions = new BooleanBuilder();
+		conditions
+			.or(eqDepartureHubId(hubId))
+			.or(eqArriveHubId(hubId));
+
+		return queryFactory
+			.selectFrom(hubRoute)
+			.where(conditions)
+			.fetch();
 	}
 
 	private BooleanExpression eqId(UUID id) {

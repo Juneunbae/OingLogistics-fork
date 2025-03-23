@@ -24,6 +24,7 @@ import com.oingmaryho.business.hubservice.domain.Hub;
 import com.oingmaryho.business.hubservice.domain.HubSearchCriteria;
 import com.oingmaryho.business.hubservice.domain.repository.HubRepository;
 import com.oingmaryho.business.hubservice.domain.service.HubCreateService;
+import com.oingmaryho.business.hubservice.domain.service.HubRouteDeleteService;
 import com.oingmaryho.business.hubservice.exception.ErrorCode;
 import com.oingmaryho.business.hubservice.exception.HubException;
 
@@ -35,9 +36,9 @@ public class HubAdminService {
 
 	private final HubCreateService hubCreateService;
 	private final HubRepository hubRepository;
+	private final HubRouteDeleteService hubRouteDeleteService;
 	private final HubApplicationMapper mapper;
 
-	// TODO : Auditing 추가하기
 	@Transactional
 	public HubCreateResponseServiceDto createHub(HubCreateRequestServiceDto requestDto) {
 		Hub hub = hubCreateService.createHub(
@@ -65,8 +66,6 @@ public class HubAdminService {
 		return hubs.map(mapper::toHubSearchAdminResponseServiceDto);
 	}
 
-	// TODO : Auditing 추가하기
-	// TODO : 전체 조회 캐시 키 확인하기
 	@Caching(evict = {
 		@CacheEvict(cacheNames = "hub", key = "#id"),
 		@CacheEvict(cacheNames = "hub", key = "'admin:' + #id"),
@@ -85,17 +84,16 @@ public class HubAdminService {
 		return new HubUpdateResponseServiceDto(id);
 	}
 
-	// TODO : Auditing 추가하기
 	@Transactional
 	@Caching(evict = {
 		@CacheEvict(cacheNames = "hub", key = "#requestDto.id()"),
 		@CacheEvict(cacheNames = "hub", key = "'admin:' + #requestDto.id()"),
 		@CacheEvict(cacheNames = "hubs", allEntries = true)
 	})
-	public void deleteHub(HubDeleteRequestServiceDto requestDto) {
+	public void deleteHub(HubDeleteRequestServiceDto requestDto, Long userId) {
 		Hub hub = findHubById(requestDto.id());
-
-		hub.delete();
+		hubRouteDeleteService.deleteHubRouteAssociatedWithHub(requestDto.id(), userId);
+		hub.softDelete(userId);
 	}
 
 	private Hub findHubById(UUID id) {

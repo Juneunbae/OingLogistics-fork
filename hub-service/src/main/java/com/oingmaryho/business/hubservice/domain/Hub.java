@@ -2,6 +2,8 @@ package com.oingmaryho.business.hubservice.domain;
 
 import java.util.UUID;
 
+import com.oingmaryho.business.common.domain.entity.BaseEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -36,17 +38,9 @@ public class Hub extends BaseEntity {
 	@Column(nullable = false)
 	private Long managerId;
 
-	@Column(nullable = false)
-	@Builder.Default
-	private Boolean isDeleted = false;
-
 	public void update(String name, Address address, Long managerId) {
 		this.name = name;
 		this.address = address;
 		this.managerId = managerId;
-	}
-
-	public void delete() {
-		this.isDeleted = true;
 	}
 }

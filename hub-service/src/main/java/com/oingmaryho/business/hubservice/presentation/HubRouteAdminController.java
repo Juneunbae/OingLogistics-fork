@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.oingmaryho.business.common.domain.type.UserRoleType;
+import com.oingmaryho.business.common.infrastructure.annotation.RequiredRoles;
 import com.oingmaryho.business.hubservice.application.HubRouteAdminService;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteCreateResponseServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteSearchAdminResponseServiceDto;
@@ -26,9 +28,9 @@ import com.oingmaryho.business.hubservice.presentation.dto.request.HubRouteSearc
 import com.oingmaryho.business.hubservice.presentation.dto.request.HubRouteUpdateRequestDto;
 import com.oingmaryho.business.hubservice.utils.PageableUtils;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
-// TODO : 권한 확인하기
 @RestController
 @RequestMapping("/admin/v1/hub-routes")
 @RequiredArgsConstructor
@@ -37,6 +39,7 @@ public class HubRouteAdminController {
 	private final HubRouteAdminService hubRouteAdminService;
 	private final HubRoutePresentationMapper mapper;
 
+	@RequiredRoles(UserRoleType.MASTER)
 	@PostMapping
 	public ResponseEntity<?> createHubRoute(@RequestBody HubRouteCreateRequestDto requestDto) {
 		HubRouteCreateResponseServiceDto responseDto = hubRouteAdminService
@@ -47,6 +50,7 @@ public class HubRouteAdminController {
 			.body(mapper.toHubRouteCreateResponseDto(responseDto));
 	}
 
+	@RequiredRoles(UserRoleType.MASTER)
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getHubRouteById(@PathVariable UUID id) {
 		HubRouteSearchAdminResponseServiceDto responseDto = hubRouteAdminService
@@ -55,6 +59,7 @@ public class HubRouteAdminController {
 		return ResponseEntity.ok(mapper.toHubRouteSearchAdminResponseDto(responseDto));
 	}
 
+	@RequiredRoles(UserRoleType.MASTER)
 	@GetMapping
 	public ResponseEntity<?> searchHubRoutes(
 		@RequestParam(value = "page", required = false, defaultValue = "1") int page,
@@ -75,6 +80,7 @@ public class HubRouteAdminController {
 		return ResponseEntity.ok(responseDto.map(mapper::toHubRouteSearchAdminResponseDto));
 	}
 
+	@RequiredRoles(UserRoleType.MASTER)
 	@PutMapping("/{id}")
 	public ResponseEntity<?> updateHubRoute(
 		@PathVariable UUID id,
@@ -86,9 +92,11 @@ public class HubRouteAdminController {
 		return ResponseEntity.ok(mapper.toHubRouteUpdateResponseDto(responseDto));
 	}
 
+	@RequiredRoles(UserRoleType.MASTER)
 	@DeleteMapping("/{id}")
-	public ResponseEntity<?> deleteHubRoute(@PathVariable UUID id) {
-		hubRouteAdminService.deleteHubRoute(mapper.toHubRouteDeleteRequestServiceDto(id));
+	public ResponseEntity<?> deleteHubRoute(@PathVariable UUID id, HttpServletRequest request) {
+		Long userId = (Long) request.getAttribute("userId");
+		hubRouteAdminService.deleteHubRoute(mapper.toHubRouteDeleteRequestServiceDto(id), userId);
 		return ResponseEntity.ok().build();
 	}
 }

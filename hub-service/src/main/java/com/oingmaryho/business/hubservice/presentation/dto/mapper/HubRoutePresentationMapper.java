@@ -8,8 +8,10 @@ import com.oingmaryho.business.hubservice.application.dto.request.HubPathRequest
 import com.oingmaryho.business.hubservice.application.dto.request.HubRouteCreateRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubRouteDeleteRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubRouteSearchAdminRequestServiceDto;
+import com.oingmaryho.business.hubservice.application.dto.request.HubRouteSearchRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubRouteUpdateRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubRoutesSearchAdminRequestServiceDto;
+import com.oingmaryho.business.hubservice.application.dto.request.HubRoutesSearchRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteCreateResponseServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteSearchAdminResponseServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteSearchResponseServiceDto;
@@ -17,6 +19,7 @@ import com.oingmaryho.business.hubservice.application.dto.response.HubRouteUpdat
 import com.oingmaryho.business.hubservice.presentation.dto.request.HubPathRequestDto;
 import com.oingmaryho.business.hubservice.presentation.dto.request.HubRouteCreateRequestDto;
 import com.oingmaryho.business.hubservice.presentation.dto.request.HubRouteSearchAdminRequestDto;
+import com.oingmaryho.business.hubservice.presentation.dto.request.HubRouteSearchRequestDto;
 import com.oingmaryho.business.hubservice.presentation.dto.request.HubRouteUpdateRequestDto;
 import com.oingmaryho.business.hubservice.presentation.dto.response.HubRouteCreateResponseDto;
 import com.oingmaryho.business.hubservice.presentation.dto.response.HubRouteSearchAdminResponseDto;
@@ -45,4 +48,8 @@ public interface HubRoutePresentationMapper {
 	HubPathRequestServiceDto toHubPathRequestServiceDto(HubPathRequestDto dto);
 
 	HubRouteSearchResponseDto toHubRouteSearchResponseDto(HubRouteSearchResponseServiceDto dto);
+
+	HubRouteSearchRequestServiceDto toHubRouteSearchRequestServiceDto(UUID id);
+
+	HubRoutesSearchRequestServiceDto toHubRoutesSearchRequestServiceDto(HubRouteSearchRequestDto requestDto);
 }

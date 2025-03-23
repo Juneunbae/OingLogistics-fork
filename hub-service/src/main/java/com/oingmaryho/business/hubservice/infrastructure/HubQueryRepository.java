@@ -32,8 +32,8 @@ public class HubQueryRepository {
 		BooleanBuilder conditions = new BooleanBuilder();
 		conditions
 			.and(eqId(criteria.getId()))
-			.and(eqName(criteria.getName()))
-			.and(eqAddress(criteria.getAddress()))
+			.and(containsName(criteria.getName()))
+			.and(containsAddress(criteria.getAddress()))
 			.and(eqLatitude(criteria.getLatitude()))
 			.and(eqLongitude(criteria.getLongitude()))
 			.and(eqManagerId(criteria.getManagerId()))
@@ -81,14 +81,14 @@ public class HubQueryRepository {
 		return hub.id.eq(id);
 	}
 
-	private BooleanExpression eqName(String name) {
+	private BooleanExpression containsName(String name) {
 		if (!StringUtils.hasText(name)) {
 			return null;
 		}
 		return hub.name.contains(name);
 	}
 
-	private BooleanExpression eqAddress(String address) {
+	private BooleanExpression containsAddress(String address) {
 		if (!StringUtils.hasText(address)) {
 			return null;
 		}

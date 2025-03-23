@@ -2,10 +2,11 @@ package com.oingmaryho.business.hubservice.domain;
 
 import java.util.UUID;
 
+import com.oingmaryho.business.common.domain.entity.BaseEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,7 +23,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class HubRoute extends BaseEntity{
+public class HubRoute extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -38,17 +39,9 @@ public class HubRoute extends BaseEntity{
 	@Embedded
 	private RouteInfo routeInfo;
 
-	@Column(nullable = false)
-	@Builder.Default
-	private Boolean isDeleted = false;
-
 	public void update(UUID departureHubId, UUID arriveHubId, RouteInfo routeInfo) {
 		this.departureHubId = departureHubId;
 		this.arriveHubId = arriveHubId;
 		this.routeInfo = routeInfo;
-	}
-
-	public void delete() {
-		this.isDeleted = true;
 	}
 }

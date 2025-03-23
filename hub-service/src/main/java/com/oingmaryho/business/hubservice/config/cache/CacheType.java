@@ -7,7 +7,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum CacheType {
     HUB("hub", 300, 500),
-    HUBS("hubs", 300, 500);
+    HUBS("hubs", 300, 500),
+    HUB_ROUTE("hubRoute", 300, 500),
+    HUB_ROUTES("hubRoutes", 300, 500),
+    HUB_PATH("hubPath", 300, 500);
 
     private final String cacheName;
     private final int expiredAfterWrite;

@@ -25,6 +25,7 @@ import com.oingmaryho.business.hubservice.domain.Address;
 import com.oingmaryho.business.hubservice.domain.Hub;
 import com.oingmaryho.business.hubservice.domain.repository.HubRepository;
 import com.oingmaryho.business.hubservice.domain.service.HubCreateService;
+import com.oingmaryho.business.hubservice.domain.service.HubRouteDeleteService;
 
 @ExtendWith(MockitoExtension.class)
 class HubAdminServiceTest {
@@ -34,6 +35,9 @@ class HubAdminServiceTest {
 
 	@Mock
 	private HubCreateService hubCreateService;
+
+	@Mock
+	private HubRouteDeleteService hubRouteDeleteService;
 
 	@Mock
 	private HubRepository hubRepository;
@@ -89,7 +93,6 @@ class HubAdminServiceTest {
 			.name("허브 이름")
 			.address(new Address("허브 주소", 1.0, 2.0))
 			.managerId(1L)
-			.isDeleted(true)
 			.build();
 
 		HubSearchRequestServiceDto requestDto = new HubSearchRequestServiceDto(hubId);
@@ -101,6 +104,10 @@ class HubAdminServiceTest {
 		when(mapper.toHubSearchAdminResponseServiceDto(hub)).thenReturn(responseDto);
 
 		// When
+		hubAdminService.deleteHub(
+			new HubDeleteRequestServiceDto(hubId),
+			1L
+		);
 		HubSearchAdminResponseServiceDto result = hubAdminService.getHubById(requestDto);
 
 		// Then
@@ -183,12 +190,12 @@ class HubAdminServiceTest {
 		when(hubRepository.findById(hubId)).thenReturn(Optional.of(hub));
 
 		// When
-		hubAdminService.deleteHub(requestDto);
+		hubAdminService.deleteHub(requestDto, 1L);
 
 		// Then
 		assertThat(hub).isNotNull()
-			.extracting(Hub::getIsDeleted)
-			.isEqualTo(true);
+			.extracting(Hub::getIsDeleted, Hub::getDeletedBy)
+			.containsExactly(true, 1L);
 	}
 }
 
