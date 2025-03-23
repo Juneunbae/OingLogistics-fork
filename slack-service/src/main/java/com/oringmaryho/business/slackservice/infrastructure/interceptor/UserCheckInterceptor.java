@@ -45,6 +45,7 @@ public class UserCheckInterceptor implements HandlerInterceptor {
 		}
 
 		if (!userInfo.get("status").toString().equals(UserConfirmStatus.CONFIRMED.toString())) {
+			log.info("user not confirmed, status: {}", userInfo.get("status"));
 			return false;
 		}
 

@@ -48,6 +48,7 @@ public class AdminCheckInterceptor implements HandlerInterceptor {
 
 		// 일반 사용자는 사용 불가
 		if (!userInfo.get("role").toString().equals(UserRoleType.MASTER.toString())) {
+			log.info("user not confirmed, status: {}", userInfo.get("status"));
 			return false;
 		}
 
