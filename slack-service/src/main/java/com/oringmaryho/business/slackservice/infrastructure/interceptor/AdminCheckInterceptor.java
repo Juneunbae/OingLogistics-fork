@@ -30,7 +30,6 @@ public class AdminCheckInterceptor implements HandlerInterceptor {
 		}
 
 		String userId = String.valueOf(userIdHeader);
-		String requestPath = request.getRequestURI();
 
 		if (!redisTemplate.hasKey("user:info:" + userId)) {
 			return true;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE로 변경

@@ -26,7 +26,6 @@ public class UserCheckInterceptor implements HandlerInterceptor {
 		log.info("Header X-User-Id: {}", request.getHeader("X-User-Id"));
 
 		Object userIdHeader = request.getHeader("X-User-Id");
-		String requestPath = request.getRequestURI();
 
 		if (userIdHeader == null) {
 			return true;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE로 변경

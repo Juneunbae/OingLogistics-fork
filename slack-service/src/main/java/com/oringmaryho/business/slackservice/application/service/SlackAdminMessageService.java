@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.context.annotation.Description;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.oringmaryho.business.slackservice.application.dto.request.SlackAdminMessageCreateRequestServiceDto;
@@ -50,7 +51,9 @@ public class SlackAdminMessageService {
 
 		//user service에서 슬랙 아이디 받아오기
 		//인터페이스 설정
-		String slackId = String.valueOf(userClient.getUserSlackIdById(requestDto.id()));
+		ResponseEntity<String> response = userClient.getUserSlackIdById(requestDto.id());
+		String slackId = response.getBody();
+		log.info("slackId:{}", slackId);
 		//slackClient 메시지 송신 메서드 호출
 		String message = requestDto.message();
 		if (slackId == null || slackId.isEmpty()) {

@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum CacheType {
-    USER("user", 300, 500),
-    USERS("users", 300, 500);
+    SLACKMESSAGE("slackMassege", 300, 500),
+    SLACKMESSAGES("slackMasseges", 300, 500);
 
     private final String cacheName;
     private final int expiredAfterWrite;

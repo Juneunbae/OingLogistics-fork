@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "user-service")
 public interface UserClient {
 
-	@GetMapping("user-service/users/slackId")
+	@GetMapping("/user-service/users/slackId")
 	ResponseEntity<String> getUserSlackIdById(@RequestParam("id") Long id);
 
 }

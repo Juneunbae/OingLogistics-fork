@@ -32,7 +32,9 @@ import com.oringmaryho.business.slackservice.presentation.dto.request.SlackMessa
 import com.oringmaryho.business.slackservice.presentation.dto.response.SlackMessageResponseDto;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/admin/v1/slack-messages")
@@ -80,6 +82,7 @@ public class SlackAdminController {
 	public ResponseEntity<Void> createSlackMessage(
 		@RequestBody SlackAdminMessageCreateRequestDto requestDto
 	) {
+		log.info("slac admin message create: {}", requestDto);
 		SlackAdminMessageCreateRequestServiceDto requestServiceDto = slackPresentationMapper.toSlackAdminMessageCreateRequestServiceDto(
 			requestDto);
 		slackAdminMessageService.createSlackMessage(requestServiceDto);

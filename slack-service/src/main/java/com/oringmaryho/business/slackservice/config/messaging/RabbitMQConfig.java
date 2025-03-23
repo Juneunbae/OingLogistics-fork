@@ -4,6 +4,7 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,16 +14,16 @@ import org.springframework.context.annotation.Description;
 public class RabbitMQConfig {
 
 	// Exchanges
-	@Value("${rabbitmq.exchange.user}")
+	@Value("${rabbitmq.exchanges.user}")
 	private String USER_EXCHANGE;
 
-	@Value("${rabbitmq.exchange.delivery}")
+	@Value("${rabbitmq.exchanges.delivery}")
 	private String DELIVERY_EXCHANGE;
 
-	@Value("${rabbitmq.exchange.order}")
+	@Value("${rabbitmq.exchanges.order}")
 	private String ORDER_EXCHANGE;
 
-	@Value("${rabbitmq.exchange.product}")
+	@Value("${rabbitmq.exchanges.product}")
 	private String PRODUCT_EXCHANGE;
 
 	// Queues
@@ -74,32 +75,32 @@ public class RabbitMQConfig {
 
 	// 배송 서비스 Exchange
 	@Bean
-	public DirectExchange userExchange() {
-		return new DirectExchange(USER_EXCHANGE);
+	public TopicExchange userExchange() {
+		return new TopicExchange(USER_EXCHANGE);
 	}
 
 	@Bean
-	public DirectExchange deliveryExchange() {
-		return new DirectExchange(DELIVERY_EXCHANGE);
+	public TopicExchange deliveryExchange() {
+		return new TopicExchange(DELIVERY_EXCHANGE);
 	}
 
 	// 주문 서비스 Exchange
 	@Bean
-	public DirectExchange orderExchange() {
-		return new DirectExchange(ORDER_EXCHANGE);
+	public TopicExchange orderExchange() {
+		return new TopicExchange(ORDER_EXCHANGE);
 	}
 
 	// 상품 서비스 Exchange
 	@Bean
-	public DirectExchange productExchange() {
-		return new DirectExchange(PRODUCT_EXCHANGE);
+	public TopicExchange productExchange() {
+		return new TopicExchange(PRODUCT_EXCHANGE);
 	}
 
 	@Description(
 		"사용자 서비스와 바인딩 (사용자 슬랙 id 인증 메시지 요청 메시지를 받음)"
 	)
 	@Bean
-	public Binding bindSlackToUser(Queue slackUserQueue, DirectExchange userExchange) {
+	public Binding bindSlackToUser(Queue slackUserQueue, TopicExchange userExchange) {
 		return BindingBuilder.bind(slackUserQueue).to(userExchange).with(USER_ROUTING_KEY);
 	}
 
@@ -107,7 +108,7 @@ public class RabbitMQConfig {
 		"배송 서비스와 바인딩 (배송 관련 메시지를 받음)"
 	)
 	@Bean
-	public Binding bindSlackToDelivery(Queue slackDeliveryQueue, DirectExchange deliveryExchange) {
+	public Binding bindSlackToDelivery(Queue slackDeliveryQueue, TopicExchange deliveryExchange) {
 		return BindingBuilder.bind(slackDeliveryQueue).to(deliveryExchange).with(DELIVERY_ROUTING_KEY);
 	}
 
@@ -115,7 +116,7 @@ public class RabbitMQConfig {
 		"주문 서비스와 바인딩 (주문 관련 메시지를 받음)"
 	)
 	@Bean
-	public Binding bindSlackToOrder(Queue slackOrderQueue, DirectExchange orderExchange) {
+	public Binding bindSlackToOrder(Queue slackOrderQueue, TopicExchange orderExchange) {
 		return BindingBuilder.bind(slackOrderQueue).to(orderExchange).with(ORDER_ROUTING_KEY);
 	}
 
@@ -123,7 +124,7 @@ public class RabbitMQConfig {
 		"상품 서비스와 바인딩 (상품 관련 메시지를 받음)"
 	)
 	@Bean
-	public Binding bindSlackToProduct(Queue slackProductQueue, DirectExchange productExchange) {
+	public Binding bindSlackToProduct(Queue slackProductQueue, TopicExchange productExchange) {
 		return BindingBuilder.bind(slackProductQueue).to(productExchange).with(PRODUCT_ROUTING_KEY);
 	}
 }

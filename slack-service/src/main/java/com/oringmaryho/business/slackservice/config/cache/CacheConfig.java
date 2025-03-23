@@ -1,7 +1,6 @@
 package com.oringmaryho.business.slackservice.config.cache;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.oringmaryho.business.userservice.config.cache.CacheType;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
