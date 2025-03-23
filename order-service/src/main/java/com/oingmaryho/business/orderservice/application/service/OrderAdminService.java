@@ -17,7 +17,9 @@ import com.oingmaryho.business.orderservice.exception.ErrorCode;
 import com.oingmaryho.business.orderservice.exception.OrderException;
 import com.oingmaryho.business.orderservice.infrastructure.OrderJPARepository;
 import com.oingmaryho.business.orderservice.infrastructure.OrderQueryRepository;
+import com.oingmaryho.business.orderservice.presentation.dto.request.OrderAdminRequestServiceDto;
 import com.oingmaryho.business.orderservice.presentation.dto.response.CompanyDetailsSearchResponseDto;
+import com.oingmaryho.business.orderservice.presentation.dto.response.OrderAdminResponseServiceDto;
 import com.oingmaryho.business.orderservice.presentation.dto.response.ProductDetailsSearchResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,28 +61,26 @@ public class OrderAdminService {
     private String queueErrProduct;
 
     @Transactional
-    public Page<OrderResponseServiceDto> getOrders(OrdersRequestServiceDto ordersRequestServiceDto) {
-        // TODO: 마스터 권한 검증
+    public Page<OrderAdminResponseServiceDto> getOrders(OrderAdminRequestServiceDto orderAdminRequestServiceDto) {
+        String cacheKey = makeOrdersCacheKey(orderAdminRequestServiceDto);
 
-        String cacheKey = makeOrdersCacheKey(ordersRequestServiceDto);
-
-        Page<OrderResponseServiceDto> cachedOrders = getOrdersCache(cacheKey);
+        Page<OrderAdminResponseServiceDto> cachedOrders = getOrdersCache(cacheKey);
         if (cachedOrders != null) {
             log.info("캐시된 주문 전체 조회 반환 성공");
             return cachedOrders;
         }
 
-        log.info("OrderRequestDto : {}", ordersRequestServiceDto);
+        log.info("OrderRequestDto : {}", orderAdminRequestServiceDto);
 
-        Pageable customPageable = ordersRequestServiceDto.customPageable();
+        Pageable customPageable = orderAdminRequestServiceDto.customPageable();
 
         Page<Order> orders = orderQueryRepository.findDynamicQuery(
-            createOrderSearchCriteria(ordersRequestServiceDto),
+            createOrderSearchCriteria(orderAdminRequestServiceDto),
             customPageable
         );
 
-        List<OrderResponseServiceDto> ordersDto = orders.stream().map(
-            order -> orderApplicationMapper.toOrderResponseServiceDto(
+        List<OrderAdminResponseServiceDto> ordersDto = orders.stream().map(
+            order -> orderApplicationMapper.toOrderAdminResponseDto(
                 order,
                 order.getOrderDetails().stream().map(
                     orderDetail -> orderApplicationMapper.toOrderDetailDto(order.getId(), orderDetail)
@@ -88,7 +88,7 @@ public class OrderAdminService {
             )
         ).toList();
 
-        Page<OrderResponseServiceDto> results = new PageImpl<>(ordersDto, customPageable, orders.getTotalElements());
+        Page<OrderAdminResponseServiceDto> results = new PageImpl<>(ordersDto, customPageable, orders.getTotalElements());
 
         putOrdersCache(cacheKey, results);
 
@@ -97,8 +97,6 @@ public class OrderAdminService {
 
     @Transactional
     public OrderResponseServiceDto getOrder(OrderRequestServiceDto orderRequestServiceDto) {
-        // TODO: 마스터 권한 검증
-
         UUID orderId = orderRequestServiceDto.orderId();
         Order order = getByOrderId(orderId);
 
@@ -196,7 +194,6 @@ public class OrderAdminService {
 
     @Transactional
     public void updateOrder(OrderUpdateServiceDto update) {
-        // TODO: 마스터 권한 검증
         int totalPrice = 0;
         UUID orderId = update.id();
 
@@ -228,8 +225,6 @@ public class OrderAdminService {
 
     @Transactional
     public void deleteOrder(OrderDeleteServiceDto delete) {
-        // TODO: 마스터 권한 검증
-
         UUID orderId = delete.orderId();
 
         Order order = getByOrderId(orderId);
@@ -247,8 +242,6 @@ public class OrderAdminService {
 
     @Transactional
     public void deleteOrderDetail(OrderDetailDeleteRequestServiceDto request) {
-        // TODO: 마스터 권한 검증
-
         UUID orderId = request.orderId();
 
         Order order = getByOrderId(orderId);
@@ -288,20 +281,20 @@ public class OrderAdminService {
         ).findFirst().orElseThrow(() -> new OrderException(ErrorCode.ORDER_DETAIL_NOT_FOUND));
     }
 
-    private String makeOrdersCacheKey(OrdersRequestServiceDto ordersRequestServiceDto) {
-        String productName = ordersRequestServiceDto.productName();
+    private String makeOrdersCacheKey(OrderAdminRequestServiceDto orderAdminRequestServiceDto) {
+        String productName = orderAdminRequestServiceDto.productName();
         productName = (productName == null) ? "" : productName;
 
-        String recipientName = ordersRequestServiceDto.recipientName();
+        String recipientName = orderAdminRequestServiceDto.recipientName();
         recipientName = (recipientName == null) ? "" : recipientName;
 
-        String requesterName = ordersRequestServiceDto.requesterName();
+        String requesterName = orderAdminRequestServiceDto.requesterName();
         requesterName = (requesterName == null) ? "" : requesterName;
 
-        Boolean isDeleted = ordersRequestServiceDto.isDeleted();
+        Boolean isDeleted = orderAdminRequestServiceDto.isDeleted();
         isDeleted = isDeleted != null && isDeleted;
 
-        Pageable customPageable = ordersRequestServiceDto.customPageable();
+        Pageable customPageable = orderAdminRequestServiceDto.customPageable();
         int customPageableHashCode = (customPageable != null) ? customPageable.hashCode() : 0;
 
         return "Orders_" +
@@ -312,12 +305,12 @@ public class OrderAdminService {
             customPageableHashCode;
     }
 
-    private Page<OrderResponseServiceDto> getOrdersCache(String cacheKey) {
+    private Page<OrderAdminResponseServiceDto> getOrdersCache(String cacheKey) {
         Cache cache = cacheManager.getCache("orders");
         return cache.get(cacheKey, Page.class);
     }
 
-    private void putOrdersCache(String cacheKey, Page<OrderResponseServiceDto> results) {
+    private void putOrdersCache(String cacheKey, Page<OrderAdminResponseServiceDto> results) {
         Cache cache = cacheManager.getCache("orders");
         cache.put(cacheKey, results);
         log.info("캐시 저장 성공: {}", cacheKey);
@@ -349,7 +342,7 @@ public class OrderAdminService {
         OrdersCache.clear();
     }
 
-    private OrderSearchCriteria createOrderSearchCriteria(OrdersRequestServiceDto requestDto) {
+    private OrderSearchCriteria createOrderSearchCriteria(OrderAdminRequestServiceDto requestDto) {
         return OrderSearchCriteria.builder()
             .productName(requestDto.productName())
             .recipientName(requestDto.recipientName())

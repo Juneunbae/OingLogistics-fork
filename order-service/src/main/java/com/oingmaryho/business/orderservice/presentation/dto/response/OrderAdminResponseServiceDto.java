@@ -1,12 +1,12 @@
-package com.oingmaryho.business.orderservice.application.dto.response;
+package com.oingmaryho.business.orderservice.presentation.dto.response;
 
 import com.oingmaryho.business.orderservice.domain.Status;
-import com.oingmaryho.business.orderservice.presentation.dto.response.OrderDetailResponseDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record OrderResponseServiceDto(
+public record OrderAdminResponseServiceDto(
     UUID id,
     UUID requesterId,
     String requesterName,
@@ -17,6 +17,13 @@ public record OrderResponseServiceDto(
     Status status,
     Integer totalPrice,
     String requests,
+    Boolean isDeleted,
+    Long deletedBy,
+    LocalDateTime deletedAt,
+    Long createdBy,
+    LocalDateTime createdAt,
+    Long updatedBy,
+    LocalDateTime updatedAt,
     List<OrderDetailResponseDto> orderDetails
 ) {
 }

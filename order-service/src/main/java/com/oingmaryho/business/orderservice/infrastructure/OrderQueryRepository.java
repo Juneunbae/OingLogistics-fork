@@ -6,13 +6,15 @@ import com.oingmaryho.business.orderservice.domain.OrderSearchCriteria;
 import com.oingmaryho.business.orderservice.domain.repository.CustomOrderRepository;
 import com.oingmaryho.business.orderservice.utils.QueryDslUtils;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.UUID;
 
 import static com.oingmaryho.business.orderservice.domain.QOrder.order;
 import static com.oingmaryho.business.orderservice.domain.QOrderDetail.orderDetail;
@@ -32,39 +34,45 @@ public class OrderQueryRepository implements CustomOrderRepository {
 
         if (criteria.getProductName() != null && !criteria.getProductName().isEmpty()) {
             conditions.and(orderDetail.productName.likeIgnoreCase("%" + criteria.getProductName() + "%"));
-        } else {
-            // productName이 없을 경우에는 해당 조건을 무시하도록 처리
-            conditions.and(orderDetail.productName.isNull().or(orderDetail.productName.isNotNull()));
         }
 
         if (criteria.getRecipientName() != null && !criteria.getRecipientName().isEmpty()) {
             conditions.and(orderDetail.recipientName.likeIgnoreCase("%" + criteria.getRecipientName() + "%"));
-        } else {
-            // recipientName이 없을 경우에는 해당 조건을 무시하도록 처리
-            conditions.and(orderDetail.recipientName.isNull().or(orderDetail.recipientName.isNotNull()));
         }
 
         if (criteria.getRequesterName() != null && !criteria.getRequesterName().isEmpty()) {
             conditions.and(order.requesterName.likeIgnoreCase("%" + criteria.getRequesterName() + "%"));
         }
 
-        JPAQuery<Order> query = queryFactory
+        List<Order> query = queryFactory
             .selectFrom(order)
-            .leftJoin(orderDetail).on(orderDetail.order.eq(order)).fetchJoin()
+            .leftJoin(order.orderDetails, orderDetail).fetchJoin()
             .where(conditions)
             .orderBy(QueryDslUtils.getOrderSpecifiers(pageable.getSort(), Order.class))
             .offset(pageable.getOffset())
-            .limit(pageable.getPageSize());
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        if (!query.isEmpty()) {
+            List<UUID> orderIds = query.stream()
+                .map(Order::getId)
+                .toList();
+
+            queryFactory
+                .selectFrom(orderDetail)
+                .where(orderDetail.order.id.in(orderIds))
+                .fetch();
+        }
 
         Long total = queryFactory
-            .select(order.id.count())
+            .select(order.id.countDistinct())
             .from(order)
-            .leftJoin(order.orderDetails, orderDetail)
+            .join(order.orderDetails, orderDetail)
             .where(conditions)
             .fetchOne();
 
         assert total != null;
 
-        return new PageImpl<>(query.fetch(), pageable, total);
+        return new PageImpl<>(query, pageable, total);
     }
 }
