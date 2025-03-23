@@ -35,8 +35,9 @@ public class SlackAdminMessageService {
   @Description(
       "슬랙 메시지 생성: 슬랙 컨트롤러에서 받음"
   )
-  public SlackAdminMessageCreateRequestServiceDto createSlackMessage(SlackAdminMessageCreateRequestDto requestDto) {
+  public SlackAdminMessageCreateRequestServiceDto createSlackMessage(SlackAdminMessageCreateRequestServiceDto requestDto) {
     //todo: 실제 생성 로직 구현
+    //
     //메시지 String 템플릿 생성
     //slackClient 메시지 송신 메서드 호출
     String slackId = null;

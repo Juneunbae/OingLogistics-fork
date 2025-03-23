@@ -10,5 +10,6 @@ public class SlackClient {
 
 	public void sendSlackMessage(String slackId, String message) {
 		//todo: 슬랙 메시지 전송
+		
 	}
 }

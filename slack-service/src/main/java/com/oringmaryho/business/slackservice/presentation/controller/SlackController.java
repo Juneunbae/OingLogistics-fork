@@ -3,6 +3,7 @@ package com.oringmaryho.business.slackservice.presentation.controller;
 import org.springframework.context.annotation.Description;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,15 +25,21 @@ public class SlackController {
   private final SlackPresentationMapper slackPresentationMapper;
   private final PageableConfig pageableConfig;
 
-  @Description(
-      "슬랙 메세지 생성(발송 개념)"
-  )
+  @Description("슬랙 메시지 생성(발송 개념)")
   @PostMapping
   public ResponseEntity<Void> createSlackMessage(
+      @RequestAttribute("userId") Long id,
       @RequestBody SlackAdminMessageCreateRequestDto requestDto
   ) {
-    SlackAdminMessageCreateRequestServiceDto createdMessage = slackAdminMessageService.createSlackMessage(requestDto);
+    // DTO 변환
+    SlackAdminMessageCreateRequestServiceDto requestServiceDto =
+        slackPresentationMapper.toSlackAdminMessageCreateRequestServiceDto(id, requestDto);
+
+    // 슬랙 메시지 생성 서비스 호출
+    slackAdminMessageService.createSlackMessage(requestServiceDto);
+
     return ResponseEntity.ok().build();
   }
+
 
 }
