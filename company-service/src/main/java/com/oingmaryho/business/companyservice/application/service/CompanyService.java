@@ -49,7 +49,7 @@ public class CompanyService {
 		validateManageHubPermission(requesterId, companyCreateRequestServiceDto.manageHubId());
 
 		String address = companyCreateRequestServiceDto.address();
-		if (companyRepository.existsByAddress(address)) {
+		if (companyRepository.existsByAddressAndIsDeletedFalse(address)) {
 			throw new CompanyException(ErrorCode.ALREADY_REGISTERED_COMPANY);
 		}
 

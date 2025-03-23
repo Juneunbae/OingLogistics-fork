@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import com.oingmaryho.business.common.domain.type.UserRoleType;
 import com.oingmaryho.business.productservice.application.dto.request.ProductCreateRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.request.ProductDetailsSearchRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.request.ProductSearchRequestServiceDto;
@@ -62,8 +63,8 @@ class ProductServiceTest {
 			.companyId(FIXED_COMPANY_ID)
 			.companyName("Test Company")
 			.manageHubId(FIXED_MANAGE_HUB_ID)
-			.price(1L)
-			.stock(2L)
+			.price(2000)
+			.stock(1000)
 			.isDeleted(false)
 			.build();
 	}
@@ -78,8 +79,8 @@ class ProductServiceTest {
 			"C0-1",
 			"Test product",
 			FIXED_MANAGE_HUB_ID,
-			1L,
-			2L
+			1000,
+			2000
 		);
 
 		Product product = Product.builder()
@@ -88,8 +89,8 @@ class ProductServiceTest {
 			.companyName("Test Company")
 			.name("Test product")
 			.manageHubId(FIXED_MANAGE_HUB_ID)
-			.stock(1L)
-			.price(2L)
+			.stock(1000)
+			.price(2000)
 			.isDeleted(false)
 			.build();
 
@@ -99,7 +100,7 @@ class ProductServiceTest {
 		when(productRepository.save(any(Product.class))).thenReturn(product);
 
 		// When
-		ProductCreateResponseServiceDto actualResponseDto = productService.createProduct(requestDto);
+		ProductCreateResponseServiceDto actualResponseDto = productService.createProduct(requestDto, 2L, UserRoleType.HUB_MANAGER);
 		System.out.println("등록된 상품 정보: " + actualResponseDto.id());
 
 		// Then
@@ -117,7 +118,7 @@ class ProductServiceTest {
 		when(productApplicationMapper.toProductSearchResponseServiceDto(any())).thenReturn(mock(
 			ProductSearchResponseServiceDto.class));
 
-		Page<ProductSearchResponseServiceDto> response = productService.searchProducts(requestDto, pageable);
+		Page<ProductSearchResponseServiceDto> response = productService.searchProducts(requestDto, pageable, 2L, UserRoleType.HUB_MANAGER);
 
 		assertThat(response).isNotNull();
 		assertThat(response.getTotalElements()).isEqualTo(1);
@@ -130,14 +131,14 @@ class ProductServiceTest {
 		ProductDetailsSearchRequestServiceDto requestDto = new ProductDetailsSearchRequestServiceDto(productId);
 
 		ProductDetailsSearchResponseServiceDto expectedResponse = new ProductDetailsSearchResponseServiceDto(
-			productId, "Test product", FIXED_COMPANY_ID, "Test Company", FIXED_MANAGE_HUB_ID, 1L, 2L
+			productId, "Test product", FIXED_COMPANY_ID, "Test Company", FIXED_MANAGE_HUB_ID, 1000, 1000
 		);
 
 		when(productRepository.findByIdAndIsDeletedFalse(productId)).thenReturn(Optional.of(product));
 		when(productApplicationMapper.toResponseDto(product)).thenReturn(expectedResponse);
 
 		// When
-		ProductDetailsSearchResponseServiceDto response = productService.getProductDetails(requestDto);
+		ProductDetailsSearchResponseServiceDto response = productService.getProductDetails(requestDto, 2L, UserRoleType.HUB_MANAGER);
 
 		// Then
 		System.out.println("상품 정보 : " + response.name());
@@ -149,14 +150,14 @@ class ProductServiceTest {
 	@Description("상품 수정 테스트")
 	void updateProduct() {
 		ProductUpdateRequestServiceDto requestDto = new ProductUpdateRequestServiceDto(
-			productId, "Updated company name", "Updated product name", 2L, 1L
+			productId, "Updated company name", "Updated product name", FIXED_MANAGE_HUB_ID,2000, 1000
 		);
 
 		when(productRepository.findByIdAndIsDeletedFalse(productId)).thenReturn(Optional.of(product));
 		when(productApplicationMapper.toUpdateResponseDto(any(UUID.class)))
 			.thenReturn(new ProductUpdateResponseServiceDto(FIXED_PRODUCT_ID));
 
-		ProductUpdateResponseServiceDto response = productService.updateProduct(requestDto);
+		ProductUpdateResponseServiceDto response = productService.updateProduct(requestDto, 2L, UserRoleType.HUB_MANAGER);
 
 		assertThat(product.getName()).isEqualTo("Updated product name");
 		assertThat(response).isNotNull();
