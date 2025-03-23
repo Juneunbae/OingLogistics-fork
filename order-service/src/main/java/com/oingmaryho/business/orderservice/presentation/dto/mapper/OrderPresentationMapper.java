@@ -44,7 +44,13 @@ public interface OrderPresentationMapper {
 
     OrderDetailDeleteRequestServiceDto toOrderDetailDeleteRequestServiceDto(UUID orderId, UUID orderDetailId);
 
-    OrderCreateRequestServiceDto toOrderCreateRequestServiceDto(OrderCreateRequestDto source, List<OrderDetailCreateRequestServiceDto> orderDetails);
+    OrderCreateRequestServiceDto toOrderCreateRequestServiceDto(
+        Long userId,
+        String username,
+        String slackId,
+        OrderCreateRequestDto source,
+        List<OrderDetailCreateRequestServiceDto> orderDetails
+    );
 
     OrderDetailCreateRequestServiceDto toOrderDetailCreateRequestServiceDto(OrderDetailCreateRequestDto orderDetailCreateRequestDto);
 }

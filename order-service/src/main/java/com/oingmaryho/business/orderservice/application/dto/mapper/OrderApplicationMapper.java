@@ -1,9 +1,6 @@
 package com.oingmaryho.business.orderservice.application.dto.mapper;
 
-import com.oingmaryho.business.orderservice.application.dto.request.OrderDetailUpdateRequestServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.request.OrderTotalPriceUpdateRequestServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.request.OrderUpdateRequestServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.request.ProductQueueRequestDto;
+import com.oingmaryho.business.orderservice.application.dto.request.*;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
@@ -41,4 +38,15 @@ public interface OrderApplicationMapper {
     OrderTotalPriceUpdateRequestServiceDto toOrderTotalPriceUpdateRequestDto(Integer totalPrice);
 
     ProductQueueRequestDto toProductQueueRequestDto(UUID productId, Integer quantity);
+
+    @Mapping(target = "orderId", source = "order.id")
+    @Mapping(target = "requesterId", source = "order.requesterId")
+    @Mapping(target = "requesterName", source = "order.requesterName")
+    @Mapping(target = "requesterAddress", source = "order.requesterAddress")
+    @Mapping(target = "requesterSlackId", source = "order.requesterSlackId")
+    @Mapping(target = "orderDetailId", source = "orderDetail.id")
+    @Mapping(target = "recipientId", source = "orderDetail.recipientId")
+    @Mapping(target = "recipientName", source = "orderDetail.recipientName")
+    @Mapping(target = "recipientHubId", source = "orderDetail.recipientHubId")
+    DeliveryCreationRequestDto toDeliveryCreationRequestDto(Order order, OrderDetail orderDetail);
 }
