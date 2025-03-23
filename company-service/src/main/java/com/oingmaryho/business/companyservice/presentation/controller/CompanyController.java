@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.oingmaryho.business.common.domain.type.UserRoleType;
+import com.oingmaryho.business.common.infrastructure.annotation.RequiredRoles;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyCreateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDeleteRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDetailsSearchRequestServiceDto;
@@ -37,6 +39,7 @@ import com.oingmaryho.business.companyservice.presentation.dto.response.CompanyS
 import com.oingmaryho.business.companyservice.presentation.dto.response.CompanyUpdateResponseDto;
 import com.oingmaryho.business.companyservice.utils.PageableUtils;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -47,16 +50,22 @@ public class CompanyController {
 	private final CompanyPresentationMapper companyPresentationMapper;
 
 	@Description("일반 - 업체 생성")
+	@RequiredRoles({UserRoleType.HUB_MANAGER})
 	@PostMapping
-	public ResponseEntity<CompanyCreateResponseDto> createCompany(@RequestBody CompanyCreateRequestDto companyCreateRequestDto) {
-		// TODO: userId 받아오기
+	public ResponseEntity<CompanyCreateResponseDto> createCompany(
+		@RequestBody CompanyCreateRequestDto companyCreateRequestDto,
+		HttpServletRequest request
+	) {
+		Long userId = (Long) request.getAttribute("userId");
+
 		CompanyCreateRequestServiceDto requestServiceDto = companyPresentationMapper.toCreateServiceDto(companyCreateRequestDto);
-		CompanyCreateResponseServiceDto responseServiceDto = companyService.createCompany(requestServiceDto);
+		CompanyCreateResponseServiceDto responseServiceDto = companyService.createCompany(requestServiceDto, userId);
 		CompanyCreateResponseDto responseDto = companyPresentationMapper.toCreateDto(responseServiceDto);
 		return ResponseEntity.ok(responseDto);
 	}
 
 	@Description("일반 - 업체 전체 조회")
+	@RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.COMPANY_MANAGER, UserRoleType.COMPANY_DELIVERY_MANAGER, UserRoleType.HUB_DELIVERY_MANAGER})
 	@GetMapping
 	public ResponseEntity<Page<CompanySearchResponseDto>> getCompanies(
 		@RequestParam(name = "page", defaultValue = "0") int page,
@@ -68,8 +77,12 @@ public class CompanyController {
 		@RequestParam(name = "type", required = false) String type,
 		@RequestParam(name = "managerId", required = false) Long managerId,
 		@RequestParam(name = "manageHubId", required = false) UUID manageHubId,
-		@RequestParam(name = "address", required = false) String address) {
-		// TODO: userId 받아오기
+		@RequestParam(name = "address", required = false) String address,
+		HttpServletRequest request
+	) {
+		Long userId = (Long) request.getAttribute("userId");
+		String roleStr = (String) request.getAttribute("role");
+		UserRoleType userRoleType = UserRoleType.valueOf(roleStr);
 		Pageable pageable = PageableUtils.customPageable(page, size, sortDirection, by);
 		CompanySearchRequestDto requestDto = new CompanySearchRequestDto(id, name, type, managerId,manageHubId, address);
 
@@ -78,8 +91,11 @@ public class CompanyController {
 	}
 
 	@Description("일반 - 업체 상세 조회")
+	@RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.COMPANY_MANAGER, UserRoleType.COMPANY_DELIVERY_MANAGER, UserRoleType.HUB_DELIVERY_MANAGER})
 	@GetMapping("/{id}")
-	public ResponseEntity<CompanyDetailsSearchResponseDto> getCompanyById(@PathVariable UUID id) {
+	public ResponseEntity<CompanyDetailsSearchResponseDto> getCompanyById(
+		@PathVariable UUID id,
+		HttpServletRequest request) {
 		// TODO: userId 받아오기
 		CompanyDetailsSearchRequestServiceDto requestServiceDto = companyPresentationMapper.toDetailsSearchServiceDto(id);
 		CompanyDetailsSearchResponseServiceDto responseServiceDto = companyService.getCompanyById(requestServiceDto);
@@ -88,8 +104,12 @@ public class CompanyController {
 	}
 
 	@Description("일반 - 업체 수정")
+	@RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.COMPANY_MANAGER})
 	@PutMapping("/{id}")
-	public ResponseEntity<CompanyUpdateResponseDto> updateCompany(@PathVariable UUID id, @RequestBody CompanyUpdateRequestDto companyUpdateRequestDto) {
+	public ResponseEntity<CompanyUpdateResponseDto> updateCompany(
+		@PathVariable UUID id,
+		@RequestBody CompanyUpdateRequestDto companyUpdateRequestDto,
+		HttpServletRequest request) {
 		// TODO: userId 받아오기
 		CompanyUpdateRequestServiceDto requestServiceDto = companyPresentationMapper.toUpdateServiceDto(id,companyUpdateRequestDto);
 		CompanyUpdateResponseServiceDto responseServiceDto = companyService.updateCompany(requestServiceDto);
@@ -97,12 +117,16 @@ public class CompanyController {
 		return ResponseEntity.ok(responseDto);
 	}
 
-	@Description("일반 - 업체 식제")
+	@Description("일반 - 업체 삭제")
+	@RequiredRoles({UserRoleType.HUB_MANAGER})
 	@DeleteMapping("/api/v1/companies/{id}")
-	public ResponseEntity<Void> deleteCompany(@PathVariable UUID id) {
-		// TODO: userId 받아오기
+	public ResponseEntity<Void> deleteCompany(
+		@PathVariable UUID id,
+		HttpServletRequest request
+	) {
+		Long userId = (Long) request.getAttribute("userId");
 		CompanyDeleteRequestServiceDto requestServiceDto = companyPresentationMapper.toDeleteServiceDto(id);
-		companyService.deleteCompany(1L, requestServiceDto);
+		companyService.deleteCompany(userId, requestServiceDto);
 		return ResponseEntity.noContent().build();
 	}
 

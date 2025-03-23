@@ -1,5 +1,8 @@
 package com.oingmaryho.business.companyservice.application.service;
 
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,12 +18,14 @@ import com.oingmaryho.business.companyservice.application.dto.response.CompanyCr
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyDetailsSearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanySearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyUpdateResponseServiceDto;
+import com.oingmaryho.business.companyservice.application.service.feignClient.HubClient;
 import com.oingmaryho.business.companyservice.domain.Company;
 import com.oingmaryho.business.companyservice.domain.CompanySearchCriteria;
 import com.oingmaryho.business.companyservice.domain.repository.CompanyRepository;
 import com.oingmaryho.business.companyservice.domain.repository.CustomCompanyRepository;
 import com.oingmaryho.business.companyservice.exception.CompanyException;
 import com.oingmaryho.business.companyservice.exception.ErrorCode;
+import com.oingmaryho.business.companyservice.presentation.dto.response.HubSearchResponseDto;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -28,13 +33,23 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class CompanyService {
+	private final HubClient hubClient;
 	private final CompanyRepository companyRepository;
 	private final CustomCompanyRepository companyCustomRepository;
 	private final CompanyApplicationMapper companyApplicationMapper;
 
 	@Transactional
-	public CompanyCreateResponseServiceDto createCompany(CompanyCreateRequestServiceDto companyCreateRequestServiceDto) {
-		// TODO : role 체크 및 권한에 따른 비지니스 로직 분리(마스터, 허브 관리자는 담당 허브만 생성하게끔)
+	public CompanyCreateResponseServiceDto createCompany(
+		CompanyCreateRequestServiceDto companyCreateRequestServiceDto,
+		Long requesterId) {
+
+		validateManageHubPermission(requesterId, companyCreateRequestServiceDto.manageHubId());
+
+		String address = companyCreateRequestServiceDto.address();
+		if (companyRepository.existsByAddress(address)) {
+			throw new CompanyException(ErrorCode.ALREADY_REGISTERED_COMPANY);
+		}
+
 		Company company = companyApplicationMapper.toCreateEntity(companyCreateRequestServiceDto);
 		Company savedCompany = companyRepository.save(company);
 		return new CompanyCreateResponseServiceDto(savedCompany.getId());
@@ -70,10 +85,13 @@ public class CompanyService {
 	}
 
 	@Transactional
-	public void deleteCompany(Long userId, CompanyDeleteRequestServiceDto requestServiceDto) {
+	public void deleteCompany(Long requesterId, CompanyDeleteRequestServiceDto requestServiceDto) {
 		Company company = companyRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
 			.orElseThrow(() -> new CompanyException(ErrorCode.NOT_FOUND));
-		company.softDelete(userId);
+
+		validateManageHubPermission(requesterId, company.getManageHubId());
+
+		company.softDelete(requesterId);
 	}
 
 	private CompanySearchCriteria createCompanySearchCriteria(CompanySearchRequestServiceDto requestDto){
@@ -89,5 +107,13 @@ public class CompanyService {
 
 	}
 
+	private void validateManageHubPermission(Long requesterId, UUID targetHubId) {
+		HubSearchResponseDto managedHub = hubClient.isManagerOfHub(requesterId)
+			.orElseThrow(() -> new CompanyException(ErrorCode.HUB_NOT_FOUND_BY_MANAGER));
+
+		if (!managedHub.id().equals(targetHubId)) {
+			throw new CompanyException(ErrorCode.NO_PERMISSION);
+		}
+	}
 
 }
