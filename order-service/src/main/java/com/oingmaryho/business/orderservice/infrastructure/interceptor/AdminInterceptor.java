@@ -19,32 +19,51 @@ public class AdminInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         log.info("admin preHandle");
-        Object userIdAttr = request.getHeader("X-User-Id");
+        String userIdAttr = request.getHeader("X-User-Id");
 
         if (userIdAttr == null) {
-            return true;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE
+            return false;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE
         }
 
-        String userId = String.valueOf(userIdAttr);
+        long userId = Long.parseLong(userIdAttr);
 
         if (!redisTemplate.hasKey("user:info:" + userId)) {
-            return true;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE
+            return false;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE
         }
 
         Map<Object, Object> userInfo = redisTemplate.opsForHash().entries("user:info:" + userId);
 
         if (userInfo.isEmpty()) {
-            return true;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE
+            return false;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE
         }
 
-        if (!userInfo.get("status").equals(UserStatus.CONFIRMED)) {
+        if (!userInfo.get("status").equals(UserStatus.CONFIRMED.name())) {
             return false;
         }
 
-        if (!userInfo.get("role").equals(UserRole.MASTER)) {
+        if (!userInfo.get("role").equals(UserRole.MASTER.name())) {
             return false;
         }
 
+        // 사용자 정보를 request 에 주입
+        request.setAttribute("userId", userId);
+
+        if (!userInfo.containsKey("username")) {
+            return false;   // TODO throw Exception
+        }
+        request.setAttribute("username", userInfo.get("username"));
+
+        if (!userInfo.containsKey("slackId")) {
+            return false;   // TODO throw Exception
+        }
+        request.setAttribute("slackId", userInfo.get("slackId"));
+
+        if (!userInfo.containsKey("role")) {
+            return false;   // TODO throw Exception
+        }
+        request.setAttribute("role", userInfo.get("role"));
+
+        log.info("admin interceptor 완료");
         return true;
     }
 }
