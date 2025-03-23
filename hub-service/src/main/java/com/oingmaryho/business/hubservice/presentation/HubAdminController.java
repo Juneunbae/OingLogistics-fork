@@ -28,6 +28,7 @@ import com.oingmaryho.business.hubservice.presentation.dto.request.HubSearchAdmi
 import com.oingmaryho.business.hubservice.presentation.dto.request.HubUpdateRequestDto;
 import com.oingmaryho.business.hubservice.utils.PageableUtils;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -39,7 +40,7 @@ public class HubAdminController {
 	private final HubPresentationMapper mapper;
 
 	@RequiredRoles(UserRoleType.MASTER)
-	@GetMapping("/{id}") // TODO : 권한 확인하기
+	@GetMapping("/{id}")
 	public ResponseEntity<?> getHubById(@PathVariable UUID id) {
 		HubSearchAdminResponseServiceDto responseDto = hubAdminService.getHubById(mapper.toHubSearchRequestServiceDto(id));
 		return ResponseEntity.ok(mapper.toHubSearchAdminResponseDto(responseDto));
@@ -70,7 +71,7 @@ public class HubAdminController {
 	}
 
 	@RequiredRoles(UserRoleType.MASTER)
-	@PostMapping // TODO : 권한 확인하기
+	@PostMapping
 	public ResponseEntity<?> createHub(@RequestBody HubCreateRequestDto requestDto) {
 		HubCreateResponseServiceDto responseDto = hubAdminService.createHub(mapper.toHubCreateRequestServiceDto(requestDto));
 		return ResponseEntity
@@ -79,7 +80,7 @@ public class HubAdminController {
 	}
 
 	@RequiredRoles(UserRoleType.MASTER)
-	@PutMapping("/{id}") // TODO : 권한 확인하기
+	@PutMapping("/{id}")
 	public ResponseEntity<?> updateHub(
 		@PathVariable UUID id,
 		@RequestBody HubUpdateRequestDto requestDto
@@ -89,9 +90,10 @@ public class HubAdminController {
 	}
 
 	@RequiredRoles(UserRoleType.MASTER)
-	@DeleteMapping("/{id}") // TODO : 권한 확인하기
-	public ResponseEntity<?> deleteHub(@PathVariable UUID id) {
-		hubAdminService.deleteHub(mapper.toHubDeleteRequestServiceDto(id));
+	@DeleteMapping("/{id}")
+	public ResponseEntity<?> deleteHub(@PathVariable UUID id, HttpServletRequest request) {
+		Long userId = (Long) request.getAttribute("userId");
+		hubAdminService.deleteHub(mapper.toHubDeleteRequestServiceDto(id), userId);
 		return ResponseEntity.ok().build();
 	}
 

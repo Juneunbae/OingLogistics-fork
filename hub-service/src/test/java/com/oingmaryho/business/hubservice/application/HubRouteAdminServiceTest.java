@@ -143,7 +143,6 @@ class HubRouteAdminServiceTest {
 			.departureHubId(UUID.randomUUID())
 			.arriveHubId(UUID.randomUUID())
 			.routeInfo(new RouteInfo(1, 1.0))
-			.isDeleted(false)
 			.build();
 
 		HubRouteDeleteRequestServiceDto requestDto = new HubRouteDeleteRequestServiceDto(hubRouteId);
@@ -151,12 +150,12 @@ class HubRouteAdminServiceTest {
 		when(hubRouteRepository.findById(hubRouteId)).thenReturn(Optional.of(hubRoute));
 
 		// When
-		hubRouteAdminService.deleteHubRoute(requestDto);
+		hubRouteAdminService.deleteHubRoute(requestDto, 1L);
 
 		// Then
 		assertThat(hubRoute).isNotNull()
-			.extracting(HubRoute::getIsDeleted)
-			.isEqualTo(true);
+			.extracting(HubRoute::getIsDeleted, HubRoute::getDeletedBy)
+			.containsExactly(true, 1L);
 	}
 
 }

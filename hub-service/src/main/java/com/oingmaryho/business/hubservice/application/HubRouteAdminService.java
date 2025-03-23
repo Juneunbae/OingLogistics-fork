@@ -60,7 +60,6 @@ public class HubRouteAdminService {
 		return hubRoutes.map(mapper::toHubRouteSearchAdminResponseServiceDto);
 	}
 
-	// TODO : Auditing 설정 추가
 	@Transactional
 	@Caching(
 		evict = {
@@ -81,7 +80,6 @@ public class HubRouteAdminService {
 		return new HubRouteUpdateResponseServiceDto(id);
 	}
 
-	// TODO : Auditing 설정 추가
 	@Transactional
 	@Caching(
 		evict = {
@@ -90,9 +88,9 @@ public class HubRouteAdminService {
 			@CacheEvict(value = "hubRoutes", allEntries = true)
 		}
 	)
-	public void deleteHubRoute(HubRouteDeleteRequestServiceDto requestDto) {
+	public void deleteHubRoute(HubRouteDeleteRequestServiceDto requestDto, Long userId) {
 		HubRoute hubRoute = findHubRouteById(requestDto.id());
-		hubRoute.delete();
+		hubRoute.softDelete(userId);
 	}
 
 	private HubRoute findHubRouteById(UUID id) {
