@@ -55,9 +55,12 @@ public class ProductController {
 		@RequestBody ProductCreateRequestDto productCreateRequestDto,
 		HttpServletRequest request
 	) {
-		// TODO: userId, role 받아오기
+		Long userId = (Long) request.getAttribute("userId");
+		String roleStr = (String) request.getAttribute("role");
+		UserRoleType role = UserRoleType.valueOf(roleStr);
+
 		ProductCreateRequestServiceDto requestServiceDto = productPresentationMapper.toCreateServiceDto(productCreateRequestDto);
-		ProductCreateResponseServiceDto responseServiceDto = productService.createProduct(requestServiceDto);
+		ProductCreateResponseServiceDto responseServiceDto = productService.createProduct(requestServiceDto, userId, role);
 		ProductCreateResponseDto responseDto = productPresentationMapper.toCreateDto(responseServiceDto);
 		return ResponseEntity.ok(responseDto);
 	}
@@ -79,13 +82,17 @@ public class ProductController {
 		@RequestParam(name = "minPrice", required = false) Integer minPrice,
 		@RequestParam(name = "maxPrice", required = false) Integer maxPrice,
 		@RequestParam(name = "minStock", required = false) Integer minStock,
-		@RequestParam(name = "maxStock", required = false) Integer maxStock
+		@RequestParam(name = "maxStock", required = false) Integer maxStock,
+		HttpServletRequest request
 	){
-		// TODO: userId, role 받아오기
+		Long userId = (Long) request.getAttribute("userId");
+		String roleStr = (String) request.getAttribute("role");
+		UserRoleType role = UserRoleType.valueOf(roleStr);
+
 		Pageable pageable = PageableUtils.customPageable(page, size, sortDirection, by);
 		ProductSearchRequestDto requestDto = new ProductSearchRequestDto(id, productCode, name, manageHubId, companyId, companyName, minPrice, maxPrice, minStock,maxStock);
 
-		Page<ProductSearchResponseServiceDto> responseDto = productService.searchProducts(productPresentationMapper.toProductSearchResponseServiceDto(requestDto), pageable);
+		Page<ProductSearchResponseServiceDto> responseDto = productService.searchProducts(productPresentationMapper.toProductSearchResponseServiceDto(requestDto), pageable, userId, role);
 
 		return ResponseEntity.ok(responseDto.map(productPresentationMapper::toProductSearchResponseDto));
 	}
@@ -93,9 +100,16 @@ public class ProductController {
 	@Description("일반 - 상품 상세 조회")
 	@RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.COMPANY_MANAGER, UserRoleType.COMPANY_DELIVERY_MANAGER, UserRoleType.HUB_DELIVERY_MANAGER})
 	@GetMapping("/{id}")
-	public ResponseEntity<ProductDetailsSearchResponseDto> getProductById(@PathVariable UUID id) {
+	public ResponseEntity<ProductDetailsSearchResponseDto> getProductById(
+		@PathVariable UUID id,
+		HttpServletRequest request
+	) {
+		Long userId = (Long) request.getAttribute("userId");
+		String roleStr = (String) request.getAttribute("role");
+		UserRoleType role = UserRoleType.valueOf(roleStr);
+
 		ProductDetailsSearchRequestServiceDto requestServiceDto = productPresentationMapper.toDetailsSearchServiceDto(id);
-		ProductDetailsSearchResponseServiceDto responseServiceDto = productService.getProductDetails(requestServiceDto);
+		ProductDetailsSearchResponseServiceDto responseServiceDto = productService.getProductDetails(requestServiceDto, userId, role);
 		ProductDetailsSearchResponseDto response = productPresentationMapper.toDetailsSearchDto(responseServiceDto);
 		return ResponseEntity.ok(response);
 	}
@@ -103,9 +117,16 @@ public class ProductController {
 	@Description("일반 - 상품 수정")
 	@RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.COMPANY_MANAGER})
 	@PutMapping("/{id}")
-	public ResponseEntity<ProductUpdateResponseDto> updateProduct(@PathVariable UUID id, @RequestBody ProductUpdateRequestDto productUpdateRequestDto){
+	public ResponseEntity<ProductUpdateResponseDto> updateProduct(
+		@PathVariable UUID id,
+		@RequestBody ProductUpdateRequestDto productUpdateRequestDto,
+		HttpServletRequest request
+	){
+		Long userId = (Long) request.getAttribute("userId");
+		String roleStr = (String) request.getAttribute("role");
+		UserRoleType role = UserRoleType.valueOf(roleStr);
 		ProductUpdateRequestServiceDto requestServiceDto = productPresentationMapper.toUpdateServiceDto(id, productUpdateRequestDto);
-		ProductUpdateResponseServiceDto responseServiceDto = productService.updateProduct(requestServiceDto);
+		ProductUpdateResponseServiceDto responseServiceDto = productService.updateProduct(requestServiceDto, userId, role);
 		ProductUpdateResponseDto responseDto = productPresentationMapper.toUpdateResponseDto(responseServiceDto);
 		return ResponseEntity.ok(responseDto);
 	}
@@ -113,10 +134,15 @@ public class ProductController {
 	@Description("일반 상품 삭제")
 	@RequiredRoles({UserRoleType.HUB_MANAGER})
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> deleteProduct(@PathVariable UUID id){
-
+	public ResponseEntity<Void> deleteProduct(
+		@PathVariable UUID id,
+		HttpServletRequest request
+	){
+		Long userId = (Long) request.getAttribute("userId");
+		String roleStr = (String) request.getAttribute("role");
+		UserRoleType role = UserRoleType.valueOf(roleStr);
 		ProductDeleteRequestServiceDto requestServiceDto = productPresentationMapper.toDeleteServiceDto(id);
-		productService.deleteProduct(4L, requestServiceDto);
+		productService.deleteProduct(requestServiceDto,userId,role);
 		return ResponseEntity.noContent().build();
 	}
 }

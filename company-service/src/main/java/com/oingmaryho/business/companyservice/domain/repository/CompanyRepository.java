@@ -10,6 +10,6 @@ import com.oingmaryho.business.companyservice.domain.Company;
 @Repository
 public interface CompanyRepository {
 	Optional<Company> findByIdAndIsDeletedFalse(UUID id);
-	boolean existsByAddress(String productCode);
+	boolean existsByAddressAndIsDeletedFalse(String productCode);
 	Company save(Company company);
 }

@@ -94,9 +94,8 @@ public class CompanyController {
 	@RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.COMPANY_MANAGER, UserRoleType.COMPANY_DELIVERY_MANAGER, UserRoleType.HUB_DELIVERY_MANAGER})
 	@GetMapping("/{id}")
 	public ResponseEntity<CompanyDetailsSearchResponseDto> getCompanyById(
-		@PathVariable UUID id,
-		HttpServletRequest request) {
-		// TODO: userId 받아오기
+		@PathVariable UUID id
+		) {
 		CompanyDetailsSearchRequestServiceDto requestServiceDto = companyPresentationMapper.toDetailsSearchServiceDto(id);
 		CompanyDetailsSearchResponseServiceDto responseServiceDto = companyService.getCompanyById(requestServiceDto);
 		CompanyDetailsSearchResponseDto responseDto = companyPresentationMapper.toDetailsSearchResponseDto(responseServiceDto);
