@@ -45,9 +45,9 @@ public class CompanyService {
 
 		validateManageHubPermission(requesterId, companyCreateRequestServiceDto.manageHubId());
 
-		String productCode = companyCreateRequestServiceDto.type();
-		if (companyRepository.existsByProductCode(productCode)) {
-			throw new CompanyException(ErrorCode.ALREADY_REGISTERED_PRODUCT_CODE);
+		String address = companyCreateRequestServiceDto.address();
+		if (companyRepository.existsByAddress(address)) {
+			throw new CompanyException(ErrorCode.ALREADY_REGISTERED_COMPANY);
 		}
 
 		Company company = companyApplicationMapper.toCreateEntity(companyCreateRequestServiceDto);
