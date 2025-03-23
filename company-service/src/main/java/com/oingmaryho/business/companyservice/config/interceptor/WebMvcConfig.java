@@ -1,7 +1,9 @@
 package com.oingmaryho.business.companyservice.config.interceptor;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -21,9 +23,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(new UserCheckInterceptor(redisTemplate))
 			.excludePathPatterns("/company-service/**");
-		registry.addInterceptor(new AdminCheckInterceptor(redisTemplate))
-			.excludePathPatterns("/api/**")
-			.excludePathPatterns("/company-service/**");;
-	}
 
+		registry.addInterceptor(new AdminCheckInterceptor(redisTemplate))
+			.excludePathPatterns("/api/**", "/company-service/**");
+	}
 }
