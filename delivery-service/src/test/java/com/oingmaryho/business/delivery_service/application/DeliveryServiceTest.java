@@ -71,20 +71,20 @@ public class DeliveryServiceTest {
 
     private UUID orderId1;
     private UUID orderId2;
-    private UUID orderId3;
+
+    private UUID orderDetailId1;
+    private UUID orderDetailId2;
+    private UUID orderDetailId3;
 
     private UUID routeId1;
     private UUID routeId2;
-    private UUID routeId3;
 
     private UUID deliveryId1;
     private UUID deliveryId2;
-    private UUID deliveryId3;
 
     private UUID hubId1;
     private UUID hubId2;
     private UUID hubId3;
-    private UUID hubId4;
 
     private String address1;
     private String address2;
@@ -140,20 +140,20 @@ public class DeliveryServiceTest {
 
         orderId1 = UUID.randomUUID();
         orderId2 = UUID.randomUUID();
-        orderId3 = UUID.randomUUID();
+
+        orderDetailId1 = UUID.randomUUID();
+        orderDetailId2 = UUID.randomUUID();
+        orderDetailId3 = UUID.randomUUID();
 
         routeId1 = UUID.randomUUID();
         routeId2 = UUID.randomUUID();
-        routeId3 = UUID.randomUUID();
 
         deliveryId1 = UUID.randomUUID();
         deliveryId2 = UUID.randomUUID();
-        deliveryId3 = UUID.randomUUID();
 
         hubId1 = UUID.randomUUID();
         hubId2 = UUID.randomUUID();
         hubId3 = UUID.randomUUID();
-        hubId4 = UUID.randomUUID();
 
         address1 = "배송지1";
         address2 = "배송지2";
@@ -178,10 +178,11 @@ public class DeliveryServiceTest {
         companyId1 = UUID.randomUUID();
         companyId2 = UUID.randomUUID();
 
-        userId1 = 1L;
-        userId2 = 2L;
-        userId3 = 3L;
-        userId4 = 4L;
+        userId1 = 1L;   // 허브 관리자
+        userId2 = 2L;   // 허브 배송 담당자
+        userId3 = 3L;   // 업체 배송 담당자
+        userId4 = 4L;   // 업체 담당자
+        userId5 = 5L;   // 마스터
 
         role1 = UserRoleType.HUB_MANAGER;
         role2 = UserRoleType.HUB_DELIVERY_MANAGER;
@@ -205,17 +206,18 @@ public class DeliveryServiceTest {
         DeliveryManager manager = DeliveryManager.builder()
                 .id(companyDeliveryManagerId1)
                 .slackId(companyDeliveryManagerSlackId1)
-                .hubId(hubId1)
-                .companyId(companyId1)
-                .managerId(userId1)
+                .hubId(hubId2)
+                .managerId(userId3)
                 .type(managerType2)
                 .sequence(1)
                 .build();
 
         Delivery delivery = Delivery.builder()
                 .id(deliveryId1)
-                .status(deliveryStatus1)
                 .orderId(orderId1)
+                .orderDetailId(orderDetailId1)
+                .companyId(companyId1)
+                .status(deliveryStatus1)
                 .departureHubId(hubId1)
                 .arriveHubId(hubId2)
                 .address(address1)
@@ -229,6 +231,9 @@ public class DeliveryServiceTest {
         );
         DeliveryResponseServiceDto responseDto = new DeliveryResponseServiceDto(
                 deliveryId1,
+                orderId1,
+                orderDetailId1,
+                companyId1,
                 deliveryStatus1,
                 hubId1,
                 hubId2,
@@ -247,7 +252,7 @@ public class DeliveryServiceTest {
 
         //when
         DeliveryResponseServiceDto result = deliveryService.GetDeliveryDetail(
-                userId1,
+                userId3,
                 role3,
                 requestDto
         );
@@ -256,6 +261,9 @@ public class DeliveryServiceTest {
         assertThat(result).isNotNull()
                 .extracting(
                         DeliveryResponseServiceDto::id,
+                        DeliveryResponseServiceDto::orderId,
+                        DeliveryResponseServiceDto::orderDetailId,
+                        DeliveryResponseServiceDto::companyId,
                         DeliveryResponseServiceDto::status,
                         DeliveryResponseServiceDto::departureHubId,
                         DeliveryResponseServiceDto::arriveHubId,
@@ -267,6 +275,9 @@ public class DeliveryServiceTest {
                 )
                 .containsExactlyInAnyOrder(
                         deliveryId1,
+                        orderId1,
+                        orderDetailId1,
+                        companyId1,
                         deliveryStatus1,
                         hubId1,
                         hubId2,
@@ -285,30 +296,31 @@ public class DeliveryServiceTest {
     @DisplayName("배송 상세 조회: 허브 배송 담당자는 본인의 배송을 조회할 수 있다.")
     public void 배송조회_허브배송담당자() {
         //given
+        // 업체 배송 담당자
         DeliveryManager manager1 = DeliveryManager.builder()
                 .id(companyDeliveryManagerId1)
                 .slackId(companyDeliveryManagerSlackId1)
                 .hubId(hubId1)
-                .companyId(companyId1)
-                .managerId(userId2)
+                .managerId(userId3)
                 .type(managerType2)
                 .sequence(1)
                 .build();
 
+        // 허브 배송 담당자
         DeliveryManager manager2 = DeliveryManager.builder()
                 .id(hubDeliveryManagerId1)
                 .slackId(hubDeliveryManagerSlackId1)
-                .hubId(hubId1)
-                .companyId(null)
-                .managerId(userId1)
+                .managerId(userId2)
                 .type(managerType1)
                 .sequence(1)
                 .build();
 
         Delivery delivery = Delivery.builder()
                 .id(deliveryId1)
-                .status(deliveryStatus1)
                 .orderId(orderId1)
+                .orderDetailId(orderDetailId1)
+                .companyId(companyId1)
+                .status(deliveryStatus1)
                 .departureHubId(hubId1)
                 .arriveHubId(hubId2)
                 .address(address1)
@@ -337,6 +349,9 @@ public class DeliveryServiceTest {
         );
         DeliveryResponseServiceDto responseDto = new DeliveryResponseServiceDto(
                 deliveryId1,
+                orderId1,
+                orderDetailId1,
+                companyId1,
                 deliveryStatus1,
                 hubId1,
                 hubId2,
@@ -355,7 +370,7 @@ public class DeliveryServiceTest {
 
         //when
         DeliveryResponseServiceDto result = deliveryService.GetDeliveryDetail(
-                userId1,
+                userId2,
                 role2,
                 requestDto
         );
@@ -364,6 +379,9 @@ public class DeliveryServiceTest {
         assertThat(result).isNotNull()
                 .extracting(
                         DeliveryResponseServiceDto::id,
+                        DeliveryResponseServiceDto::orderId,
+                        DeliveryResponseServiceDto::orderDetailId,
+                        DeliveryResponseServiceDto::companyId,
                         DeliveryResponseServiceDto::status,
                         DeliveryResponseServiceDto::departureHubId,
                         DeliveryResponseServiceDto::arriveHubId,
@@ -375,6 +393,9 @@ public class DeliveryServiceTest {
                 )
                 .containsExactlyInAnyOrder(
                         deliveryId1,
+                        orderId1,
+                        orderDetailId1,
+                        companyId1,
                         deliveryStatus1,
                         hubId1,
                         hubId2,
@@ -394,7 +415,9 @@ public class DeliveryServiceTest {
     public void 배송검색_허브관리자() {
         //given
         Pageable pageable = PageableUtils.customPageable(1, 10, null, null);
+
         DeliverySearchRequestServiceDto requestDto = new DeliverySearchRequestServiceDto(
+                null,
                 null,
                 null,
                 hubId1,
@@ -405,30 +428,31 @@ public class DeliveryServiceTest {
                 pageable
         );
 
+        // 업체 배송 담당자
         DeliveryManager manager1 = DeliveryManager.builder()
                 .id(companyDeliveryManagerId1)
                 .slackId(companyDeliveryManagerSlackId1)
                 .hubId(hubId1)
-                .companyId(companyId1)
                 .managerId(userId1)
                 .type(managerType2)
-                .sequence(null)
+                .sequence(1)
                 .build();
 
+        // 업체 배송 담당자
         DeliveryManager manager2 = DeliveryManager.builder()
-                .id(hubDeliveryManagerId1)
-                .slackId(hubDeliveryManagerSlackId1)
-                .hubId(hubId1)
-                .companyId(null)
+                .id(companyDeliveryManagerId2)
+                .slackId(companyDeliveryManagerSlackId2)
                 .managerId(userId2)
-                .type(managerType1)
+                .type(managerType2)
                 .sequence(1)
                 .build();
 
         Delivery delivery1 = Delivery.builder()
                 .id(deliveryId1)
-                .status(deliveryStatus1)
                 .orderId(orderId1)
+                .orderDetailId(orderDetailId1)
+                .companyId(companyId1)
+                .status(deliveryStatus1)
                 .departureHubId(hubId1)
                 .arriveHubId(hubId2)
                 .address(address1)
@@ -439,6 +463,9 @@ public class DeliveryServiceTest {
 
         Delivery delivery2 = Delivery.builder()
                 .id(deliveryId2)
+                .orderId(orderId1)
+                .orderDetailId(orderDetailId2)
+                .companyId(companyId1)
                 .status(deliveryStatus2)
                 .orderId(orderId2)
                 .departureHubId(hubId1)
@@ -453,6 +480,9 @@ public class DeliveryServiceTest {
 
         DeliveryResponseServiceDto responseDto1 = new DeliveryResponseServiceDto(
                 deliveryId1,
+                orderId1,
+                orderDetailId1,
+                companyId1,
                 deliveryStatus1,
                 hubId1,
                 hubId2,
@@ -465,6 +495,9 @@ public class DeliveryServiceTest {
 
         DeliveryResponseServiceDto responseDto2 = new DeliveryResponseServiceDto(
                 deliveryId2,
+                orderId1,
+                orderDetailId2,
+                companyId1,
                 deliveryStatus2,
                 hubId1,
                 hubId3,
@@ -481,7 +514,7 @@ public class DeliveryServiceTest {
 
         //when
         Page<DeliveryResponseServiceDto> result = deliveryService.GetDeliveriesBySearch(
-                userId1,
+                userId3,
                 role1,
                 requestDto
         );
@@ -506,6 +539,7 @@ public class DeliveryServiceTest {
                 null,
                 null,
                 null,
+                null,
                 Boolean.FALSE,
                 pageable
         );
@@ -514,8 +548,6 @@ public class DeliveryServiceTest {
         DeliveryManager manager1 = DeliveryManager.builder()
                 .id(hubDeliveryManagerId1)
                 .slackId(hubDeliveryManagerSlackId1)
-                .hubId(hubId1)
-                .companyId(null)
                 .managerId(userId2)
                 .type(managerType1)
                 .sequence(1)
@@ -526,7 +558,6 @@ public class DeliveryServiceTest {
                 .id(companyDeliveryManagerId1)
                 .slackId(companyDeliveryManagerSlackId1)
                 .hubId(hubId2)
-                .companyId(companyId1)
                 .managerId(userId1)
                 .type(managerType2)
                 .sequence(1)
@@ -535,8 +566,10 @@ public class DeliveryServiceTest {
         // 배송
         Delivery delivery1 = Delivery.builder()
                 .id(deliveryId1)
-                .status(deliveryStatus1)
                 .orderId(orderId1)
+                .orderDetailId(orderDetailId1)
+                .companyId(companyId1)
+                .status(deliveryStatus1)
                 .departureHubId(hubId1)
                 .arriveHubId(hubId2)
                 .address(address1)
@@ -558,10 +591,15 @@ public class DeliveryServiceTest {
                 .manager(manager1)
                 .build();
 
+        route1.addRoute(delivery1);
+
         Page<Delivery> page = new PageImpl<>(List.of(delivery1), pageable, 1);
 
         DeliveryResponseServiceDto responseDto1 = new DeliveryResponseServiceDto(
                 deliveryId1,
+                orderId1,
+                orderDetailId1,
+                companyId1,
                 deliveryStatus1,
                 hubId1,
                 hubId2,
@@ -602,6 +640,7 @@ public class DeliveryServiceTest {
                 null,
                 null,
                 null,
+                null,
                 Boolean.FALSE,
                 pageable
         );
@@ -610,19 +649,20 @@ public class DeliveryServiceTest {
         DeliveryManager manager1 = DeliveryManager.builder()
                 .id(companyDeliveryManagerId1)
                 .slackId(companyDeliveryManagerSlackId1)
-                .hubId(hubId1)
-                .companyId(companyId1)
-                .managerId(userId1)
+                .hubId(hubId3)
+                .managerId(userId3)
                 .type(managerType2)
-                .sequence(null)
+                .sequence(0)
                 .build();
 
         Delivery delivery1 = Delivery.builder()
                 .id(deliveryId1)
-                .status(deliveryStatus1)
                 .orderId(orderId1)
+                .orderDetailId(orderDetailId1)
+                .companyId(companyId1)
+                .status(deliveryStatus1)
                 .departureHubId(hubId1)
-                .arriveHubId(hubId2)
+                .arriveHubId(hubId3)
                 .address(address1)
                 .receiver(receiver1)
                 .receiverSlackId(receiverSlackId1)
@@ -631,9 +671,11 @@ public class DeliveryServiceTest {
 
         Delivery delivery2 = Delivery.builder()
                 .id(deliveryId2)
-                .status(deliveryStatus2)
                 .orderId(orderId2)
-                .departureHubId(hubId1)
+                .orderDetailId(orderDetailId2)
+                .companyId(companyId2)
+                .status(deliveryStatus2)
+                .departureHubId(hubId2)
                 .arriveHubId(hubId3)
                 .address(address1)
                 .receiver(receiver1)
@@ -645,9 +687,12 @@ public class DeliveryServiceTest {
 
         DeliveryResponseServiceDto responseDto1 = new DeliveryResponseServiceDto(
                 deliveryId1,
+                orderId1,
+                orderDetailId1,
+                companyId1,
                 deliveryStatus1,
                 hubId1,
-                hubId2,
+                hubId3,
                 address1,
                 receiver1,
                 receiverSlackId1,
@@ -657,8 +702,11 @@ public class DeliveryServiceTest {
 
         DeliveryResponseServiceDto responseDto2 = new DeliveryResponseServiceDto(
                 deliveryId2,
+                orderId2,
+                orderDetailId2,
+                companyId2,
                 deliveryStatus2,
-                hubId1,
+                hubId2,
                 hubId3,
                 address1,
                 receiver1,
@@ -687,11 +735,12 @@ public class DeliveryServiceTest {
     }
 
     @Test
-    @DisplayName("배송 검색: 업체 담당자는 본인 업체에 속한 업체 배송을 검색할 수 있다.")
+    @DisplayName("배송 검색: 업체 담당자는 본인 업체의 배송을 검색할 수 있다.")
     public void 배송검색_업체담당자() {
         //given
         Pageable pageable = PageableUtils.customPageable(1, 10, null, null);
         DeliverySearchRequestServiceDto requestDto = new DeliverySearchRequestServiceDto(
+                null,
                 null,
                 null,
                 null,
@@ -707,7 +756,6 @@ public class DeliveryServiceTest {
                 .id(companyDeliveryManagerId1)
                 .slackId(companyDeliveryManagerSlackId1)
                 .hubId(hubId2)
-                .companyId(companyId1)
                 .managerId(userId1)
                 .type(managerType2)
                 .sequence(1)
@@ -718,7 +766,6 @@ public class DeliveryServiceTest {
                 .id(companyDeliveryManagerId2)
                 .slackId(companyDeliveryManagerSlackId1)
                 .hubId(hubId3)
-                .companyId(companyId1)
                 .managerId(userId2)
                 .type(managerType2)
                 .sequence(2)
@@ -726,8 +773,10 @@ public class DeliveryServiceTest {
 
         Delivery delivery1 = Delivery.builder()
                 .id(deliveryId1)
-                .status(deliveryStatus1)
                 .orderId(orderId1)
+                .orderDetailId(orderDetailId1)
+                .companyId(companyId1)
+                .status(deliveryStatus1)
                 .departureHubId(hubId1)
                 .arriveHubId(hubId2)
                 .address(address1)
@@ -738,9 +787,11 @@ public class DeliveryServiceTest {
 
         Delivery delivery2 = Delivery.builder()
                 .id(deliveryId2)
-                .status(deliveryStatus1)
                 .orderId(orderId2)
-                .departureHubId(hubId1)
+                .orderDetailId(orderDetailId2)
+                .companyId(companyId1)
+                .status(deliveryStatus1)
+                .departureHubId(hubId2)
                 .arriveHubId(hubId3)
                 .address(address1)
                 .receiver(receiver1)
@@ -752,6 +803,9 @@ public class DeliveryServiceTest {
 
         DeliveryResponseServiceDto responseDto1 = new DeliveryResponseServiceDto(
                 deliveryId1,
+                orderId1,
+                orderDetailId1,
+                companyId1,
                 deliveryStatus1,
                 hubId1,
                 hubId2,
@@ -764,8 +818,11 @@ public class DeliveryServiceTest {
 
         DeliveryResponseServiceDto responseDto2 = new DeliveryResponseServiceDto(
                 deliveryId2,
+                orderId2,
+                orderDetailId2,
+                companyId1,
                 deliveryStatus1,
-                hubId1,
+                hubId2,
                 hubId3,
                 address1,
                 receiver1,
@@ -801,8 +858,6 @@ public class DeliveryServiceTest {
         DeliveryManager manager1 = DeliveryManager.builder()
                 .id(hubDeliveryManagerId1)
                 .slackId(hubDeliveryManagerSlackId1)
-                .hubId(hubId1)
-                .companyId(null)
                 .managerId(userId1)
                 .type(managerType1)
                 .sequence(1)
@@ -813,7 +868,6 @@ public class DeliveryServiceTest {
                 .id(companyDeliveryManagerId1)
                 .slackId(companyDeliveryManagerSlackId1)
                 .hubId(hubId2)
-                .companyId(companyId1)
                 .managerId(userId2)
                 .type(managerType2)
                 .sequence(1)
@@ -821,8 +875,10 @@ public class DeliveryServiceTest {
 
         Delivery delivery = Delivery.builder()
                 .id(deliveryId1)
-                .status(deliveryStatus1)
                 .orderId(orderId1)
+                .orderDetailId(orderDetailId1)
+                .companyId(companyId1)
+                .status(deliveryStatus1)
                 .departureHubId(hubId1)
                 .arriveHubId(hubId2)
                 .address(address1)
@@ -868,12 +924,12 @@ public class DeliveryServiceTest {
         when(mapper.toRouteResponseServiceDto(any(DeliveryRoute.class)))
                 .thenReturn(responseDto);
 
-        when(deliveryRepository.findRouteByIdAndIsDeleted(routeId1))
+        when(deliveryRepository.findRouteByIdAndIsDeletedFalse(routeId1))
                 .thenReturn(Optional.of(route));
 
         //when
         DeliveryRouteResponseServiceDto result = deliveryService.GetDeliveryRouteDetail(
-                userId2,
+                userId1,
                 role2,
                 requestDto
         );
@@ -905,7 +961,7 @@ public class DeliveryServiceTest {
                         Boolean.FALSE
                 );
         verify(deliveryRepository, times(1))
-                .findRouteByIdAndIsDeleted(routeId1);
+                .findRouteByIdAndIsDeletedFalse(routeId1);
     }
 
     @Test
@@ -914,6 +970,8 @@ public class DeliveryServiceTest {
         //given
         Pageable pageable = PageableUtils.customPageable(1, 10, null, null);
         DeliveryRouteSearchRequestServiceDto requestDto = new DeliveryRouteSearchRequestServiceDto(
+                null,
+                null,
                 null,
                 deliveryId1,
                 null,
@@ -929,8 +987,7 @@ public class DeliveryServiceTest {
         DeliveryManager manager1 = DeliveryManager.builder()
                 .id(companyDeliveryManagerId1)
                 .slackId(companyDeliveryManagerSlackId1)
-                .hubId(hubId1)
-                .companyId(companyId1)
+                .hubId(hubId3)
                 .managerId(userId1)
                 .type(managerType2)
                 .sequence(1)
@@ -940,8 +997,6 @@ public class DeliveryServiceTest {
         DeliveryManager manager2 = DeliveryManager.builder()
                 .id(hubDeliveryManagerId1)
                 .slackId(hubDeliveryManagerSlackId1)
-                .hubId(hubId1)
-                .companyId(null)
                 .managerId(userId2)
                 .type(managerType1)
                 .sequence(1)
@@ -951,8 +1006,6 @@ public class DeliveryServiceTest {
         DeliveryManager manager3 = DeliveryManager.builder()
                 .id(hubDeliveryManagerId2)
                 .slackId(hubDeliveryManagerSlackId2)
-                .hubId(hubId2)
-                .companyId(null)
                 .managerId(userId3)
                 .type(managerType1)
                 .sequence(2)
@@ -996,6 +1049,9 @@ public class DeliveryServiceTest {
                 .manager(manager3)
                 .build();
 
+        route1.addRoute(delivery);
+        route2.addRoute(delivery);
+
         Page<DeliveryRoute> page = new PageImpl<>(List.of(route1, route2), pageable, 2);
 
         DeliveryRouteResponseServiceDto responseDto1 = new DeliveryRouteResponseServiceDto(
@@ -1036,7 +1092,7 @@ public class DeliveryServiceTest {
         //when
         Page<DeliveryRouteResponseServiceDto> result = deliveryService.GetDeliveryRoutesBySearch(
                 userId1,
-                role1,
+                role3,
                 requestDto
         );
 
@@ -1056,8 +1112,7 @@ public class DeliveryServiceTest {
         DeliveryManager manager1 = DeliveryManager.builder()
                 .id(companyDeliveryManagerId1)
                 .slackId(companyDeliveryManagerSlackId1)
-                .hubId(hubId1)
-                .companyId(companyId1)
+                .hubId(hubId3)
                 .managerId(userId2)
                 .type(managerType2)
                 .sequence(1)
@@ -1067,8 +1122,7 @@ public class DeliveryServiceTest {
         DeliveryManager manager2 = DeliveryManager.builder()
                 .id(companyDeliveryManagerId2)
                 .slackId(companyDeliveryManagerSlackId2)
-                .hubId(hubId1)
-                .companyId(companyId2)
+                .hubId(hubId3)
                 .managerId(userId3)
                 .type(managerType2)
                 .sequence(1)
@@ -1076,8 +1130,10 @@ public class DeliveryServiceTest {
 
         Delivery delivery = Delivery.builder()
                 .id(deliveryId1)
-                .status(deliveryStatus1)
                 .orderId(orderId1)
+                .orderDetailId(orderDetailId1)
+                .companyId(companyId1)
+                .status(deliveryStatus1)
                 .departureHubId(hubId1)
                 .arriveHubId(hubId3)
                 .address(address1)
@@ -1131,8 +1187,7 @@ public class DeliveryServiceTest {
         DeliveryManager manager1 = DeliveryManager.builder()
                 .id(companyDeliveryManagerId1)
                 .slackId(companyDeliveryManagerSlackId1)
-                .hubId(hubId1)
-                .companyId(companyId1)
+                .hubId(hubId3)
                 .managerId(userId1)
                 .type(managerType2)
                 .sequence(1)
@@ -1140,8 +1195,10 @@ public class DeliveryServiceTest {
 
         Delivery delivery = Delivery.builder()
                 .id(deliveryId1)
-                .status(deliveryStatus1)
                 .orderId(orderId1)
+                .orderDetailId(orderDetailId1)
+                .companyId(companyId1)
+                .status(deliveryStatus1)
                 .departureHubId(hubId1)
                 .arriveHubId(hubId3)
                 .address(address1)
@@ -1153,8 +1210,8 @@ public class DeliveryServiceTest {
         DeliveryUpdateStatusRequestServiceDto requestDto = new DeliveryUpdateStatusRequestServiceDto(
                 deliveryId1,
                 deliveryStatus2
-
         );
+
         DeliveryUpdateStatusResponseServiceDto responseDto = new DeliveryUpdateStatusResponseServiceDto(
                 deliveryId1
         );
@@ -1189,8 +1246,7 @@ public class DeliveryServiceTest {
         DeliveryManager manager1 = DeliveryManager.builder()
                 .id(companyDeliveryManagerId1)
                 .slackId(companyDeliveryManagerSlackId1)
-                .hubId(hubId1)
-                .companyId(companyId1)
+                .hubId(hubId3)
                 .managerId(userId1)
                 .type(managerType2)
                 .sequence(1)
@@ -1198,8 +1254,10 @@ public class DeliveryServiceTest {
 
         Delivery delivery = Delivery.builder()
                 .id(deliveryId1)
-                .status(deliveryStatus1)
                 .orderId(orderId1)
+                .orderDetailId(orderDetailId1)
+                .companyId(companyId1)
+                .status(deliveryStatus1)
                 .departureHubId(hubId1)
                 .arriveHubId(hubId3)
                 .address(address1)
@@ -1237,7 +1295,6 @@ public class DeliveryServiceTest {
                 .id(companyDeliveryManagerId1)
                 .slackId(companyDeliveryManagerSlackId1)
                 .hubId(hubId2)
-                .companyId(companyId1)
                 .managerId(userId1)
                 .type(managerType2)
                 .sequence(1)
@@ -1247,8 +1304,6 @@ public class DeliveryServiceTest {
         DeliveryManager manager2 = DeliveryManager.builder()
                 .id(hubDeliveryManagerId1)
                 .slackId(hubDeliveryManagerSlackId1)
-                .hubId(hubId1)
-                .companyId(null)
                 .managerId(userId2)
                 .type(managerType1)
                 .sequence(1)
@@ -1279,6 +1334,8 @@ public class DeliveryServiceTest {
                 .manager(manager2)
                 .build();
 
+        route.addRoute(delivery);
+
         DeliveryRouteUpdateStatusRequestServiceDto requestDto = new DeliveryRouteUpdateStatusRequestServiceDto(
                 routeId1,
                 routeStatus3
@@ -1291,7 +1348,7 @@ public class DeliveryServiceTest {
         when(mapper.toUpdateRouteStatusResponseServiceDto(any(UUID.class)))
                 .thenReturn(responseDto);
 
-        when(deliveryRepository.findRouteByIdAndIsDeleted(routeId1))
+        when(deliveryRepository.findRouteByIdAndIsDeletedFalse(routeId1))
                 .thenReturn(Optional.of(route));
 
         when(deliveryRepository.findByIdAndIsDeletedFalse(deliveryId1))
@@ -1310,7 +1367,7 @@ public class DeliveryServiceTest {
                 .isEqualTo(routeId1);
 
         verify(deliveryRepository, times(1))
-                .findRouteByIdAndIsDeleted(routeId1);
+                .findRouteByIdAndIsDeletedFalse(routeId1);
 
         verify(deliveryRepository, times(1))
                 .findByIdAndIsDeletedFalse(deliveryId1);

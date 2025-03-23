@@ -17,6 +17,7 @@ public class DeliverySearchCriteria {
 
     private final UUID id;
     private final UUID orderId;
+    private final UUID orderDetailId;
     private final UUID hubId;
     private final UUID companyId;
     private final DeliveryStatus status;

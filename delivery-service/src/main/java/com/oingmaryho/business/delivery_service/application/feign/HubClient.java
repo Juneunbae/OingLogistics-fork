@@ -15,7 +15,7 @@ public interface HubClient {
     ResponseEntity<HubSearchResponseDto> getHubByManagerId(
             @RequestParam("managerId") Long managerId);
 
-    @GetMapping("/hub-service/path")
+    @GetMapping("/path")
     ResponseEntity<List<HubPathResponseDto>> getPath(
             @RequestParam("departureHubId") UUID departureHubId,
             @RequestParam("arriveAddress") String arriveAddress);

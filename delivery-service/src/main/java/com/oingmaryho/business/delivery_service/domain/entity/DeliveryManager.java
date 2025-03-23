@@ -20,9 +20,7 @@ public class DeliveryManager extends BaseEntity {
     @Column(nullable = false)
     private String slackId;
 
-    private UUID hubId; // 허브 배송 담당자, 업체 배송 담당자 -> 소속 허브
-
-    private UUID companyId; // 업체 배송 담당자 -> 소속 업체
+    private UUID hubId; // 업체 배송 담당자 -> 소속 허브
 
     @Column(nullable = false)
     private Long managerId; // 실제 user-service에서 조회할 때 사용할 id
@@ -33,10 +31,9 @@ public class DeliveryManager extends BaseEntity {
 
     private Integer sequence;
 
-    public void updateManager(Long managerId, String slackId, UUID hubId, UUID companyId){
+    public void updateManager(Long managerId, String slackId, UUID hubId){
         this.managerId = managerId;
         this.slackId = slackId;
         this.hubId = hubId;
-        this.companyId = companyId;
     }
 }

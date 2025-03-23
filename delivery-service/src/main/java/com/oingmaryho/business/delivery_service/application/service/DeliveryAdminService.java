@@ -3,10 +3,7 @@ package com.oingmaryho.business.delivery_service.application.service;
 import com.oingmaryho.business.delivery_service.application.dto.mapper.DeliveryApplicationMapper;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
-import com.oingmaryho.business.delivery_service.application.feign.CompanyClient;
-import com.oingmaryho.business.delivery_service.application.feign.HubClient;
-import com.oingmaryho.business.delivery_service.application.feign.HubSearchResponseDto;
-import com.oingmaryho.business.delivery_service.application.feign.UserClient;
+import com.oingmaryho.business.delivery_service.application.feign.*;
 import com.oingmaryho.business.delivery_service.domain.criteria.DeliveryRouteSearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.criteria.DeliverySearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.entity.Delivery;
@@ -25,10 +22,13 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -38,6 +38,9 @@ public class DeliveryAdminService {
     private final CompanyClient companyClient;
     private final HubClient hubClient;
     private final UserClient userClient;
+
+    private final RedisTemplate<String, Object> redisTemplate;
+
     private final DeliveryRepository deliveryRepository;
     private final DeliveryManagerRepository deliveryManagerRepository;
     private final DeliveryApplicationMapper deliveryApplicationMapper;
@@ -45,37 +48,64 @@ public class DeliveryAdminService {
 
     @Transactional
     public DeliveryCreationResponseServiceDto createDelivery(
-            Long userId,
-            UserRoleType userRole,
             DeliveryCreationRequestServiceDto requestServiceDto) {
 
-        // TODO 1. 배송 경로 요청 (허브 도메인에 요청)
-//        HubPathRequestDto requestDto = new HubPathRequestDto(UUID.randomUUID(), UUID.randomUUID());
-//        List<HubRouteSearchResponseDto> hubRoutes = Optional.ofNullable(hubClient.getPath(requestDto))
-//                .filter(response -> response.getStatusCode().is2xxSuccessful())
-//                .map(ResponseEntity::getBody)
-//                .orElseThrow(() -> new DeliveryException(ErrorCode.HUB_ROUTE_NOT_FOUND));
+        // hub 쪽에 최적 배송 경로 요청
+        List<HubPathResponseDto> hubRoutes = Optional.ofNullable(hubClient.getPath(requestServiceDto.hubId(), requestServiceDto.address()))
+                .filter(response -> response.getStatusCode().is2xxSuccessful())
+                .map(ResponseEntity::getBody)
+                .orElseThrow(() -> new DeliveryException(ErrorCode.HUB_ROUTE_NOT_FOUND));
+
+        Delivery delivery = Delivery.builder()
+                .departureHubId(hubRoutes.get(0).departureHubId())
+                .arriveHubId(hubRoutes.get(hubRoutes.size()-1).arriveHubId())
+                .address(requestServiceDto.address())
+                .receiver(requestServiceDto.receiver())
+                .receiverSlackId(requestServiceDto.receiverSlackId())
+                .build();
+
+        // 각 배송 경로에 허브 배송 담당자 배정
+        for (HubPathResponseDto route : hubRoutes) {
+            int routeSequence = 1;      // 배송 경로 상 순번
+            int hubDeliveryManagerSequence = 0;    // TODO Redis에서 조회 (key: hub:delivery:sequence)
+
+            DeliveryManager hubDeliveryManager = deliveryManagerRepository.findByTypeAndSequence(
+                            DeliveryManagerType.HUB_DELIVERY_MANAGER, hubDeliveryManagerSequence % 10)
+                    .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
+
+            hubDeliveryManagerSequence++;
+            DeliveryRoute deliveryRoute = DeliveryRoute.builder()
+                    .delivery(delivery)
+                    .sequence(routeSequence)
+                    .departureHubId(route.departureHubId())
+                    .arriveHubId(route.arriveHubId())
+                    .status(DeliveryRouteStatus.HUB_WAITING)
+                    .estimatedDistance(route.distance())
+                    .estimatedTime(route.hubToHubTime())
+                    .manager(hubDeliveryManager)
+                    .build();
+
+            routeSequence++;
+
+            // 배송 엔티티에 배송 경로 양방향 설정
+            deliveryRoute.addRoute(delivery);
+        }
+
+        // 배송에 업체 배송 담당자 배정
+        int companyDeliveryManagerSequence = 0; // TODO Redis에서 조회 (key: company:delivery:sequence:{hubId})
+        DeliveryManager companyDeliveryManager = deliveryManagerRepository.findByHubIdAndTypeAndSequence(
+                        delivery.getArriveHubId(), DeliveryManagerType.COMPANY_DELIVERY_MANAGER, companyDeliveryManagerSequence % 10)
+                .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
+
+        delivery.update(null,null,null,companyDeliveryManager);
 
 
+        // 배송 저장
+        Delivery savedDelivery = deliveryRepository.save(delivery);
 
-        // TODO 2. 배송 담당자 생성 (유저 도메인에 요청) , 소속 업체 id 조회 (업체 도메인에 요청)
-        // GET -> List<UserResponseDto> users
-        // 허브 배송 담당자: 전체 10명, 업체 배송 담당자: 각 허브당 10명 존재
+        // 배송 id 반환
+        return deliveryApplicationMapper.toCreationResponseServiceDto(savedDelivery.getId());
 
-        // stream().map -> List<DeliveryRoute> routes 생성
-        //      순차 배정 방식으로 허브 배송 담당자를 각 배송 경로에 매핑
-        //      정렬되어 온다면, index 값을 sequence에 매핑
-        // DeliveryManager 생성
-        //      허브 배송 담당자, 업체 배송 담당자의 경우, 매핑된 허브 경로의 출발 허브를 hubId로 지정
-        //      업체 배송 담당자의 경우, 소속 업체를 companyId로 지정
-
-        // TODO 3. 배송 생성
-        // Delivery delivery = DeliveryApplicationMapper.INSTANCE.toDelivery(managerId, hubRoutes[0].getDepartureId(),hubRoutes[hubRoutes.size()-1].getDestinationHubId(),requestServiceDto, routes);
-        // deliveryRepository.save(delivery);
-
-        // TODO 4. 배송 UUID 반환
-        // 메시지큐로 구현한다면, 주문 도메인에 UUID 메시지 전송
-        return null;
     }
 
     @Transactional
@@ -92,12 +122,12 @@ public class DeliveryAdminService {
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
         // managerId로 user 쪽에 수정하려는 manager가 '업체 배송 담당자'인지 유효성 검사
-        ResponseEntity<UserRoleType> userResponse = userClient.getUserRoleById(requestServiceDto.managerId());
-        if (userResponse.getStatusCode().is2xxSuccessful() && userResponse.getBody() != null) {
-            if (!userResponse.getBody().equals(UserRoleType.COMPANY_DELIVERY_MANAGER)) {
-                throw new DeliveryException(ErrorCode.BAD_REQUEST);
-            }
-        }
+//        ResponseEntity<UserRoleType> userResponse = userClient.getUserRoleById(requestServiceDto.managerId());
+//        if (userResponse.getStatusCode().is2xxSuccessful() && userResponse.getBody() != null) {
+//            if (!userResponse.getBody().equals(UserRoleType.COMPANY_DELIVERY_MANAGER)) {
+//                throw new DeliveryException(ErrorCode.BAD_REQUEST);
+//            }
+//        }
 
         // managerId로 DeliveryManager 쪽에 수정하려는 manager가 '업체 배송 담당자'인지 유효성 검사
         DeliveryManager newManager = deliveryManagerRepository.findByManagerIdAndIsDeletedFalse(requestServiceDto.managerId())
@@ -171,7 +201,9 @@ public class DeliveryAdminService {
             DeliverySearchRequestServiceDto requestServiceDto) {
 
         DeliverySearchCriteria criteria = createDeliverySearchCriteria(
+                requestServiceDto.id(),
                 requestServiceDto.orderId(),
+                requestServiceDto.orderDetailId(),
                 requestServiceDto.hubId(),
                 requestServiceDto.companyId(),
                 requestServiceDto.status(),
@@ -208,6 +240,8 @@ public class DeliveryAdminService {
 
         DeliveryRouteSearchCriteria criteria = createDeliveryRouteSearchCriteria(
                 requestServiceDto.routeId(),
+                requestServiceDto.orderId(),
+                requestServiceDto.orderDetailId(),
                 requestServiceDto.deliveryId(),
                 requestServiceDto.departureHubId(),
                 requestServiceDto.arriveHubId(),
@@ -264,7 +298,9 @@ public class DeliveryAdminService {
 
     // 배송 조회 검색 조건 생성 (admin)
     private DeliverySearchCriteria createDeliverySearchCriteria(
+            UUID id,
             UUID orderId,
+            UUID orderDetailId,
             UUID hubId,
             UUID companyId,
             DeliveryStatus status,
@@ -272,7 +308,9 @@ public class DeliveryAdminService {
             Boolean isDeleted) {
 
         return DeliverySearchCriteria.builder()
+                .id(id)
                 .orderId(orderId)
+                .orderDetailId(orderDetailId)
                 .hubId(hubId)
                 .companyId(companyId)
                 .status(status)
@@ -285,6 +323,8 @@ public class DeliveryAdminService {
     // 배송 경로 조회 검색 조건 생성 (admin)
     private DeliveryRouteSearchCriteria createDeliveryRouteSearchCriteria(
             UUID routeId,
+            UUID orderId,
+            UUID orderDetailId,
             UUID deliveryId,
             UUID departureHubId,
             UUID arriveHubId,
@@ -296,6 +336,8 @@ public class DeliveryAdminService {
 
         return DeliveryRouteSearchCriteria.builder()
                 .routeId(routeId)
+                .orderId(orderId)
+                .orderDetailId(orderDetailId)
                 .deliveryId(deliveryId)
                 .departureHubId(departureHubId)
                 .arriveHubId(arriveHubId)

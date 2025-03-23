@@ -43,6 +43,7 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
 
         UUID id = criteria.getId();
         UUID orderId = criteria.getOrderId();
+        UUID orderDetailId = criteria.getOrderDetailId();
         UUID hubId = criteria.getHubId();
         UUID companyId = criteria.getCompanyId();
         DeliveryStatus status = criteria.getStatus();
@@ -51,6 +52,7 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
 
         builder.and(eqId(id))
                 .and(eqOrderId(orderId))
+                .and(eqOrderDetailId(orderDetailId))
                 .and(eqHubId(hubId))
                 .and(eqCompanyId(companyId))
                 .and(eqStatus(status))
@@ -98,6 +100,13 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
         return qDelivery.orderId.eq(orderId);
     }
 
+    private BooleanExpression eqOrderDetailId(UUID orderDetailId) {
+        if (orderDetailId == null) {
+            return null;
+        }
+        return qDelivery.orderDetailId.eq(orderDetailId);
+    }
+
     private BooleanExpression eqHubId(UUID hubId) {
         if (hubId == null) {
             return null;
@@ -109,7 +118,7 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
         if (companyId == null) {
             return null;
         }
-        return qDelivery.manager.companyId.eq(companyId);
+        return qDelivery.companyId.eq(companyId);
     }
 
     private BooleanExpression eqStatus(DeliveryStatus status) {
@@ -145,6 +154,8 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
                                            Pageable pageable) {
 
         UUID routeId = criteria.getRouteId();
+        UUID orderId = criteria.getOrderId();
+        UUID orderDetailId = criteria.getOrderDetailId();
         UUID deliveryId = criteria.getDeliveryId();
         UUID departureHubId = criteria.getDepartureHubId();
         UUID arriveHubId = criteria.getArriveHubId();
@@ -156,6 +167,14 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
 
         if (routeId != null) {
             builder.and(qDeliveryRoute.id.eq(routeId));
+        }
+
+        if (orderId != null) {
+            builder.and(qDeliveryRoute.delivery.orderId.eq(orderId));
+        }
+
+        if (orderDetailId != null) {
+            builder.and(qDeliveryRoute.delivery.orderDetailId.eq(orderDetailId));
         }
 
         if (deliveryId != null) {
@@ -171,7 +190,7 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
         }
 
         if (companyId != null) {
-            builder.and(qDeliveryRoute.manager.companyId.eq(companyId));
+            builder.and(qDeliveryRoute.delivery.companyId.eq(companyId));
         }
 
         if (managerId != null) {
@@ -181,7 +200,6 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
         if (status != null) {
             builder.and(qDeliveryRoute.status.eq(status));
         }
-
 
         if (isDeleted != null) {
             builder.and(qDeliveryRoute.isDeleted.eq(isDeleted));
@@ -193,7 +211,8 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
                 .leftJoin(qDelivery).on(qDeliveryRoute.delivery.eq(qDelivery)).fetchJoin()
                 .join(qDeliveryManager).on(qDelivery.manager.id.eq(qDeliveryManager.id)).fetchJoin()
                 .where(builder)
-                .orderBy(QueryDslUtils.getOrderSpecifiers(pageable.getSort(), DeliveryRoute.class))
+                .orderBy(qDeliveryRoute.sequence.asc())
+//                .orderBy(QueryDslUtils.getOrderSpecifiers(pageable.getSort(), DeliveryRoute.class))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -235,7 +254,7 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
      * @param routeId 배송 경로 id
      */
     @Override
-    public Optional<DeliveryRoute> findRouteByIdAndIsDeleted(UUID routeId) {
+    public Optional<DeliveryRoute> findRouteByIdAndIsDeletedFalse(UUID routeId) {
         return Optional.ofNullable(
                 queryFactory
                         .selectFrom(qDeliveryRoute)

@@ -15,6 +15,8 @@ import java.util.UUID;
 public class DeliveryRouteSearchCriteria {
 
     private final UUID routeId;
+    private final UUID orderId;
+    private final UUID orderDetailId;
     private final UUID deliveryId;
     private final UUID departureHubId;
     private final UUID arriveHubId;

@@ -121,6 +121,7 @@ public class DeliveryController {
             @RequestParam(value = "by", required = false) String by,
             @RequestParam(value = "id", required = false) UUID id,
             @RequestParam(value = "orderId", required = false) UUID orderId,
+            @RequestParam(value = "orderDetailId", required = false) UUID orderDetailId,
             @RequestParam(value = "hubId", required = false) UUID hubId,
             @RequestParam(value = "companyId", required = false) UUID companyId,
             @RequestParam(value = "status", required = false) DeliveryStatus status,
@@ -134,6 +135,7 @@ public class DeliveryController {
         DeliverySearchRequestDto requestDto = new DeliverySearchRequestDto(
                 id,
                 orderId,
+                orderDetailId,
                 hubId,
                 companyId,
                 status,
@@ -181,6 +183,8 @@ public class DeliveryController {
             @RequestParam(value = "sortDirection", required = false, defaultValue = "DESC") String sortDirection,
             @RequestParam(value = "by", required = false) String by,
             @RequestParam(value = "routeId", required = false) UUID routeId,
+            @RequestParam(value = "orderId", required = false) UUID orderId,
+            @RequestParam(value = "orderDetailId", required = false) UUID orderDetailId,
             @RequestParam(value = "departureHubId", required = false) UUID departureHubId,
             @RequestParam(value = "arriveHubId", required = false) UUID arriveHubId,
             @RequestParam(value = "companyId", required = false) UUID companyId,
@@ -194,6 +198,8 @@ public class DeliveryController {
 
         DeliveryRouteSearchRequestDto requestDto = new DeliveryRouteSearchRequestDto(
                 routeId,
+                orderId,
+                orderDetailId,
                 departureHubId,
                 arriveHubId,
                 companyId,

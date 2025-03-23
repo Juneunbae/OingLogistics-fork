@@ -6,6 +6,8 @@ import java.util.UUID;
 
 public record DeliveryRouteSearchRequestDto(
         UUID routeId,
+        UUID orderId,
+        UUID orderDetailId,
         UUID departureHubId,
         UUID arriveHubId,
         UUID companyId,
