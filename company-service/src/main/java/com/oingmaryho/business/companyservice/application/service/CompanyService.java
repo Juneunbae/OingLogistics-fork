@@ -3,6 +3,8 @@ package com.oingmaryho.business.companyservice.application.service;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import com.oingmaryho.business.companyservice.application.dto.response.CompanyDe
 import com.oingmaryho.business.companyservice.application.dto.response.CompanySearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyUpdateResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.service.feignClient.HubClient;
+import com.oingmaryho.business.companyservice.config.cache.CacheType;
 import com.oingmaryho.business.companyservice.domain.Company;
 import com.oingmaryho.business.companyservice.domain.CompanySearchCriteria;
 import com.oingmaryho.business.companyservice.domain.repository.CompanyRepository;
@@ -55,6 +58,7 @@ public class CompanyService {
 		return new CompanyCreateResponseServiceDto(savedCompany.getId());
 	}
 
+	@Cacheable(value = CacheType.COMPANY_CACHE, key = "#requestDto.id")
 	public CompanyDetailsSearchResponseServiceDto getCompanyById(CompanyDetailsSearchRequestServiceDto requestDto) {
 		Company company = companyRepository.findByIdAndIsDeletedFalse(requestDto.id())
 			.orElseThrow(() -> new CompanyException(ErrorCode.NOT_FOUND));
@@ -67,6 +71,7 @@ public class CompanyService {
 		return companies.map(companyApplicationMapper::toCompanySearchResponseServiceDto);
 	}
 
+	@CacheEvict(value = CacheType.COMPANY_CACHE, key = "#requestServiceDto.id")
 	@Transactional
 	public CompanyUpdateResponseServiceDto updateCompany(Long requesterId, UserRoleType role,CompanyUpdateRequestServiceDto requestServiceDto) {
 		Company company = companyRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
@@ -82,6 +87,7 @@ public class CompanyService {
 		return companyApplicationMapper.toUpdateResponseDto(company.getId());
 	}
 
+	@CacheEvict(value = CacheType.COMPANY_CACHE, key = "#requestServiceDto.id")
 	@Transactional
 	public void deleteCompany(Long requesterId, CompanyDeleteRequestServiceDto requestServiceDto) {
 		Company company = companyRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
