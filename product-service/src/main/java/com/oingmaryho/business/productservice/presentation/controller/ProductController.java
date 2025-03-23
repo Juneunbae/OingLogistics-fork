@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.oingmaryho.business.common.domain.type.UserRoleType;
+import com.oingmaryho.business.common.infrastructure.annotation.RequiredRoles;
 import com.oingmaryho.business.productservice.application.dto.request.ProductDetailsSearchRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.request.ProductUpdateRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.response.ProductDetailsSearchResponseServiceDto;
@@ -35,6 +37,7 @@ import com.oingmaryho.business.productservice.presentation.dto.response.ProductU
 import com.oingmaryho.business.productservice.presentation.mapper.ProductPresentationMapper;
 import com.oingmaryho.business.productservice.utils.PageableUtils;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -46,8 +49,12 @@ public class ProductController {
 	private final ProductPresentationMapper productPresentationMapper;
 
 	@Description("일반 - 상품 등록")
+	@RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.COMPANY_MANAGER})
 	@PostMapping
-	public ResponseEntity<ProductCreateResponseDto> createProduct(@RequestBody ProductCreateRequestDto productCreateRequestDto){
+	public ResponseEntity<ProductCreateResponseDto> createProduct(
+		@RequestBody ProductCreateRequestDto productCreateRequestDto,
+		HttpServletRequest request
+	) {
 		// TODO: userId, role 받아오기
 		ProductCreateRequestServiceDto requestServiceDto = productPresentationMapper.toCreateServiceDto(productCreateRequestDto);
 		ProductCreateResponseServiceDto responseServiceDto = productService.createProduct(requestServiceDto);
@@ -56,6 +63,7 @@ public class ProductController {
 	}
 
 	@Description("일반 - 상품 전체 조회")
+	@RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.COMPANY_MANAGER, UserRoleType.COMPANY_DELIVERY_MANAGER, UserRoleType.HUB_DELIVERY_MANAGER})
 	@GetMapping
 	public ResponseEntity<Page<ProductSearchResponseDto>> getProducts(
 		@RequestParam(name = "page", defaultValue = "0") int page,
@@ -83,6 +91,7 @@ public class ProductController {
 	}
 
 	@Description("일반 - 상품 상세 조회")
+	@RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.COMPANY_MANAGER, UserRoleType.COMPANY_DELIVERY_MANAGER, UserRoleType.HUB_DELIVERY_MANAGER})
 	@GetMapping("/{id}")
 	public ResponseEntity<ProductDetailsSearchResponseDto> getProductById(@PathVariable UUID id) {
 		ProductDetailsSearchRequestServiceDto requestServiceDto = productPresentationMapper.toDetailsSearchServiceDto(id);
@@ -92,6 +101,7 @@ public class ProductController {
 	}
 
 	@Description("일반 - 상품 수정")
+	@RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.COMPANY_MANAGER})
 	@PutMapping("/{id}")
 	public ResponseEntity<ProductUpdateResponseDto> updateProduct(@PathVariable UUID id, @RequestBody ProductUpdateRequestDto productUpdateRequestDto){
 		ProductUpdateRequestServiceDto requestServiceDto = productPresentationMapper.toUpdateServiceDto(id, productUpdateRequestDto);
@@ -101,10 +111,12 @@ public class ProductController {
 	}
 
 	@Description("일반 상품 삭제")
+	@RequiredRoles({UserRoleType.HUB_MANAGER})
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteProduct(@PathVariable UUID id){
+
 		ProductDeleteRequestServiceDto requestServiceDto = productPresentationMapper.toDeleteServiceDto(id);
-		productService.deleteProduct(1L, requestServiceDto);
+		productService.deleteProduct(4L, requestServiceDto);
 		return ResponseEntity.noContent().build();
 	}
 }
