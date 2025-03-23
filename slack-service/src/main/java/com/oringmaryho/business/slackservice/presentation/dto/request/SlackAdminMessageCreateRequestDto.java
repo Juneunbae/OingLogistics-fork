@@ -1,5 +1,5 @@
 package com.oringmaryho.business.slackservice.presentation.dto.request;
 
-public record SlackMessageCreateRequestDto(Long id, String message) {
+public record SlackAdminMessageCreateRequestDto(Long id, String message) {
 
 }

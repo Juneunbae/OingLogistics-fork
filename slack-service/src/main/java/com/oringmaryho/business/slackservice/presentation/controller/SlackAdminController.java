@@ -1,14 +1,14 @@
 package com.oringmaryho.business.slackservice.presentation.controller;
 
-import com.oringmaryho.business.slackservice.application.dto.request.SlackMessageCreateRequestServiceDto;
+import com.oringmaryho.business.slackservice.application.dto.request.SlackAdminMessageCreateRequestServiceDto;
 import com.oringmaryho.business.slackservice.application.dto.request.SlackMessageDeleteRequestServiceDto;
 import com.oringmaryho.business.slackservice.application.dto.request.SlackMessageSearchRequestServiceDto;
 import com.oringmaryho.business.slackservice.application.dto.request.SlackMessageUpdateRequestServiceDto;
-import com.oringmaryho.business.slackservice.application.service.SlackMessageService;
+import com.oringmaryho.business.slackservice.application.service.SlackAdminMessageService;
 import com.oringmaryho.business.slackservice.config.pageable.PageableConfig;
 import com.oringmaryho.business.slackservice.presentation.dto.mapper.SlackPresentationMapper;
 import com.oringmaryho.business.slackservice.application.dto.request.SlackMessageFindRequestServiceDto;
-import com.oringmaryho.business.slackservice.presentation.dto.request.SlackMessageCreateRequestDto;
+import com.oringmaryho.business.slackservice.presentation.dto.request.SlackAdminMessageCreateRequestDto;
 import com.oringmaryho.business.slackservice.presentation.dto.request.SlackMessageRequestDto;
 import com.oringmaryho.business.slackservice.presentation.dto.request.SlackMessageSearchRequestDto;
 import com.oringmaryho.business.slackservice.presentation.dto.request.SlackMessageUpdateResponseDto;
@@ -27,7 +27,7 @@ import java.util.UUID;
 @RequestMapping("/admin/v1/slack-messages")
 public class SlackAdminController {
 
-  private final SlackMessageService slackMessageService;
+  private final SlackAdminMessageService slackAdminMessageService;
   private final SlackPresentationMapper slackPresentationMapper;
   private final PageableConfig pageableConfig;
 
@@ -45,7 +45,7 @@ public class SlackAdminController {
     Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
     SlackMessageSearchRequestServiceDto requestServiceDto = slackPresentationMapper.toSlackMessageSearchRequestServiceDto(
         requestDto, customPageable);
-    List<SlackMessageResponseDto> responseDtos = slackMessageService.getSlackMessages(requestServiceDto);
+    List<SlackMessageResponseDto> responseDtos = slackAdminMessageService.getSlackMessages(requestServiceDto);
     return ResponseEntity.ok(responseDtos);
   }
 
@@ -57,7 +57,7 @@ public class SlackAdminController {
       @PathVariable UUID id
   ) {
     SlackMessageFindRequestServiceDto requestServiceDto = slackPresentationMapper.toSlackMessageFindRequestServiceDto(id);
-    SlackMessageResponseDto message = slackMessageService.getSlackMessageById(id);
+    SlackMessageResponseDto message = slackAdminMessageService.getSlackMessageById(id);
     return ResponseEntity.ok(message);
   }
 
@@ -66,9 +66,9 @@ public class SlackAdminController {
   )
   @PostMapping
   public ResponseEntity<Void> createSlackMessage(
-      @RequestBody SlackMessageCreateRequestDto requestDto
+      @RequestBody SlackAdminMessageCreateRequestDto requestDto
   ) {
-    SlackMessageCreateRequestServiceDto createdMessage = slackMessageService.createSlackMessage(requestDto);
+    SlackAdminMessageCreateRequestServiceDto createdMessage = slackAdminMessageService.createSlackMessage(requestDto);
     return ResponseEntity.ok().build();
   }
 
@@ -81,7 +81,7 @@ public class SlackAdminController {
       @RequestBody SlackMessageRequestDto requestDto
   ) {
     SlackMessageUpdateRequestServiceDto requestServiceDto = slackPresentationMapper.toSlackMessageUpdateRequestServiceDto(requestDto);
-    SlackMessageUpdateResponseDto updatedMessage = slackMessageService.updateSlackMessage(id, requestDto);
+    SlackMessageUpdateResponseDto updatedMessage = slackAdminMessageService.updateSlackMessage(id, requestDto);
     return ResponseEntity.ok(updatedMessage);
   }
 
@@ -93,7 +93,7 @@ public class SlackAdminController {
       @PathVariable UUID id
   ) {
     SlackMessageDeleteRequestServiceDto requestServiceDto = slackPresentationMapper.toSlackMessageDeleteRequestServiceDto(id);
-    slackMessageService.deleteSlackMessage(requestServiceDto);
+    slackAdminMessageService.deleteSlackMessage(requestServiceDto);
     return ResponseEntity.ok().build();
   }
 }
