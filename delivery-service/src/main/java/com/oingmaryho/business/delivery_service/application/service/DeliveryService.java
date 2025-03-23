@@ -202,6 +202,7 @@ public class DeliveryService {
 
         // 허브 관리자 : 본인이 담당하는 허브의 배송인 지 유효성 검사
         if (userRole == UserRoleType.HUB_MANAGER) {
+            System.out.println(">>들어오나요?");
             ResponseEntity<HubSearchResponseDto> response = hubClient.getHubByManagerId(userId);
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 HubSearchResponseDto hubDto = response.getBody();

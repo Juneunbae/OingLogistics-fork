@@ -17,6 +17,7 @@ public interface DeliveryPresentationMapper {
     // RequestServiceDto -> RequestDto
     @Mapping(target = "receiver", source = "requestDto.requesterName")
     @Mapping(target = "receiverSlackId", source = "requestDto.requesterSlackId")
+    @Mapping(target = "companyId", source = "requestDto.recipientId")
     @Mapping(target = "hubId", source = "requestDto.recipientHubId")
     @Mapping(target = "address", source = "requestDto.requesterAddress")
     DeliveryCreationRequestServiceDto toCreationServiceDto(DeliveryCreationRequestDto requestDto);

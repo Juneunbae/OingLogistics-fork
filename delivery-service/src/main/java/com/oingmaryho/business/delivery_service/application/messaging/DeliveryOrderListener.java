@@ -34,6 +34,7 @@ public class DeliveryOrderListener {
         DeliveryCreationRequestServiceDto requestServiceDto = new DeliveryCreationRequestServiceDto(
                 requestDto.orderId(),
                 requestDto.orderDetailId(),
+                requestDto.recipientId(),
                 requestDto.requesterAddress(),
                 requestDto.requesterName(),
                 requestDto.requesterSlackId(),
@@ -42,14 +43,12 @@ public class DeliveryOrderListener {
 
         DeliveryCreationResponseServiceDto responseServiceDto = deliveryAdminService.createDelivery(requestServiceDto);
 
-        UUID deliveryId = UUID.randomUUID();
-        log.info("[Delivery Creation Success Response] orderId = {}, orderDetailId = {}, deliveryId = {}",requestDto.orderId(), requestDto.orderDetailId(), deliveryId);
+        log.info("[Delivery Creation Success Response] orderId = {}, orderDetailId = {}, deliveryId = {}",responseServiceDto.orderId(),responseServiceDto.orderDetailId(), responseServiceDto.deliveryId());
 
         rabbitTemplate.convertAndSend(queueOrder, new DeliveryCreationResponseDto(
                 requestDto.orderId(),
                 requestDto.orderDetailId(),
-                deliveryId));
-//                responseServiceDto.id()));
+                responseServiceDto.deliveryId()));
     }
 
 }

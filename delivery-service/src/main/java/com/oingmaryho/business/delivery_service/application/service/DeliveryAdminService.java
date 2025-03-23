@@ -58,59 +58,93 @@ public class DeliveryAdminService {
                 .map(ResponseEntity::getBody)
                 .orElseThrow(() -> new DeliveryException(ErrorCode.HUB_ROUTE_NOT_FOUND));
 
+        // logging
         for (int i = 0; i < hubRoutes.size(); i++) {
-            log.info("route{} : departureId({}) arriveId({}) time({}) dist({})", i, hubRoutes.get(i).departureHubId(), hubRoutes.get(i).arriveHubId(), hubRoutes.get(i).hubToHubTime(), hubRoutes.get(i).distance());
+            log.info("route{} : departureId({}) arriveId({}) time({}) dist({})",
+                    i,
+                    hubRoutes.get(i).departureHubId(),
+                    hubRoutes.get(i).arriveHubId(),
+                    hubRoutes.get(i).hubToHubTime(),
+                    hubRoutes.get(i).distance());
         }
 
-//        Delivery delivery = Delivery.builder()
-//                .departureHubId(hubRoutes.get(0).departureHubId())
-//                .arriveHubId(hubRoutes.get(hubRoutes.size()-1).arriveHubId())
-//                .address(requestServiceDto.address())
-//                .receiver(requestServiceDto.receiver())
-//                .receiverSlackId(requestServiceDto.receiverSlackId())
-//                .build();
-//
-//        // 각 배송 경로에 허브 배송 담당자 배정
-//        for (HubPathResponseDto route : hubRoutes) {
-//            int routeSequence = 1;      // 배송 경로 상 순번
-//            int hubDeliveryManagerSequence = 0;    // TODO Redis에서 조회 (key: hub:delivery:sequence)
-//
-//            DeliveryManager hubDeliveryManager = deliveryManagerRepository.findByTypeAndSequence(
-//                            DeliveryManagerType.HUB_DELIVERY_MANAGER, hubDeliveryManagerSequence % 10)
-//                    .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
-//
-//            hubDeliveryManagerSequence++;
-//            DeliveryRoute deliveryRoute = DeliveryRoute.builder()
-//                    .delivery(delivery)
-//                    .sequence(routeSequence)
-//                    .departureHubId(route.departureHubId())
-//                    .arriveHubId(route.arriveHubId())
-//                    .status(DeliveryRouteStatus.HUB_WAITING)
-//                    .estimatedDistance(route.distance())
-//                    .estimatedTime(route.hubToHubTime())
-//                    .manager(hubDeliveryManager)
-//                    .build();
-//
-//            routeSequence++;
-//
-//            // 배송 엔티티에 배송 경로 양방향 설정
-//            deliveryRoute.addRoute(delivery);
-//        }
-//
-//        // 배송에 업체 배송 담당자 배정
-//        int companyDeliveryManagerSequence = 0; // TODO Redis에서 조회 (key: company:delivery:sequence:{hubId})
-//        DeliveryManager companyDeliveryManager = deliveryManagerRepository.findByHubIdAndTypeAndSequence(
-//                        delivery.getArriveHubId(), DeliveryManagerType.COMPANY_DELIVERY_MANAGER, companyDeliveryManagerSequence % 10)
-//                .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
-//
-//        delivery.update(null,null,null,companyDeliveryManager);
-//
-//
-//        // 배송 저장
-//        Delivery savedDelivery = deliveryRepository.save(delivery);
+        Delivery delivery = Delivery.builder()
+                .orderId(requestServiceDto.orderId())
+                .orderDetailId(requestServiceDto.orderDetailId())
+                .companyId(requestServiceDto.companyId())
+                .departureHubId(hubRoutes.get(0).departureHubId())
+                .arriveHubId(hubRoutes.get(hubRoutes.size()-1).arriveHubId())
+                .address(requestServiceDto.address())
+                .receiver(requestServiceDto.receiver())
+                .receiverSlackId(requestServiceDto.receiverSlackId())
+                .build();
+
+        int routeSequence = 0;      // 배송 경로 상 순번
+        // 각 배송 경로에 허브 배송 담당자 배정 (0번부터 순차 배정)
+        for (HubPathResponseDto route : hubRoutes) {
+            String hubDeliveryManagerSequenceKey = "hub:delivery:sequence";
+            if (!redisTemplate.hasKey(hubDeliveryManagerSequenceKey)) {
+                redisTemplate.opsForValue().set(hubDeliveryManagerSequenceKey, 0);
+            }
+
+            Object value = redisTemplate.opsForValue().get(hubDeliveryManagerSequenceKey);
+            Integer hubDeliveryManagerSequence = Optional.ofNullable(value)
+                    .map(Object::toString)
+                    .map(Integer::parseInt)
+                    .orElse(0); // 없으면 0번 sequence 허브 배송 담당자부터 배정
+
+
+            DeliveryManager hubDeliveryManager = deliveryManagerRepository.findByTypeAndSequence(
+                            DeliveryManagerType.HUB_DELIVERY_MANAGER, hubDeliveryManagerSequence % 10)
+                    .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
+
+            redisTemplate.opsForValue().increment(hubDeliveryManagerSequenceKey);
+
+            DeliveryRoute deliveryRoute = DeliveryRoute.builder()
+                    .delivery(delivery)
+                    .sequence(routeSequence)
+                    .departureHubId(route.departureHubId())
+                    .arriveHubId(route.arriveHubId())
+                    .status(DeliveryRouteStatus.HUB_WAITING)
+                    .estimatedDistance(route.distance())
+                    .estimatedTime(route.hubToHubTime())
+                    .manager(hubDeliveryManager)
+                    .build();
+
+            routeSequence++;
+
+            // 배송 엔티티에 배송 경로 양방향 설정
+            deliveryRoute.addRoute(delivery);
+        }
+
+        // 배송에 업체 배송 담당자 배정 (배송 경로 기준 마지막 경로의 도착지 허브에 있는 업체 배송 담당자 중 0번부터 순차 배정)
+        String companyDeliveryManagerSequenceKey = "company:delivery:sequence" + hubRoutes.get(hubRoutes.size() - 1).arriveHubId();
+        if (!redisTemplate.hasKey(companyDeliveryManagerSequenceKey)) {
+            redisTemplate.opsForValue().set(companyDeliveryManagerSequenceKey, 0);
+        }
+
+        Object value = redisTemplate.opsForValue().get(companyDeliveryManagerSequenceKey + hubRoutes.get(hubRoutes.size()-1).arriveHubId());
+        Integer companyDeliveryManagerSequence = Optional.ofNullable(value)
+                .map(Object::toString)
+                .map(Integer::parseInt)
+                .orElse(0); // 없으면 0번 sequence 업체 배송 담당자부터 배정
+
+        DeliveryManager companyDeliveryManager = deliveryManagerRepository.findByHubIdAndTypeAndSequence(
+                        delivery.getArriveHubId(), DeliveryManagerType.COMPANY_DELIVERY_MANAGER, companyDeliveryManagerSequence % 10)
+                .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
+
+        redisTemplate.opsForValue().increment(companyDeliveryManagerSequenceKey);
+
+        delivery.update(null,null,null,companyDeliveryManager);
+
+        // 배송 저장
+        Delivery savedDelivery = deliveryRepository.save(delivery);
 
         // 배송 id 반환
-        return deliveryApplicationMapper.toCreationResponseServiceDto(UUID.randomUUID());
+        return deliveryApplicationMapper.toCreationResponseServiceDto(
+                savedDelivery.getOrderId(),
+                savedDelivery.getOrderDetailId(),
+                savedDelivery.getId());
 
     }
 
@@ -124,16 +158,18 @@ public class DeliveryAdminService {
             UserRoleType userRole,
             DeliveryUpdateRequestServiceDto requestServiceDto) {
 
+        System.out.println(userId);
+
         Delivery delivery = deliveryRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
         // managerId로 user 쪽에 수정하려는 manager가 '업체 배송 담당자'인지 유효성 검사
-//        ResponseEntity<UserRoleType> userResponse = userClient.getUserRoleById(requestServiceDto.managerId());
-//        if (userResponse.getStatusCode().is2xxSuccessful() && userResponse.getBody() != null) {
-//            if (!userResponse.getBody().equals(UserRoleType.COMPANY_DELIVERY_MANAGER)) {
-//                throw new DeliveryException(ErrorCode.BAD_REQUEST);
-//            }
-//        }
+        ResponseEntity<UserRoleType> userResponse = userClient.getUserRoleById(requestServiceDto.managerId());
+        if (userResponse.getStatusCode().is2xxSuccessful() && userResponse.getBody() != null) {
+            if (!userResponse.getBody().equals(UserRoleType.COMPANY_DELIVERY_MANAGER)) {
+                throw new DeliveryException(ErrorCode.BAD_REQUEST);
+            }
+        }
 
         // managerId로 DeliveryManager 쪽에 수정하려는 manager가 '업체 배송 담당자'인지 유효성 검사
         DeliveryManager newManager = deliveryManagerRepository.findByManagerIdAndIsDeletedFalse(requestServiceDto.managerId())
