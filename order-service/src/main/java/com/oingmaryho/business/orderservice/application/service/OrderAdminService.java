@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -41,7 +42,6 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class OrderAdminService {
-    private final OrderEvent orderEvent;
     private final CacheManager cacheManager;
     private final CompanyClient companyClient;
     private final ProductClient productClient;
@@ -115,16 +115,23 @@ public class OrderAdminService {
         int totalPrice = 0;
         ArrayList<OrderDetail> details = new ArrayList<>();
 
-        // recipientId, recipientName, requests
+        log.info("-");
         CompanyDetailsSearchResponseDto requestCompanyInfo = getCompanyInfo(create.requesterId());
+        log.info("requestCompanyInfo: {}", requestCompanyInfo);
 
         Order order = Order.builder()
             .requesterId(requestCompanyInfo.id())
+            .requesterSlackId(create.slackId())
             .requesterName(requestCompanyInfo.name())
+            .requesterAddress(requestCompanyInfo.address())
+            .requesterUserId(create.userId())
+            .requesterUsername(create.username())
             .status(Status.ORDERING)
             .requests(create.requests())
             .totalPrice(totalPrice)
             .isDeleted(false)
+            .createdAt(LocalDateTime.now())
+            .createdBy(create.userId())
             .build();
 
         // orderId, requesterId, requesterName, productId, quantity
@@ -167,11 +174,14 @@ public class OrderAdminService {
                 .order(order)
                 .recipientId(productInfo.companyId())
                 .recipientName(productInfo.companyName())
+                .recipientHubId(productInfo.manageHubId())
                 .productId(productInfo.id())
                 .productName(productInfo.name())
                 .quantity(orderDetail.quantity())
                 .price(productInfo.price())
                 .isDeleted(false)
+                .createdAt(LocalDateTime.now())
+                .createdBy(create.userId())
                 .build();
 
             details.add(detail);
@@ -181,7 +191,7 @@ public class OrderAdminService {
         order.addOrderDetail(details);
 
         orderRepository.save(order);
-        publisher.publishEvent(order);
+        publisher.publishEvent(new OrderEvent(order));
     }
 
     @Transactional
@@ -349,7 +359,7 @@ public class OrderAdminService {
     }
 
     private CompanyDetailsSearchResponseDto getCompanyInfo(UUID companyId) {
-        return companyClient.getCompany(companyId)
+        return companyClient.getCompanyId(companyId)
             .orElseThrow(() -> new OrderException(ErrorCode.COMPANY_NOT_FOUND));
     }
 

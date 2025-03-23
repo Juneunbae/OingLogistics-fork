@@ -39,7 +39,7 @@ public class UserInterceptor implements HandlerInterceptor {
             return false;   // TODO throw Exception
         }
 
-        if (!userInfo.get("status").equals(UserStatus.CONFIRMED)) {
+        if (!userInfo.get("status").equals(UserStatus.CONFIRMED.name())) {
             return false;   // TODO throw Exception
         }
 
@@ -60,7 +60,6 @@ public class UserInterceptor implements HandlerInterceptor {
             return false;   // TODO throw Exception
         }
         request.setAttribute("role", userInfo.get("role"));
-
         return true;
     }
 }

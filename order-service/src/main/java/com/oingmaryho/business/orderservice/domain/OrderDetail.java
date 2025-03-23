@@ -36,6 +36,8 @@ public class OrderDetail extends BaseEntity {
     )
     private String recipientName;
 
+    private UUID recipientHubId;
+
     private UUID deliveryId;
 
     @Column(
@@ -72,5 +74,9 @@ public class OrderDetail extends BaseEntity {
 
     public void delete() {
         this.isDeleted = true;
+    }
+
+    public void updateDelivery(UUID deliveryId) {
+        this.deliveryId = deliveryId;
     }
 }

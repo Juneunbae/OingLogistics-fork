@@ -21,21 +21,30 @@ public class OrderApplicationQueueConfig {
         return new Jackson2JsonMessageConverter(objectMapper);
     }
 
-    @Value("${message.exchange}")
-    private String exchange;
+    @Value("${message.product.exchange}")
+    private String productExchange;
 
     @Value("${message.queue.product}")
     private String queueProduct;
 
-    @Value("${message.err.exchange}")
-    private String errExchange;
+    @Value("${message.product.err.exchange}")
+    private String productErrExchange;
 
     @Value("${message.queue.err.product}")
     private String queueErrProduct;
 
+    @Value("${message.delivery.exchange}")
+    private String deliveryExchange;
+
+    @Value("${message.queue.delivery}")
+    private String queueDelivery;
+
+    @Value("${message.queue.order}")
+    private String queueOrder;
+
     @Bean
     public TopicExchange exchange() {
-        return new TopicExchange(exchange);
+        return new TopicExchange(productExchange);
     }
 
     @Bean
@@ -50,7 +59,7 @@ public class OrderApplicationQueueConfig {
 
     @Bean
     public TopicExchange errExchange() {
-        return new TopicExchange(errExchange);
+        return new TopicExchange(productErrExchange);
     }
 
     @Bean
@@ -60,6 +69,26 @@ public class OrderApplicationQueueConfig {
 
     @Bean
     public Binding bindingErrProduct() {
-        return BindingBuilder.bind(queueErrProduct()).to(errExchange()).with(errExchange);
+        return BindingBuilder.bind(queueErrProduct()).to(errExchange()).with(productErrExchange);
+    }
+
+    @Bean
+    public TopicExchange deliveryExchange() {
+        return new TopicExchange(deliveryExchange);
+    }
+
+    @Bean
+    public Queue queueDelivery() {
+        return new Queue(queueDelivery);
+    }
+
+    @Bean
+    public Binding bindingDelivery() {
+        return BindingBuilder.bind(queueDelivery()).to(deliveryExchange()).with(deliveryExchange);
+    }
+
+    @Bean
+    public Queue queueOrder() {
+        return new Queue(queueOrder);
     }
 }

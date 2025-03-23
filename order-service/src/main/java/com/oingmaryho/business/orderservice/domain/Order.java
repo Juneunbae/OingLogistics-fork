@@ -36,6 +36,25 @@ public class Order extends BaseEntity {
     private String requesterName;
 
     @Column(
+        nullable = false,
+        length = 100
+    )
+    private String requesterAddress;
+
+    private Long requesterUserId;
+
+    @Column(
+        length = 50
+    )
+    private String requesterUsername;
+
+    @Column(
+        nullable = false,
+        length = 50
+    )
+    private String requesterSlackId;
+
+    @Column(
         nullable = false
     )
     @Enumerated(EnumType.STRING)
