@@ -41,4 +41,7 @@ public class SlackMessage extends BaseEntity implements Serializable {
 	@Column(name = "slack_id", nullable = false)
 	private LocalDateTime sentAt;
 
+	public void setMessage(String message) {
+		this.message = message;
+	}
 }

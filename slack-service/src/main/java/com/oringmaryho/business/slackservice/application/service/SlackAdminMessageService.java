@@ -7,10 +7,13 @@ import java.util.UUID;
 import org.springframework.context.annotation.Description;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.oringmaryho.business.slackservice.application.dto.mapper.SlackApplicationMapper;
 import com.oringmaryho.business.slackservice.application.dto.request.SlackAdminMessageCreateRequestServiceDto;
 import com.oringmaryho.business.slackservice.application.dto.request.SlackMessageDeleteRequestServiceDto;
 import com.oringmaryho.business.slackservice.application.dto.request.SlackMessageSearchRequestServiceDto;
+import com.oringmaryho.business.slackservice.application.dto.request.SlackMessageUpdateRequestServiceDto;
 import com.oringmaryho.business.slackservice.application.feign.UserClient;
 import com.oringmaryho.business.slackservice.application.utils.DirectMessageService;
 import com.oringmaryho.business.slackservice.domain.SlackMessage;
@@ -18,7 +21,6 @@ import com.oringmaryho.business.slackservice.exception.ErrorCode;
 import com.oringmaryho.business.slackservice.exception.SlackException;
 import com.oringmaryho.business.slackservice.infrastructure.SlackJpaRepository;
 import com.oringmaryho.business.slackservice.presentation.dto.request.SlackAdminMessageCreateRequestDto;
-import com.oringmaryho.business.slackservice.presentation.dto.request.SlackMessageRequestDto;
 import com.oringmaryho.business.slackservice.presentation.dto.request.SlackMessageUpdateResponseDto;
 import com.oringmaryho.business.slackservice.presentation.dto.response.SlackMessageResponseDto;
 
@@ -33,6 +35,7 @@ public class SlackAdminMessageService {
 	private final DirectMessageService directMessageService;
 	private final UserClient userClient;
 	private final SlackJpaRepository slackJpaRepository;
+	private final SlackApplicationMapper slackApplicationMapper;
 
 	@Description("모든 슬랙 메시지 조회")
 	public List<SlackMessageResponseDto> getSlackMessages(SlackMessageSearchRequestServiceDto requestServiceDto) {
@@ -47,6 +50,7 @@ public class SlackAdminMessageService {
 	@Description(
 		"슬랙 메시지 생성: 슬랙 컨트롤러에서 받음"
 	)
+	@Transactional
 	public void createSlackMessage(SlackAdminMessageCreateRequestServiceDto requestDto) {
 
 		//user service에서 슬랙 아이디 받아오기
@@ -111,12 +115,19 @@ public class SlackAdminMessageService {
 	}
 
 	@Description("슬랙 메시지 수정")
-	public SlackMessageUpdateResponseDto updateSlackMessage(UUID id, SlackMessageRequestDto requestDto) {
-		return null;
+	@Transactional
+	public SlackMessageUpdateResponseDto updateSlackMessage(SlackMessageUpdateRequestServiceDto requestServiceDto) {
+		SlackMessage slackMessage = slackJpaRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new SlackException(ErrorCode.NOT_FOUND));
+		slackMessage.setMessage(requestServiceDto.message());
+		return slackApplicationMapper.toSlackMessageUpdateResponseDto(requestServiceDto.id());
 	}
 
 	@Description("슬랙 메시지 삭제")
+	@Transactional
 	public void deleteSlackMessage(SlackMessageDeleteRequestServiceDto requestServiceDto) {
-
+		SlackMessage slackMessage = slackJpaRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new SlackException(ErrorCode.NOT_FOUND));
+		slackMessage.softDelete(requestServiceDto.userId());
 	}
 }

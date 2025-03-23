@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.context.annotation.Description;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,6 +33,7 @@ import com.oringmaryho.business.slackservice.presentation.dto.request.SlackMessa
 import com.oringmaryho.business.slackservice.presentation.dto.request.SlackMessageUpdateResponseDto;
 import com.oringmaryho.business.slackservice.presentation.dto.response.SlackMessageResponseDto;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -98,8 +101,8 @@ public class SlackAdminController {
 		@RequestBody SlackMessageRequestDto requestDto
 	) {
 		SlackMessageUpdateRequestServiceDto requestServiceDto = slackPresentationMapper.toSlackMessageUpdateRequestServiceDto(
-			requestDto);
-		SlackMessageUpdateResponseDto updatedMessage = slackAdminMessageService.updateSlackMessage(id, requestDto);
+			id, requestDto);
+		SlackMessageUpdateResponseDto updatedMessage = slackAdminMessageService.updateSlackMessage(requestServiceDto);
 		return ResponseEntity.ok(updatedMessage);
 	}
 
@@ -108,10 +111,12 @@ public class SlackAdminController {
 	)
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteSlackMessage(
-		@PathVariable UUID id
+		@PathVariable UUID id,
+		HttpServletRequest request
 	) {
+		Long userId = (Long) request.getAttribute("userId");
 		SlackMessageDeleteRequestServiceDto requestServiceDto = slackPresentationMapper.toSlackMessageDeleteRequestServiceDto(
-			id);
+			userId, id);
 		slackAdminMessageService.deleteSlackMessage(requestServiceDto);
 		return ResponseEntity.ok().build();
 	}
