@@ -16,4 +16,5 @@ public class SlackMessageSearchCriteria {
   private Long receiverId;
   private String message;
   private LocalDateTime sentAt;
+  private Boolean isDeleted;
 }
