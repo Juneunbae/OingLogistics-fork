@@ -124,9 +124,9 @@ public class CompanyController {
 		@PathVariable UUID id,
 		HttpServletRequest request
 	) {
-		// TODO: userId 받아오기
+		Long userId = (Long) request.getAttribute("userId");
 		CompanyDeleteRequestServiceDto requestServiceDto = companyPresentationMapper.toDeleteServiceDto(id);
-		companyService.deleteCompany(1L, requestServiceDto);
+		companyService.deleteCompany(userId, requestServiceDto);
 		return ResponseEntity.noContent().build();
 	}
 

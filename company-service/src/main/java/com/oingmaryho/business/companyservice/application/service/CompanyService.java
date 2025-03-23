@@ -1,6 +1,7 @@
 package com.oingmaryho.business.companyservice.application.service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,10 +43,7 @@ public class CompanyService {
 		CompanyCreateRequestServiceDto companyCreateRequestServiceDto,
 		Long requesterId) {
 
-		Optional<HubSearchResponseDto> optionalHub = hubClient.isManagerOfHub(requesterId);
-		if (optionalHub.isEmpty() || !optionalHub.get().id().equals(companyCreateRequestServiceDto.manageHubId())) {
-			throw new CompanyException(ErrorCode.NO_PERMISSION);
-		}
+		validateManageHubPermission(requesterId, companyCreateRequestServiceDto.manageHubId());
 
 		String productCode = companyCreateRequestServiceDto.type();
 		if (companyRepository.existsByProductCode(productCode)) {
@@ -87,10 +85,13 @@ public class CompanyService {
 	}
 
 	@Transactional
-	public void deleteCompany(Long userId, CompanyDeleteRequestServiceDto requestServiceDto) {
+	public void deleteCompany(Long requesterId, CompanyDeleteRequestServiceDto requestServiceDto) {
 		Company company = companyRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
 			.orElseThrow(() -> new CompanyException(ErrorCode.NOT_FOUND));
-		company.softDelete(userId);
+
+		validateManageHubPermission(requesterId, company.getManageHubId());
+
+		company.softDelete(requesterId);
 	}
 
 	private CompanySearchCriteria createCompanySearchCriteria(CompanySearchRequestServiceDto requestDto){
@@ -106,5 +107,13 @@ public class CompanyService {
 
 	}
 
+	private void validateManageHubPermission(Long requesterId, UUID targetHubId) {
+		HubSearchResponseDto managedHub = hubClient.isManagerOfHub(requesterId)
+			.orElseThrow(() -> new CompanyException(ErrorCode.HUB_NOT_FOUND_BY_MANAGER));
+
+		if (!managedHub.id().equals(targetHubId)) {
+			throw new CompanyException(ErrorCode.NO_PERMISSION);
+		}
+	}
 
 }
