@@ -20,7 +20,7 @@ public class UserInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         log.info("user preHandle");
-        String userId = request.getHeader("X-User-Id");
+        Long userId = Long.valueOf(request.getHeader("X-User-Id"));
 
         if (userId == null) {
             return false;    // TODO throw Exception

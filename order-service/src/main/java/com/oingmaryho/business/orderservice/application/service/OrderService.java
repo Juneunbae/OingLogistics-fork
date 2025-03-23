@@ -1,26 +1,39 @@
 package com.oingmaryho.business.orderservice.application.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oingmaryho.business.orderservice.application.dto.mapper.OrderApplicationMapper;
 import com.oingmaryho.business.orderservice.application.dto.request.*;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.event.OrderEvent;
+import com.oingmaryho.business.orderservice.application.service.feignclient.CompanyClient;
 import com.oingmaryho.business.orderservice.application.service.feignclient.ProductClient;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
+import com.oingmaryho.business.orderservice.domain.Status;
+import com.oingmaryho.business.orderservice.domain.repository.OrderRepository;
 import com.oingmaryho.business.orderservice.exception.ErrorCode;
 import com.oingmaryho.business.orderservice.exception.OrderException;
 import com.oingmaryho.business.orderservice.infrastructure.OrderJPARepository;
+import com.oingmaryho.business.orderservice.presentation.dto.response.CompanyDetailsSearchResponseDto;
+import com.oingmaryho.business.orderservice.presentation.dto.response.ProductDetailsSearchResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,14 +42,26 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderService {
     private final CacheManager cacheManager;
+    private final CompanyClient companyClient;
     private final ProductClient productClient;
+    private final RabbitTemplate rabbitTemplate;
+    private final OrderRepository orderRepository;
+    private final ApplicationEventPublisher publisher;
     private final OrderJPARepository orderJPARepository;
     private final OrderApplicationMapper orderApplicationMapper;
 
+    @Value("${message.queue.product}")
+    private String queueProduct;
+
+    @Value("${message.queue.err.product}")
+    private String queueErrProduct;
+
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = "orders")
-    public Page<OrderResponseServiceDto> getOrders(OrdersRequestServiceDto ordersRequestServiceDto) {
+    public Page<OrderResponseServiceDto> getOrders(Long userId, String username, String slackId, String role, OrdersRequestServiceDto ordersRequestServiceDto) {
         // TODO: Role - HubManager, HubDeliveryManager, CompanyDeliveryManager, CompanyManager 설정하기
+
+        log.info("{}, {}, {}, {}", userId, username, slackId, role);
 
         Pageable customPageable = ordersRequestServiceDto.customPageable();
         Page<Order> orders = orderJPARepository.findAll(customPageable);
@@ -54,10 +79,107 @@ public class OrderService {
         return new PageImpl<>(ordersDto, customPageable, orders.getTotalElements());
     }
 
-    @Transactional
-    public void updateOrder(OrderUpdateServiceDto update) {
-        // TODO: 허브 관리자 검증하기
+    @Transactional(readOnly = true)
+    public OrderResponseServiceDto getOrder(Long userId, String username, String slackId, String role, OrderRequestServiceDto orderRequestServiceDto) {
+        // TODO: Role 검사하기
 
+        UUID orderId = orderRequestServiceDto.orderId();
+        Order order = getByOrderId(orderId);
+
+        return orderApplicationMapper.toOrderResponseServiceDto(
+            order,
+            order.getOrderDetails().stream().map(
+                orderDetail -> orderApplicationMapper.toOrderDetailDto(order.getId(), orderDetail)
+            ).toList()
+        );
+    }
+
+    @Transactional
+    public void createOrder(OrderCreateRequestServiceDto create) {
+        int totalPrice = 0;
+        ArrayList<OrderDetail> details = new ArrayList<>();
+
+        log.info("-");
+        CompanyDetailsSearchResponseDto requestCompanyInfo = getCompanyInfo(create.requesterId());
+        log.info("requestCompanyInfo: {}", requestCompanyInfo);
+
+        Order order = Order.builder()
+            .requesterId(requestCompanyInfo.id())
+            .requesterSlackId(create.slackId())
+            .requesterName(requestCompanyInfo.name())
+            .requesterAddress(requestCompanyInfo.address())
+            .requesterUserId(create.userId())
+            .requesterUsername(create.username())
+            .status(Status.ORDERING)
+            .requests(create.requests())
+            .totalPrice(totalPrice)
+            .isDeleted(false)
+            .createdAt(LocalDateTime.now())
+            .createdBy(create.userId())
+            .build();
+
+        // orderId, requesterId, requesterName, productId, quantity
+        for (OrderDetailCreateRequestServiceDto orderDetail : create.orderDetails()) {
+            ProductDetailsSearchResponseDto productInfo = getProductInfo(orderDetail.productId());
+
+            log.info(productInfo.toString());
+            log.info(orderDetail.toString());
+
+            if (!orderDetail.recipientId().equals(productInfo.companyId())) {
+                throw new OrderException(ErrorCode.COMPANY_NOT_MATCH);
+            }
+
+            ProductQueueRequestDto QueueRequest = orderApplicationMapper.toProductQueueRequestDto(
+                productInfo.id(),
+                orderDetail.quantity()
+            );
+
+            Object response = rabbitTemplate.convertSendAndReceive(queueProduct, QueueRequest);
+            log.info("성공");
+
+            if (response == null) {
+                rabbitTemplate.convertAndSend(queueErrProduct, QueueRequest);
+                throw new OrderException(ErrorCode.PRODUCT_SERVER_ERROR);
+            }
+
+            try {
+                String responseString = new String((byte[]) response, StandardCharsets.UTF_8);
+                ObjectMapper objectMapper = new ObjectMapper();
+                int statusCode = objectMapper.readValue(responseString, Integer.class);
+
+                log.info(String.valueOf(statusCode));
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+
+            totalPrice += (productInfo.price() * orderDetail.quantity());
+
+            OrderDetail detail = OrderDetail.builder()
+                .order(order)
+                .recipientId(productInfo.companyId())
+                .recipientName(productInfo.companyName())
+                .recipientHubId(productInfo.manageHubId())
+                .productId(productInfo.id())
+                .productName(productInfo.name())
+                .quantity(orderDetail.quantity())
+                .price(productInfo.price())
+                .isDeleted(false)
+                .createdAt(LocalDateTime.now())
+                .createdBy(create.userId())
+                .build();
+
+            details.add(detail);
+        }
+
+        order.inputTotalPrice(totalPrice);
+        order.addOrderDetail(details);
+
+        orderRepository.save(order);
+        publisher.publishEvent(new OrderEvent(order));
+    }
+
+    @Transactional
+    public void updateOrder(Long userId, String username, String slackId, OrderUpdateServiceDto update) {
         int totalPrice = 0;
         UUID orderId = update.id();
 
@@ -88,9 +210,7 @@ public class OrderService {
     }
 
     @Transactional
-    public void deleteOrder(OrderDeleteServiceDto delete) {
-        // TODO: 허브 관리자 권한 확인
-
+    public void deleteOrder(Long userId, String username, String slackId, OrderDeleteServiceDto delete) {
         UUID orderId = delete.orderId();
 
         Order order = getByOrderId(orderId);
@@ -106,10 +226,8 @@ public class OrderService {
         evictCache(order);
     }
 
-
-    public void deleteOrderDetail(OrderDetailDeleteRequestServiceDto request) {
-        // TODO: 허브 관리자 권한 확인하기
-
+    @Transactional
+    public void deleteOrderDetail(Long userId, String username, String slackId, OrderDetailDeleteRequestServiceDto request) {
         UUID orderId = request.orderId();
 
         Order order = getByOrderId(orderId);
@@ -171,5 +289,15 @@ public class OrderService {
         }
 
         OrdersCache.clear();
+    }
+
+    private CompanyDetailsSearchResponseDto getCompanyInfo(UUID companyId) {
+        return companyClient.getCompanyId(companyId)
+            .orElseThrow(() -> new OrderException(ErrorCode.COMPANY_NOT_FOUND));
+    }
+
+    private ProductDetailsSearchResponseDto getProductInfo(UUID productId) {
+        return productClient.getProduct(productId)
+            .orElseThrow(() -> new OrderException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 }

@@ -1,14 +1,16 @@
 package com.oingmaryho.business.orderservice.presentation.controller;
 
-import com.oingmaryho.business.orderservice.application.dto.request.OrderDeleteServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.request.OrderDetailDeleteRequestServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.request.OrderUpdateServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.request.OrdersRequestServiceDto;
+import com.oingmaryho.business.common.domain.type.UserRoleType;
+import com.oingmaryho.business.common.infrastructure.annotation.RequiredRoles;
+import com.oingmaryho.business.orderservice.application.dto.request.*;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.service.OrderService;
 import com.oingmaryho.business.orderservice.presentation.dto.mapper.OrderPresentationMapper;
+import com.oingmaryho.business.orderservice.presentation.dto.request.OrderCreateRequestDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderUpdateRequestDto;
 import com.oingmaryho.business.orderservice.utils.PageableUtils;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Description;
@@ -17,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -30,7 +33,9 @@ public class OrderController {
         "허브 관리자, 허브 배송 담당자, 업체 배송 담당자, 업체 담당자 - 주문 전제 조회"
     )
     @GetMapping
+    @RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.HUB_DELIVERY_MANAGER, UserRoleType.COMPANY_DELIVERY_MANAGER, UserRoleType.COMPANY_MANAGER})
     public ResponseEntity<?> getOrders(
+        HttpServletRequest request,
         @Min(value = 1, message = "페이지 번호는 1 이상이어야 합니다.")
         @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
         @RequestParam(value = "size", required = false) Integer size,
@@ -41,26 +46,76 @@ public class OrderController {
         @RequestParam(value = "requesterName", required = false) String requesterName,
         @RequestParam(value = "isDeleted", required = false, defaultValue = "false") Boolean isDeleted
     ) {
+        Long userId = (Long) request.getAttribute("userId");
+        String username = (String) request.getAttribute("username");
+        String slackId = (String) request.getAttribute("slackId");
+        String role = (String) request.getAttribute("role");
+
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
+
         OrdersRequestServiceDto ordersRequestServiceDto = orderPresentationMapper.toOrdersServiceDto(
             productName, recipientName, requesterName, isDeleted, customPageable
         );
-        Page<OrderResponseServiceDto> response = orderService.getOrders(ordersRequestServiceDto);
+        Page<OrderResponseServiceDto> response = orderService.getOrders(userId, username, slackId, role, ordersRequestServiceDto);
 
         return ResponseEntity.ok(response.map(orderPresentationMapper::toOrderResponseServiceDto));
+    }
+
+    @Description(
+        "허브 관리자, 허브 배송 담당자, 업체 배송 담당자, 업체 담당자 - 주문 상세 조회"
+    )
+    @GetMapping("/{id}")
+    @RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.HUB_DELIVERY_MANAGER, UserRoleType.COMPANY_DELIVERY_MANAGER, UserRoleType.COMPANY_MANAGER})
+    public ResponseEntity<?> getOrder(HttpServletRequest request, @PathVariable UUID id) {
+        Long userId = (Long) request.getAttribute("userId");
+        String username = (String) request.getAttribute("username");
+        String slackId = (String) request.getAttribute("slackId");
+        String role = (String) request.getAttribute("role");
+
+        OrderRequestServiceDto orderRequestServiceDto = orderPresentationMapper.toOrderServiceDto(id);
+        OrderResponseServiceDto response = orderService.getOrder(userId, username, slackId, role, orderRequestServiceDto);
+
+        return ResponseEntity.ok(orderPresentationMapper.toOrderResponseServiceDto(response));
+    }
+
+    @Description(
+        "허브 관리자, 허브 배송 담당자, 업체 배송 담당자, 업체 담당자 - 주문 생성"
+    )
+    @PostMapping
+    @RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.HUB_DELIVERY_MANAGER, UserRoleType.COMPANY_DELIVERY_MANAGER, UserRoleType.COMPANY_MANAGER})
+    public ResponseEntity<?> createOrder(HttpServletRequest request, @Valid @RequestBody OrderCreateRequestDto orderCreateRequestDto) {
+        Long userId = (Long) request.getAttribute("userId");
+        String username = (String) request.getAttribute("username");
+        String slackId = (String) request.getAttribute("slackId");
+
+        List<OrderDetailCreateRequestServiceDto> orderCreateRequestServiceDto = orderCreateRequestDto.orderDetailCreateDto().stream().map(
+            orderPresentationMapper::toOrderDetailCreateRequestServiceDto
+        ).toList();
+
+        OrderCreateRequestServiceDto create = orderPresentationMapper.toOrderCreateRequestServiceDto(
+            userId, username, slackId, orderCreateRequestDto, orderCreateRequestServiceDto
+        );
+
+        orderService.createOrder(create);
+        return ResponseEntity.ok().build();
     }
 
     @Description(
         "허브 관리자 - 주문 수정"
     )
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updateOrder(@PathVariable UUID id, @RequestBody OrderUpdateRequestDto update) {
+    @RequiredRoles({UserRoleType.HUB_MANAGER})
+    public ResponseEntity<Void> updateOrder(HttpServletRequest request, @PathVariable UUID id, @RequestBody OrderUpdateRequestDto update) {
+        Long userId = (Long) request.getAttribute("userId");
+        String username = (String) request.getAttribute("username");
+        String slackId = (String) request.getAttribute("slackId");
+
         OrderUpdateServiceDto orderUpdateServiceDto = orderPresentationMapper.toOrderUpdateServiceDto(
             id, update, update.requestOrderDetails().stream().map(
                 orderPresentationMapper::toOrderDetailUpdateServiceDto
             ).toList()
         );
-        orderService.updateOrder(orderUpdateServiceDto);
+        orderService.updateOrder(userId, username, slackId, orderUpdateServiceDto);
 
         return ResponseEntity.ok().build();
     }
@@ -69,9 +124,14 @@ public class OrderController {
         "허브 관리자 - 주문 삭제"
     )
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable UUID id) {
+    @RequiredRoles({UserRoleType.HUB_MANAGER})
+    public ResponseEntity<Void> deleteOrder(HttpServletRequest request, @PathVariable UUID id) {
+        Long userId = (Long) request.getAttribute("userId");
+        String username = (String) request.getAttribute("username");
+        String slackId = (String) request.getAttribute("slackId");
+
         OrderDeleteServiceDto orderDeleteServiceDto = orderPresentationMapper.toOrderDeleteDto(id);
-        orderService.deleteOrder(orderDeleteServiceDto);
+        orderService.deleteOrder(userId, username, slackId, orderDeleteServiceDto);
 
         return ResponseEntity.ok().build();
     }
@@ -79,10 +139,15 @@ public class OrderController {
     @Description(
         "허브 관리자 - 상세 주문 삭제"
     )
+    @RequiredRoles({UserRoleType.HUB_MANAGER})
     @DeleteMapping("/{id}/details/{orderDetailId}")
-    public ResponseEntity<Void> deleteOrderDetail(@PathVariable UUID id, @PathVariable UUID orderDetailId) {
-        OrderDetailDeleteRequestServiceDto request = orderPresentationMapper.toOrderDetailDeleteRequestServiceDto(id, orderDetailId);
-        orderService.deleteOrderDetail(request);
+    public ResponseEntity<Void> deleteOrderDetail(HttpServletRequest request, @PathVariable UUID id, @PathVariable UUID orderDetailId) {
+        Long userId = (Long) request.getAttribute("userId");
+        String username = (String) request.getAttribute("username");
+        String slackId = (String) request.getAttribute("slackId");
+
+        OrderDetailDeleteRequestServiceDto orderDetailDeleteRequestServiceDto = orderPresentationMapper.toOrderDetailDeleteRequestServiceDto(id, orderDetailId);
+        orderService.deleteOrderDetail(userId, username, slackId, orderDetailDeleteRequestServiceDto);
 
         return ResponseEntity.ok().build();
     }

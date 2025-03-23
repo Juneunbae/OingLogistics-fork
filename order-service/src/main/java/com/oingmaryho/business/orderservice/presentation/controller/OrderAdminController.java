@@ -1,11 +1,15 @@
 package com.oingmaryho.business.orderservice.presentation.controller;
 
+import com.oingmaryho.business.common.domain.type.UserRoleType;
+import com.oingmaryho.business.common.infrastructure.annotation.RequiredRoles;
 import com.oingmaryho.business.orderservice.application.dto.request.*;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.service.OrderAdminService;
 import com.oingmaryho.business.orderservice.presentation.dto.mapper.OrderPresentationMapper;
+import com.oingmaryho.business.orderservice.presentation.dto.request.OrderAdminRequestServiceDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderCreateRequestDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderUpdateRequestDto;
+import com.oingmaryho.business.orderservice.presentation.dto.response.OrderAdminResponseServiceDto;
 import com.oingmaryho.business.orderservice.utils.PageableUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Min;
@@ -30,6 +34,7 @@ public class OrderAdminController {
         "마스터 - 주문 전체 조회"
     )
     @GetMapping
+    @RequiredRoles({UserRoleType.MASTER})
     public ResponseEntity<?> getOrders(
         @Min(value = 1, message = "페이지 번호는 1 이상이어야 합니다.")
         @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
@@ -42,22 +47,24 @@ public class OrderAdminController {
         @RequestParam(value = "isDeleted", required = false, defaultValue = "false") Boolean isDeleted
     ) {
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
-        OrdersRequestServiceDto ordersRequestServiceDto = orderPresentationMapper.toOrdersServiceDto(
+
+        OrderAdminRequestServiceDto orderAdminRequestServiceDto = orderPresentationMapper.toOrderAdminRequestServiceDto(
             productName,
             recipientName,
             requesterName,
             isDeleted,
             customPageable
         );
-        Page<OrderResponseServiceDto> response = orderAdminService.getOrders(ordersRequestServiceDto);
+        Page<OrderAdminResponseServiceDto> response = orderAdminService.getOrders(orderAdminRequestServiceDto);
 
-        return ResponseEntity.ok(response.map(orderPresentationMapper::toOrderResponseServiceDto));
+        return ResponseEntity.ok(response.map(orderPresentationMapper::toOrderAdminResponseServiceDto));
     }
 
     @Description(
         "마스터 - 주문 생성"
     )
     @PostMapping
+    @RequiredRoles({UserRoleType.MASTER})
     public ResponseEntity<?> createOrder(HttpServletRequest request, @RequestBody OrderCreateRequestDto orderCreateRequestDto) {
         Long userId = (Long) request.getAttribute("userId");
         String username = (String) request.getAttribute("username");
@@ -79,6 +86,7 @@ public class OrderAdminController {
         "마스터 - 주문 상세 조회"
     )
     @GetMapping("/{id}")
+    @RequiredRoles({UserRoleType.MASTER})
     public ResponseEntity<?> getOrder(@PathVariable UUID id) {
         OrderRequestServiceDto orderRequestServiceDto = orderPresentationMapper.toOrderServiceDto(id);
         OrderResponseServiceDto response = orderAdminService.getOrder(orderRequestServiceDto);
@@ -90,6 +98,7 @@ public class OrderAdminController {
         "마스터 - 주문 수정하기"
     )
     @PutMapping("/{id}")
+    @RequiredRoles({UserRoleType.MASTER})
     public ResponseEntity<Void> updateOrder(@PathVariable UUID id, @RequestBody OrderUpdateRequestDto update) {
         OrderUpdateServiceDto orderUpdateServiceDto = orderPresentationMapper.toOrderUpdateServiceDto(
             id, update, update.requestOrderDetails().stream().map(
@@ -105,6 +114,7 @@ public class OrderAdminController {
         "마스터 - 주문 삭제"
     )
     @DeleteMapping("/{id}")
+    @RequiredRoles({UserRoleType.MASTER})
     public ResponseEntity<Void> deleteOrder(@PathVariable UUID id) {
         OrderDeleteServiceDto orderDeleteServiceDto = orderPresentationMapper.toOrderDeleteDto(id);
         orderAdminService.deleteOrder(orderDeleteServiceDto);
@@ -115,6 +125,7 @@ public class OrderAdminController {
     @Description(
         "마스터 - 상세 주문 삭제"
     )
+    @RequiredRoles({UserRoleType.MASTER})
     @DeleteMapping("/{id}/details/{orderDetailId}")
     public ResponseEntity<Void> deleteOrderDetail(@PathVariable UUID id, @PathVariable UUID orderDetailId) {
         OrderDetailDeleteRequestServiceDto request = orderPresentationMapper.toOrderDetailDeleteRequestServiceDto(id, orderDetailId);
