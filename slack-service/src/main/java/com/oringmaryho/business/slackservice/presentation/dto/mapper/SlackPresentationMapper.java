@@ -1,9 +1,10 @@
 package com.oringmaryho.business.slackservice.presentation.dto.mapper;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.mapstruct.Mapper;
-import org.springframework.data.domain.Pageable;
+import org.mapstruct.Mapping;
 
 import com.oringmaryho.business.slackservice.application.dto.request.SlackAdminMessageCreateRequestServiceDto;
 import com.oringmaryho.business.slackservice.application.dto.request.SlackMessageDeleteRequestServiceDto;
@@ -18,7 +19,7 @@ import com.oringmaryho.business.slackservice.presentation.dto.request.SlackMessa
 public interface SlackPresentationMapper {
 
 	SlackMessageSearchRequestServiceDto toSlackMessageSearchRequestServiceDto(
-		SlackMessageSearchRequestDto requestDto, Pageable customPageable);
+		SlackMessageSearchRequestDto requestDto);
 
 	SlackMessageFindRequestServiceDto toSlackMessageFindRequestServiceDto(UUID id);
 

@@ -1,11 +1,11 @@
 package com.oringmaryho.business.slackservice.presentation.controller;
 
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.context.annotation.Description;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -51,17 +50,17 @@ public class SlackAdminController {
 		"슬랙 메세지 전체 조회"
 	)
 	@GetMapping
-	public ResponseEntity<List<SlackMessageResponseDto>> getSlackMessages(
-		@RequestParam(required = false, defaultValue = "0") Integer page,
-		@RequestParam(required = false, defaultValue = "10") Integer size,
-		@RequestParam(required = false, defaultValue = "desc") String sortDirection,
-		@RequestParam(required = false, defaultValue = "createdAt") String by,
+	public ResponseEntity<Page<SlackMessageResponseDto>> getSlackMessages(
+		@RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
+		@RequestParam(value = "size", required = false) Integer size,
+		@RequestParam(value = "sortDirection", required = false) String sortDirection,
 		@ModelAttribute SlackMessageSearchRequestDto requestDto) {
-		//todo: 전체조회 파라미터 조정
 		Pageable customPageable = pageableConfig.customPageable(page, size, sortDirection);
+
 		SlackMessageSearchRequestServiceDto requestServiceDto = slackPresentationMapper.toSlackMessageSearchRequestServiceDto(
-			requestDto, customPageable);
-		List<SlackMessageResponseDto> responseDtos = slackAdminMessageService.getSlackMessages(requestServiceDto);
+			requestDto);
+		Page<SlackMessageResponseDto> responseDtos = slackAdminMessageService.getSlackMessages(requestServiceDto, customPageable);
+
 		return ResponseEntity.ok(responseDtos);
 	}
 
@@ -74,7 +73,7 @@ public class SlackAdminController {
 	) {
 		SlackMessageFindRequestServiceDto requestServiceDto = slackPresentationMapper.toSlackMessageFindRequestServiceDto(
 			id);
-		SlackMessageResponseDto message = slackAdminMessageService.getSlackMessageById(id);
+		SlackMessageResponseDto message = slackAdminMessageService.getSlackMessageById(requestServiceDto);
 		return ResponseEntity.ok(message);
 	}
 

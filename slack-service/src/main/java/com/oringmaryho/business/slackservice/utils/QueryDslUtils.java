@@ -8,7 +8,10 @@ import org.springframework.data.domain.Sort;
 public class QueryDslUtils {
 
 	public static OrderSpecifier<?>[] getOrderSpecifiers(Sort sort, Class<?> entityClass) {
-		PathBuilder<?> entityPath = new PathBuilder<>(entityClass, entityClass.getSimpleName().toLowerCase());
+		String str = entityClass.getSimpleName();
+		PathBuilder<?> entityPath = new PathBuilder<>(entityClass,
+			Character.toLowerCase(str.charAt(0)) + str.substring(1) );
+
 		return sort.stream()
 			.map(order -> new OrderSpecifier<>(
 					order.isAscending() ? Order.ASC : Order.DESC,

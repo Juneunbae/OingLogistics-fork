@@ -184,7 +184,7 @@ public class UserAdminService {
 		UserAdminSearchRequestServiceDto requestServiceDto, Pageable pageable) {
 
 		//쿼리 dsl로 유저 조회
-		Page<User> users = customUserRepository.findDynamicQuery(createHubSearchCriteria(requestServiceDto),
+		Page<User> users = customUserRepository.findDynamicQuery(createUserSearchCriteria(requestServiceDto),
 			pageable);
 
 		return users.map(userApplicationMapper::toUserAdminSearchResponseDto);
@@ -331,7 +331,7 @@ public class UserAdminService {
 		}
 	}
 
-	public UserSearchCriteria createHubSearchCriteria(UserAdminSearchRequestServiceDto requestDto) {
+	public UserSearchCriteria createUserSearchCriteria(UserAdminSearchRequestServiceDto requestDto) {
 		return UserSearchCriteria.builder()
 			.id(requestDto.id())
 			.username(requestDto.username())
