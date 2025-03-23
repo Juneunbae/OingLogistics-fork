@@ -22,6 +22,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserSignUpRe
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackCodeRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserSlackConfirmRequestServiceDto;
 import com.oringmaryho.business.userservice.domain.UserRoleType;
+import com.oringmaryho.business.userservice.presentation.dto.request.SlackGetSlackIdRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminCreateRequestDto;
 import com.oringmaryho.business.userservice.application.dto.request.UserAdminDeleteRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserAdminSignInRequestDto;
@@ -106,4 +107,6 @@ public interface UserPresentationMapper {
 	UserAdminSignInRequestServiceDto toUserAdminSignInRequestServiceDto(UserAdminSignInRequestDto requestDto);
 
 	UserFromDeliveryGetRoleRequestServiceDto toUserFromDeliveryGetRoleRequestServiceDto(Long id);
+
+	SlackGetSlackIdRequestServiceDto toSlackGetSlackIdRequestServiceDto(Long id);
 }

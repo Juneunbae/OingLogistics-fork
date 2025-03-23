@@ -17,10 +17,13 @@ import com.oringmaryho.business.userservice.domain.User;
 import com.oringmaryho.business.userservice.domain.UserRoleType;
 import com.oringmaryho.business.userservice.presentation.dto.mapper.UserPresentationMapper;
 import com.oringmaryho.business.userservice.application.dto.request.UsersRequestServiceDto;
+import com.oringmaryho.business.userservice.presentation.dto.request.SlackGetSlackIdRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserFromDeliveryGetRoleRequestServiceDto;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/user-service/users")
@@ -55,6 +58,17 @@ public class UserFeignClientController {
 		UserFromDeliveryGetRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserFromDeliveryGetRoleRequestServiceDto(id);
 
 		return ResponseEntity.ok(userFeignService.userFeignServiceGetRole(requestServiceDto));
+	}
+
+	@Description("FeignClient - 슬랙 서비스에서 요청, User Id를 받아 user slackId 조회 api")
+	@GetMapping("/slackId")
+	public ResponseEntity<String> userFeignServiceGetSlackIdById(
+		@RequestParam(name = "id", required = true) Long id
+	){
+		log.info("userFeignServiceGetSlackIdById");
+		SlackGetSlackIdRequestServiceDto requestServiceDto = userPresentationMapper.toSlackGetSlackIdRequestServiceDto(id);
+
+		return ResponseEntity.ok(userFeignService.userFeignServiceGetSlackId(requestServiceDto));
 	}
 
 }

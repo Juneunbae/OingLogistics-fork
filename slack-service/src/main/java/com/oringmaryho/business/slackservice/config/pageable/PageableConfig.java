@@ -1,6 +1,5 @@
 package com.oringmaryho.business.slackservice.config.pageable;
 
-import com.oringmaryho.business.userservice.utils.SortConstants;
 import java.util.List;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.PageRequest;
@@ -10,6 +9,8 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import com.oringmaryho.business.slackservice.utils.SortConstants;
 
 @Configuration
 @EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)

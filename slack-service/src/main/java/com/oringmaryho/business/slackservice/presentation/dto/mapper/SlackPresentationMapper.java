@@ -1,25 +1,32 @@
 package com.oringmaryho.business.slackservice.presentation.dto.mapper;
 
-import com.oringmaryho.business.slackservice.application.dto.request.SlackMessageDeleteRequestServiceDto;
-import com.oringmaryho.business.slackservice.application.dto.request.SlackMessageSearchRequestServiceDto;
-import com.oringmaryho.business.slackservice.application.dto.request.SlackMessageFindRequestServiceDto;
-import com.oringmaryho.business.slackservice.application.dto.request.SlackMessageUpdateRequestServiceDto;
-import com.oringmaryho.business.slackservice.presentation.dto.request.SlackMessageRequestDto;
-import com.oringmaryho.business.slackservice.presentation.dto.request.SlackMessageSearchRequestDto;
 import java.util.UUID;
+
 import org.mapstruct.Mapper;
 import org.springframework.data.domain.Pageable;
+
+import com.oringmaryho.business.slackservice.application.dto.request.SlackAdminMessageCreateRequestServiceDto;
+import com.oringmaryho.business.slackservice.application.dto.request.SlackMessageDeleteRequestServiceDto;
+import com.oringmaryho.business.slackservice.application.dto.request.SlackMessageFindRequestServiceDto;
+import com.oringmaryho.business.slackservice.application.dto.request.SlackMessageSearchRequestServiceDto;
+import com.oringmaryho.business.slackservice.application.dto.request.SlackMessageUpdateRequestServiceDto;
+import com.oringmaryho.business.slackservice.presentation.dto.request.SlackAdminMessageCreateRequestDto;
+import com.oringmaryho.business.slackservice.presentation.dto.request.SlackMessageRequestDto;
+import com.oringmaryho.business.slackservice.presentation.dto.request.SlackMessageSearchRequestDto;
 
 @Mapper(componentModel = "spring")
 public interface SlackPresentationMapper {
 
-  SlackMessageSearchRequestServiceDto toSlackMessageSearchRequestServiceDto(
-      SlackMessageSearchRequestDto requestDto, Pageable customPageable);
+	SlackMessageSearchRequestServiceDto toSlackMessageSearchRequestServiceDto(
+		SlackMessageSearchRequestDto requestDto, Pageable customPageable);
 
-  SlackMessageFindRequestServiceDto toSlackMessageFindRequestServiceDto(UUID id);
+	SlackMessageFindRequestServiceDto toSlackMessageFindRequestServiceDto(UUID id);
 
-  SlackMessageUpdateRequestServiceDto toSlackMessageUpdateRequestServiceDto(
-      SlackMessageRequestDto requestDto);
+	SlackMessageUpdateRequestServiceDto toSlackMessageUpdateRequestServiceDto(UUID id,
+		SlackMessageRequestDto requestDto);
 
-  SlackMessageDeleteRequestServiceDto toSlackMessageDeleteRequestServiceDto(UUID id);
+	SlackMessageDeleteRequestServiceDto toSlackMessageDeleteRequestServiceDto(Long userId, UUID id);
+
+	SlackAdminMessageCreateRequestServiceDto toSlackAdminMessageCreateRequestServiceDto(
+		SlackAdminMessageCreateRequestDto requestDto);
 }

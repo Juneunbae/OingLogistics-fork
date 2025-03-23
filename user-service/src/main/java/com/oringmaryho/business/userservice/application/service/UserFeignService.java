@@ -17,6 +17,7 @@ import com.oringmaryho.business.userservice.domain.repository.CustomUserReposito
 import com.oringmaryho.business.userservice.domain.repository.UserRepository;
 import com.oringmaryho.business.userservice.exception.ErrorCode;
 import com.oringmaryho.business.userservice.exception.UserException;
+import com.oringmaryho.business.userservice.presentation.dto.request.SlackGetSlackIdRequestServiceDto;
 import com.oringmaryho.business.userservice.presentation.dto.request.UserFromDeliveryGetRoleRequestServiceDto;
 
 import lombok.RequiredArgsConstructor;
@@ -57,5 +58,14 @@ public class UserFeignService {
 			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
 
 		return user.getRole();
+	}
+
+	@Description(
+		"슬랙 서비스에서 user id를 받아 해당하는 유저의 slackId를 반환하는 메서드"
+	)
+	public String userFeignServiceGetSlackId(SlackGetSlackIdRequestServiceDto requestServiceDto) {
+		User user = userRepository.findById(requestServiceDto.id())
+			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+		return user.getSlackId();
 	}
 }

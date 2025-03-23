@@ -1,11 +1,12 @@
 package com.oringmaryho.business.slackservice.config.interceptor;
 
-import com.oringmaryho.business.userservice.infrastructure.interceptor.AdminCheckInterceptor;
-import com.oringmaryho.business.userservice.infrastructure.interceptor.UserCheckInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import com.oringmaryho.business.slackservice.infrastructure.interceptor.AdminCheckInterceptor;
+import com.oringmaryho.business.slackservice.infrastructure.interceptor.UserCheckInterceptor;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {

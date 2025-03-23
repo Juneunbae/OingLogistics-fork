@@ -36,7 +36,8 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 	private static final List<String> EXCLUDED_PATHS = Arrays.asList(
 		"/api/v1/users/sign-up",
 		"/admin/v1/users/sign-up",
-		"/api/v1/users/sign-in");
+		"/api/v1/users/sign-in",
+		"/admin/v1/users/sign-in");
 
 	@Value("${spring.cloud.gateway.secrets.secretKey}")
 	private String SECRET_KEY;

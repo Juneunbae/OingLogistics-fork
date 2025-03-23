@@ -1,5 +1,7 @@
 package com.oringmaryho.business.slackservice.presentation.dto.request;
 
-public record SlackMessageRequestDto(String message) {
+import java.util.UUID;
+
+public record SlackMessageRequestDto(UUID id, String message) {
 
 }
