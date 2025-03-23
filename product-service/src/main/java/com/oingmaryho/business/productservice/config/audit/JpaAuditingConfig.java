@@ -1,4 +1,4 @@
-package com.oingmaryho.business.productservice.config;
+package com.oingmaryho.business.productservice.config.audit;
 
 import java.util.Optional;
 
