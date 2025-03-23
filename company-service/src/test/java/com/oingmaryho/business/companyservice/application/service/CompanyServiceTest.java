@@ -85,7 +85,7 @@ class CompanyServiceTest {
 		when(companyRepository.save(any(Company.class))).thenReturn(company);
 
 		// When
-		CompanyCreateResponseServiceDto response = companyService.createCompany(requestDto);
+		CompanyCreateResponseServiceDto response = companyService.createCompany(requestDto, 2L);
 		System.out.println("생성된 업체 정보: " + response.id());
 
 		// Then
