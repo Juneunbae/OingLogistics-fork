@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
-import com.oingmaryho.business.common.entity.BaseEntity;
+import com.oingmaryho.business.common.domain.entity.BaseEntity;
 import com.oingmaryho.business.productservice.exception.ErrorCode;
 import com.oingmaryho.business.productservice.exception.ProductException;
 

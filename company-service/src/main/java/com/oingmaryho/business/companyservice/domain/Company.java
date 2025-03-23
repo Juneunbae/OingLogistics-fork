@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
-import com.oingmaryho.business.common.entity.BaseEntity;
+import com.oingmaryho.business.common.domain.entity.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
