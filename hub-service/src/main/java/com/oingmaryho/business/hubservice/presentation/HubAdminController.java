@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.oingmaryho.business.common.domain.type.UserRoleType;
+import com.oingmaryho.business.common.infrastructure.annotation.RequiredRoles;
 import com.oingmaryho.business.hubservice.application.HubAdminService;
 import com.oingmaryho.business.hubservice.application.dto.response.HubCreateResponseServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubSearchAdminResponseServiceDto;
@@ -36,12 +38,14 @@ public class HubAdminController {
 	private final HubAdminService hubAdminService;
 	private final HubPresentationMapper mapper;
 
+	@RequiredRoles(UserRoleType.MASTER)
 	@GetMapping("/{id}") // TODO : 권한 확인하기
 	public ResponseEntity<?> getHubById(@PathVariable UUID id) {
 		HubSearchAdminResponseServiceDto responseDto = hubAdminService.getHubById(mapper.toHubSearchRequestServiceDto(id));
 		return ResponseEntity.ok(mapper.toHubSearchAdminResponseDto(responseDto));
 	}
 
+	@RequiredRoles(UserRoleType.MASTER)
 	@GetMapping
 	public ResponseEntity<?> searchHubs(
 		@RequestParam(value = "page", required = false, defaultValue = "1") int page,
@@ -65,6 +69,7 @@ public class HubAdminController {
 		return ResponseEntity.ok(responseDto.map(mapper::toHubSearchAdminResponseDto));
 	}
 
+	@RequiredRoles(UserRoleType.MASTER)
 	@PostMapping // TODO : 권한 확인하기
 	public ResponseEntity<?> createHub(@RequestBody HubCreateRequestDto requestDto) {
 		HubCreateResponseServiceDto responseDto = hubAdminService.createHub(mapper.toHubCreateRequestServiceDto(requestDto));
@@ -73,6 +78,7 @@ public class HubAdminController {
 			.body(mapper.toHubCreateResponseDto(responseDto));
 	}
 
+	@RequiredRoles(UserRoleType.MASTER)
 	@PutMapping("/{id}") // TODO : 권한 확인하기
 	public ResponseEntity<?> updateHub(
 		@PathVariable UUID id,
@@ -82,6 +88,7 @@ public class HubAdminController {
 		return ResponseEntity.ok(mapper.toHubUpdateResponseDto(responseDto));
 	}
 
+	@RequiredRoles(UserRoleType.MASTER)
 	@DeleteMapping("/{id}") // TODO : 권한 확인하기
 	public ResponseEntity<?> deleteHub(@PathVariable UUID id) {
 		hubAdminService.deleteHub(mapper.toHubDeleteRequestServiceDto(id));
