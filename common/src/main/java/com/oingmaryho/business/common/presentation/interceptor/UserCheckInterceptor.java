@@ -27,12 +27,13 @@ public class UserCheckInterceptor implements HandlerInterceptor {
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 		log.info("user preHandle");
-		String userId = request.getHeader("X-User-Id");
+		String userIdAttr = request.getHeader("X-User-Id");
 
-		if (userId == null) {
-			return false;
-			//throw new BaseException(CommonErrorCode.FORBIDDEN);    // TODO throw Exception
+		if (userIdAttr == null) {
+			return false;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE
 		}
+
+		long userId = Long.parseLong(userIdAttr);
 
 		if (!redisTemplate.hasKey("user:info:" + userId)) {
 			return false;    // TODO throw Exception
@@ -48,7 +49,7 @@ public class UserCheckInterceptor implements HandlerInterceptor {
 			return false;   // TODO throw Exception
 		}
 
-		if (!userInfo.get("status").toString().equals(UserConfirmStatus.CONFIRMED.toString())) {
+		if (!userInfo.get("status").equals(UserConfirmStatus.CONFIRMED.name())) {
 			return false;   // TODO throw Exception
 		}
 
