@@ -3,6 +3,8 @@ package com.oingmaryho.business.companyservice.application.service;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -15,6 +17,7 @@ import com.oingmaryho.business.companyservice.application.dto.mapper.CompanyAppl
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyCreateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDeleteRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDetailsSearchRequestServiceDto;
+import com.oingmaryho.business.companyservice.application.dto.request.CompanyProductDeleteRequestDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanySearchRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyUpdateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyCreateResponseServiceDto;
@@ -36,7 +39,11 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class CompanyService {
+	@Value("${rabbitmq.queue.company-deleted}")
+	private String queueCompanyDelete;
+
 	private final HubClient hubClient;
+	private final RabbitTemplate rabbitTemplate;
 	private final CompanyRepository companyRepository;
 	private final CustomCompanyRepository companyCustomRepository;
 	private final CompanyApplicationMapper companyApplicationMapper;
@@ -53,7 +60,8 @@ public class CompanyService {
 			throw new CompanyException(ErrorCode.ALREADY_REGISTERED_COMPANY);
 		}
 
-		Company company = companyApplicationMapper.toCreateEntity(companyCreateRequestServiceDto);
+		HubSearchResponseDto hub = hubClient(companyCreateRequestServiceDto.manageHubId());
+		Company company = companyApplicationMapper.toCreateEntity(companyCreateRequestServiceDto, hub.id());
 		Company savedCompany = companyRepository.save(company);
 		return new CompanyCreateResponseServiceDto(savedCompany.getId());
 	}
@@ -96,6 +104,13 @@ public class CompanyService {
 		validateManageHubPermission(requesterId, company.getManageHubId());
 
 		company.softDelete(requesterId);
+		// event ~
+		CompanyProductDeleteRequestDto message = new CompanyProductDeleteRequestDto(company.getId(), requesterId);
+
+		rabbitTemplate.convertAndSend(
+			queueCompanyDelete,
+			message
+		);
 	}
 
 	private CompanySearchCriteria createCompanySearchCriteria(CompanySearchRequestServiceDto requestDto){
@@ -137,6 +152,11 @@ public class CompanyService {
 			}
 			default -> throw new CompanyException(ErrorCode.NO_PERMISSION);
 		}
+	}
+
+	private HubSearchResponseDto hubClient(UUID manageHubId) {
+		return hubClient.getHubById(manageHubId)
+			.orElseThrow(() -> new CompanyException(ErrorCode.HUB_NOT_FOUND));
 	}
 
 }

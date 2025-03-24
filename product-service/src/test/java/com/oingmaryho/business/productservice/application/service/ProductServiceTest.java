@@ -77,7 +77,6 @@ class ProductServiceTest {
 			FIXED_COMPANY_ID,
 			"Test Company",
 			"C0-1",
-			"Test product",
 			FIXED_MANAGE_HUB_ID,
 			1000,
 			2000
@@ -96,7 +95,7 @@ class ProductServiceTest {
 
 		ProductCreateResponseServiceDto expectedResponseDto = new ProductCreateResponseServiceDto(FIXED_PRODUCT_ID);
 
-		when(productApplicationMapper.toCreateEntity(any(ProductCreateRequestServiceDto.class))).thenReturn(product);
+		when(productApplicationMapper.toCreateEntity(any(ProductCreateRequestServiceDto.class),"Test Company", FIXED_MANAGE_HUB_ID)).thenReturn(product);
 		when(productRepository.save(any(Product.class))).thenReturn(product);
 
 		// When
@@ -150,7 +149,7 @@ class ProductServiceTest {
 	@Description("상품 수정 테스트")
 	void updateProduct() {
 		ProductUpdateRequestServiceDto requestDto = new ProductUpdateRequestServiceDto(
-			productId, "Updated company name", "Updated product name", FIXED_MANAGE_HUB_ID,2000, 1000
+			productId, "Updated company name", FIXED_MANAGE_HUB_ID,2000, 1000
 		);
 
 		when(productRepository.findByIdAndIsDeletedFalse(productId)).thenReturn(Optional.of(product));

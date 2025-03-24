@@ -3,6 +3,7 @@ package com.oingmaryho.business.productservice.application.service;
 
 import java.util.UUID;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -161,6 +162,9 @@ public class ProductService {
 		validateManagerPermission(product.getManageHubId(), userId, role);
 
 		product.softDelete(userId);
+
+		UUID companyId = product.getCompanyId(); // 상품이 소속된 업체 ID
+
 	}
 
 	private ProductSearchCriteria createProductSearchCriteria(ProductSearchRequestServiceDto requestDto){

@@ -1,4 +1,4 @@
-package com.oingmaryho.business.productservice.infrastructure.messaging;
+package com.oingmaryho.business.productservice.application.messaging;
 
 import java.io.IOException;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package com.oingmaryho.business.productservice.infrastructure.messaging;
+package com.oingmaryho.business.productservice.application.messaging;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
