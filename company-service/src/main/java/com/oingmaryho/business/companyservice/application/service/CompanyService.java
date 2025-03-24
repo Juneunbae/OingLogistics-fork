@@ -108,7 +108,6 @@ public class CompanyService {
 
 		CompanyProductDeleteRequestDto message = new CompanyProductDeleteRequestDto(company.getId(), requesterId);
 		companyProductDeletePublisher.publish(message);
-		);
 	}
 
 	private CompanySearchCriteria createCompanySearchCriteria(CompanySearchRequestServiceDto requestDto){
