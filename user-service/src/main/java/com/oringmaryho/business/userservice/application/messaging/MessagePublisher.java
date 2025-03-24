@@ -4,4 +4,6 @@ import com.oringmaryho.business.userservice.application.dto.request.SlackMessage
 
 public interface MessagePublisher {
   void publishSlackMessage(SlackMessageDto dto);
+
+  void publishUserStatus(Long id);
 }

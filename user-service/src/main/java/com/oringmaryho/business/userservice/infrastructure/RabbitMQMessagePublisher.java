@@ -13,18 +13,22 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class RabbitMQMessagePublisher implements MessagePublisher {
 
+  private final RabbitTemplate rabbitTemplate;
   @Value("${rabbitmq.exchanges.user}")
   private String USER_EXCHANGE;
-
   @Value("${rabbitmq.routing-keys.user}")
   private String USER_ROUTING_KEY;
-
-  private final RabbitTemplate rabbitTemplate;
-
 
   @Override
   public void publishSlackMessage(SlackMessageDto dto) {
     rabbitTemplate.convertAndSend(USER_EXCHANGE, USER_ROUTING_KEY, dto);
-    log.info("Message published successfully USER_EXCHANGE: ${}, USER_ROUTING_KEY: ${}, id: ${}, msg: ${}",USER_EXCHANGE, USER_ROUTING_KEY, dto.id(), dto.message());
+    log.info(
+        "Message published successfully USER_EXCHANGE: ${}, USER_ROUTING_KEY: ${}, id: ${}, msg: ${}",
+        USER_EXCHANGE, USER_ROUTING_KEY, dto.id(), dto.message());
+  }
+
+  @Override
+  public void publishUserStatus(Long id) {
+
   }
 }
