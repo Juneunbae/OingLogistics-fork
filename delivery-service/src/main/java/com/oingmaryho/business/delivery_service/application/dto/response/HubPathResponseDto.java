@@ -1,4 +1,4 @@
-package com.oingmaryho.business.delivery_service.application.feign;
+package com.oingmaryho.business.delivery_service.application.dto.response;
 
 import java.util.UUID;
 

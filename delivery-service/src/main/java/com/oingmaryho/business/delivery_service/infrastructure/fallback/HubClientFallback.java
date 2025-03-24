@@ -1,5 +1,8 @@
-package com.oingmaryho.business.delivery_service.application.feign;
+package com.oingmaryho.business.delivery_service.infrastructure.fallback;
 
+import com.oingmaryho.business.delivery_service.application.feign.HubClient;
+import com.oingmaryho.business.delivery_service.application.dto.response.HubPathResponseDto;
+import com.oingmaryho.business.delivery_service.application.dto.response.HubSearchResponseDto;
 import com.oingmaryho.business.delivery_service.exception.DeliveryException;
 import com.oingmaryho.business.delivery_service.exception.ErrorCode;
 import org.springframework.http.ResponseEntity;

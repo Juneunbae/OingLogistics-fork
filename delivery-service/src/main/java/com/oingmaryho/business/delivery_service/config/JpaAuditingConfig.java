@@ -1,4 +1,4 @@
-package com.oingmaryho.business.delivery_service.config.audit;
+package com.oingmaryho.business.delivery_service.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

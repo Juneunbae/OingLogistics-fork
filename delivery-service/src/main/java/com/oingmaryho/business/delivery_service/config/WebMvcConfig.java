@@ -1,7 +1,7 @@
-package com.oingmaryho.business.delivery_service.config.interceptor;
+package com.oingmaryho.business.delivery_service.config;
 
-import com.oingmaryho.business.delivery_service.presentation.interceptor.AdminCheckInterceptor;
-import com.oingmaryho.business.delivery_service.presentation.interceptor.UserCheckInterceptor;
+import com.oingmaryho.business.common.presentation.interceptor.AdminCheckInterceptor;
+import com.oingmaryho.business.common.presentation.interceptor.UserCheckInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;

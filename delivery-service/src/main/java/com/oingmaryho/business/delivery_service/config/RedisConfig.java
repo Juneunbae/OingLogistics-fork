@@ -1,4 +1,4 @@
-package com.oingmaryho.business.delivery_service.config.redis;
+package com.oingmaryho.business.delivery_service.config;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

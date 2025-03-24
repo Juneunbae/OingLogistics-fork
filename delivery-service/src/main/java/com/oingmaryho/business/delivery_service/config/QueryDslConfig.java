@@ -1,4 +1,4 @@
-package com.oingmaryho.business.delivery_service.config.querydsl;
+package com.oingmaryho.business.delivery_service.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;

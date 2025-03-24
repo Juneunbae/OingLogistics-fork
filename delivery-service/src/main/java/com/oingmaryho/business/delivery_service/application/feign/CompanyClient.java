@@ -1,5 +1,6 @@
 package com.oingmaryho.business.delivery_service.application.feign;
 
+import com.oingmaryho.business.delivery_service.application.dto.response.CompanyDetailsSearchResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

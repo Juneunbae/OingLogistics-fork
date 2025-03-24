@@ -1,5 +1,6 @@
 package com.oingmaryho.business.delivery_service.application.service;
 
+import com.oingmaryho.business.common.domain.type.UserRoleType;
 import com.oingmaryho.business.delivery_service.application.dto.mapper.DeliveryApplicationMapper;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
@@ -12,17 +13,15 @@ import com.oingmaryho.business.delivery_service.domain.entity.DeliveryRoute;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryManagerType;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryRouteStatus;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryStatus;
-import com.oingmaryho.business.delivery_service.domain.type.UserRoleType;
 import com.oingmaryho.business.delivery_service.exception.DeliveryException;
 import com.oingmaryho.business.delivery_service.exception.ErrorCode;
-import com.oingmaryho.business.delivery_service.infrastructure.repository.DeliveryManagerRepository;
-import com.oingmaryho.business.delivery_service.infrastructure.repository.DeliveryRepository;
+import com.oingmaryho.business.delivery_service.domain.repository.DeliveryManagerRepository;
+import com.oingmaryho.business.delivery_service.domain.repository.DeliveryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,7 +74,7 @@ public class DeliveryService {
         }
 
         // managerId로 user 쪽에 수정하려는 manager가 '업체 배송 담당자'인지 유효성 검사
-        UserRoleType userRoleType = Optional.ofNullable(
+        UserRoleType userRoleType = (UserRoleType) Optional.ofNullable(
                 userClient.getUserRoleById(requestServiceDto.managerId()).getBody()
         ).orElseThrow(() -> new DeliveryException(ErrorCode.USER_ROLE_NOT_FOUND));
 
@@ -325,7 +324,7 @@ public class DeliveryService {
     }
 
     /**
-     * 배송 경로 상세 조회
+     * 배송 경로 상세 조회 - 허브 관리자, 허브 배송 담당자, 업체 배송 담당자, 업체 담당자
      * @param userId 사용자 id
      * @param userRole 사용자 권한
      * @param requestServiceDto 배송 경로 상세 조회 request
@@ -459,6 +458,13 @@ public class DeliveryService {
 
     }
 
+    /**
+     * 배송 경로 상태 수정 - 허브 관리자, 허브 배송 담당자, 업체 배송 담당자
+     * @param userId 사용자 id
+     * @param userRole 사용자 권한
+     * @param requestServiceDto 배송 경로 상태 수정 request
+     * @return 배송 경로 상태 수정 response
+     */
     @Transactional
     @Caching(evict = {
             @CacheEvict(cacheNames = "route", key = "#requestServiceDto.id()"),

@@ -1,4 +1,4 @@
-package com.oingmaryho.business.delivery_service.config.rabbitmq;
+package com.oingmaryho.business.delivery_service.config;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;

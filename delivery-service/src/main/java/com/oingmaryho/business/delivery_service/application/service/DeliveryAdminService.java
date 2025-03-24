@@ -1,5 +1,6 @@
 package com.oingmaryho.business.delivery_service.application.service;
 
+import com.oingmaryho.business.common.domain.type.UserRoleType;
 import com.oingmaryho.business.delivery_service.application.dto.mapper.DeliveryApplicationMapper;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
@@ -12,11 +13,10 @@ import com.oingmaryho.business.delivery_service.domain.entity.DeliveryRoute;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryManagerType;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryRouteStatus;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryStatus;
-import com.oingmaryho.business.delivery_service.domain.type.UserRoleType;
 import com.oingmaryho.business.delivery_service.exception.DeliveryException;
 import com.oingmaryho.business.delivery_service.exception.ErrorCode;
-import com.oingmaryho.business.delivery_service.infrastructure.repository.DeliveryManagerRepository;
-import com.oingmaryho.business.delivery_service.infrastructure.repository.DeliveryRepository;
+import com.oingmaryho.business.delivery_service.domain.repository.DeliveryManagerRepository;
+import com.oingmaryho.business.delivery_service.domain.repository.DeliveryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -194,7 +194,7 @@ public class DeliveryAdminService {
                 .orElseThrow(() -> new DeliveryException(ErrorCode.DELIVERY_NOT_FOUND));
 
         // managerId로 user 쪽에 수정하려는 manager가 '업체 배송 담당자'인지 유효성 검사
-        UserRoleType userRoleType = Optional.ofNullable(
+        UserRoleType userRoleType = (UserRoleType) Optional.ofNullable(
                 userClient.getUserRoleById(requestServiceDto.managerId()).getBody()
         ).orElseThrow(() -> new DeliveryException(ErrorCode.USER_ROLE_NOT_FOUND));
 
