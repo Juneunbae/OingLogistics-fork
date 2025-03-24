@@ -24,6 +24,7 @@ import com.oingmaryho.business.companyservice.application.dto.response.CompanyCr
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyDetailsSearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanySearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyUpdateResponseServiceDto;
+import com.oingmaryho.business.companyservice.application.event.CompanyProductDeletePublisher;
 import com.oingmaryho.business.companyservice.application.service.feignClient.HubClient;
 import com.oingmaryho.business.companyservice.config.cache.CacheType;
 import com.oingmaryho.business.companyservice.domain.Company;
@@ -47,7 +48,7 @@ public class CompanyService {
 	private final CompanyRepository companyRepository;
 	private final CustomCompanyRepository companyCustomRepository;
 	private final CompanyApplicationMapper companyApplicationMapper;
-
+	private final CompanyProductDeletePublisher companyProductDeletePublisher;
 	@Transactional
 	public CompanyCreateResponseServiceDto createCompany(
 		CompanyCreateRequestServiceDto companyCreateRequestServiceDto,
@@ -104,12 +105,9 @@ public class CompanyService {
 		validateManageHubPermission(requesterId, company.getManageHubId());
 
 		company.softDelete(requesterId);
-		// event ~
-		CompanyProductDeleteRequestDto message = new CompanyProductDeleteRequestDto(company.getId(), requesterId);
 
-		rabbitTemplate.convertAndSend(
-			queueCompanyDelete,
-			message
+		CompanyProductDeleteRequestDto message = new CompanyProductDeleteRequestDto(company.getId(), requesterId);
+		companyProductDeletePublisher.publish(message);
 		);
 	}
 
