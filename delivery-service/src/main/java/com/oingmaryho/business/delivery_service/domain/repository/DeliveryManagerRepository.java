@@ -1,4 +1,4 @@
-package com.oingmaryho.business.delivery_service.infrastructure.repository;
+package com.oingmaryho.business.delivery_service.domain.repository;
 
 import com.oingmaryho.business.delivery_service.domain.entity.DeliveryManager;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryManagerType;

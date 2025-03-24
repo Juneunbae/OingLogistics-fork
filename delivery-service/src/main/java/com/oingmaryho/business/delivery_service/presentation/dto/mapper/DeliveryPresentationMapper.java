@@ -6,7 +6,6 @@ import com.oingmaryho.business.delivery_service.presentation.dto.request.*;
 import com.oingmaryho.business.delivery_service.presentation.dto.response.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Pageable;
 
 import java.util.UUID;
@@ -17,6 +16,7 @@ public interface DeliveryPresentationMapper {
     // RequestServiceDto -> RequestDto
     @Mapping(target = "receiver", source = "requestDto.requesterName")
     @Mapping(target = "receiverSlackId", source = "requestDto.requesterSlackId")
+    @Mapping(target = "companyId", source = "requestDto.recipientId")
     @Mapping(target = "hubId", source = "requestDto.recipientHubId")
     @Mapping(target = "address", source = "requestDto.requesterAddress")
     DeliveryCreationRequestServiceDto toCreationServiceDto(DeliveryCreationRequestDto requestDto);

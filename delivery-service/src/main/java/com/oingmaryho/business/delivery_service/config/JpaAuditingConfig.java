@@ -1,4 +1,4 @@
-package com.oingmaryho.business.delivery_service.config.audit;
+package com.oingmaryho.business.delivery_service.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,8 +22,7 @@ public class JpaAuditingConfig {
             if (attributes == null) {
                 return Optional.empty();
             }
-
-            String userId = attributes.getRequest().getHeader("userId");
+            String userId = attributes.getRequest().getHeader("X-User-Id");
 
             if (userId != null) {
                 try {

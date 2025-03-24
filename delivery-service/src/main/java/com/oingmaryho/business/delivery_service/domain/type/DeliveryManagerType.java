@@ -1,5 +1,6 @@
 package com.oingmaryho.business.delivery_service.domain.type;
 
+import com.oingmaryho.business.common.domain.type.UserRoleType;
 import lombok.Getter;
 
 @Getter

@@ -1,5 +1,7 @@
 package com.oingmaryho.business.delivery_service.application.feign;
 
+import com.oingmaryho.business.delivery_service.application.dto.response.HubPathResponseDto;
+import com.oingmaryho.business.delivery_service.application.dto.response.HubSearchResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +17,7 @@ public interface HubClient {
     ResponseEntity<HubSearchResponseDto> getHubByManagerId(
             @RequestParam("managerId") Long managerId);
 
-    @GetMapping("hub-service/path")
+    @GetMapping("/hub-service/path")
     ResponseEntity<List<HubPathResponseDto>> getPath(
             @RequestParam("departureHubId") UUID departureHubId,
             @RequestParam("arriveAddress") String arriveAddress);

@@ -1,5 +1,6 @@
 package com.oingmaryho.business.delivery_service.application;
 
+import com.oingmaryho.business.common.domain.type.UserRoleType;
 import com.oingmaryho.business.delivery_service.application.dto.mapper.DeliveryApplicationMapper;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
@@ -13,9 +14,8 @@ import com.oingmaryho.business.delivery_service.domain.entity.DeliveryRoute;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryManagerType;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryRouteStatus;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryStatus;
-import com.oingmaryho.business.delivery_service.domain.type.UserRoleType;
-import com.oingmaryho.business.delivery_service.infrastructure.repository.DeliveryManagerRepository;
-import com.oingmaryho.business.delivery_service.infrastructure.repository.DeliveryRepository;
+import com.oingmaryho.business.delivery_service.domain.repository.DeliveryManagerRepository;
+import com.oingmaryho.business.delivery_service.domain.repository.DeliveryRepository;
 import com.oingmaryho.business.delivery_service.utils.PageableUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

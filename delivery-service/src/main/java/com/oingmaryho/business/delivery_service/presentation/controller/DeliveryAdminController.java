@@ -1,17 +1,20 @@
 package com.oingmaryho.business.delivery_service.presentation.controller;
 
+import com.oingmaryho.business.common.domain.type.UserRoleType;
+import com.oingmaryho.business.common.infrastructure.annotation.RequiredRoles;
 import com.oingmaryho.business.delivery_service.application.service.DeliveryAdminService;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryRouteStatus;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryStatus;
-import com.oingmaryho.business.delivery_service.domain.type.UserRoleType;
 import com.oingmaryho.business.delivery_service.utils.PageableUtils;
 import com.oingmaryho.business.delivery_service.presentation.dto.mapper.DeliveryPresentationMapper;
 import com.oingmaryho.business.delivery_service.presentation.dto.request.*;
 import com.oingmaryho.business.delivery_service.presentation.dto.response.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Description;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/admin/v1/deliveries")
@@ -27,21 +31,25 @@ public class DeliveryAdminController {
     private final DeliveryAdminService deliveryAdminService;
     private final DeliveryPresentationMapper deliveryPresentationMapper;
 
+
+    @Description(
+            "마스터 - 배송 생성"
+    )
+    @Deprecated
+    @RequiredRoles(UserRoleType.MASTER)
     @PostMapping
     public ResponseEntity<DeliveryCreationResponseDto> createDelivery(
-            HttpServletRequest request,
             @RequestBody DeliveryCreationRequestDto requestDto) {
-
-        Long userId = (Long) request.getAttribute("userId");
-        UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
-
         DeliveryCreationRequestServiceDto requestServiceDto = deliveryPresentationMapper.toCreationServiceDto(requestDto);
         DeliveryCreationResponseServiceDto responseServiceDto = deliveryAdminService.createDelivery(
                 requestServiceDto);
-
         return ResponseEntity.ok(deliveryPresentationMapper.toCreationResponseDto(responseServiceDto));
     }
 
+    @Description(
+            "마스터 - 배송 수정"
+    )
+    @RequiredRoles(UserRoleType.MASTER)
     @PutMapping("/{id}")
     public ResponseEntity<DeliveryUpdateResponseDto> updateDelivery(
             HttpServletRequest request,
@@ -49,18 +57,20 @@ public class DeliveryAdminController {
             @RequestBody DeliveryUpdateRequestDto requestDto) {
 
         Long userId = (Long) request.getAttribute("userId");
-        UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
-
-        // 권한 체크
+        UserRoleType userRole = (UserRoleType) request.getAttribute("role");
 
         DeliveryUpdateRequestServiceDto requestServiceDto = deliveryPresentationMapper.toUpdateServiceDto(id, requestDto);
         DeliveryUpdateResponseServiceDto responseServiceDto = deliveryAdminService.updateDelivery(
                 userId,
-                UserRoleType.COMPANY_DELIVERY_MANAGER,
+                userRole,
                 requestServiceDto);
         return ResponseEntity.ok(deliveryPresentationMapper.toUpdateResponseDto(responseServiceDto));
     }
 
+    @Description(
+            "마스터 - 배송 상태 수정"
+    )
+    @RequiredRoles(UserRoleType.MASTER)
     @PutMapping("/{id}/status")
     public ResponseEntity<DeliveryUpdateStatusResponseDto> updateDeliveryStatus(
             HttpServletRequest request,
@@ -68,18 +78,20 @@ public class DeliveryAdminController {
             @RequestBody DeliveryUpdateStatusRequestDto requestDto) {
 
         Long userId = (Long) request.getAttribute("userId");
-        UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
-
-        // 권한 체크
+        UserRoleType userRole = (UserRoleType) request.getAttribute("role");
 
         DeliveryUpdateStatusRequestServiceDto requestServiceDto = deliveryPresentationMapper.toUpdateStatusServiceDto(id, requestDto);
         DeliveryUpdateStatusResponseServiceDto responseServiceDto = deliveryAdminService.updateStatusDelivery(
                 userId,
-                UserRoleType.COMPANY_DELIVERY_MANAGER,
+                userRole,
                 requestServiceDto);
         return ResponseEntity.ok(deliveryPresentationMapper.toUpdateStatusResponseDto(responseServiceDto));
     }
 
+    @Description(
+            "마스터 - 배송 삭제"
+    )
+    @RequiredRoles(UserRoleType.MASTER)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDelivery(
             HttpServletRequest request,
@@ -88,17 +100,18 @@ public class DeliveryAdminController {
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
 
-        // 권한 체크
-
         DeliveryDeletionRequestServiceDto requestServiceDto = deliveryPresentationMapper.toDeletionServiceDto(id);
         deliveryAdminService.deleteDelivery(
                 userId,
-                UserRoleType.COMPANY_DELIVERY_MANAGER,
+                userRole,
                 requestServiceDto);
         return ResponseEntity.noContent().build();
     }
 
-    // 배송 조회
+    @Description(
+            "마스터 - 배송 상세 조회"
+    )
+    @RequiredRoles(UserRoleType.MASTER)
     @GetMapping("/{id}")
     public ResponseEntity<DeliveryAdminResponseDto> getDeliveryDetail(
             HttpServletRequest request,
@@ -107,17 +120,18 @@ public class DeliveryAdminController {
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
 
-        // 권한 체크
-
         DeliveryDetailRequestServiceDto requestServiceDto = deliveryPresentationMapper.toDetailServiceDto(id);
         DeliveryResponseServiceDto responseServiceDto = deliveryAdminService.GetDeliveryDetail(
                 userId,
-                UserRoleType.COMPANY_DELIVERY_MANAGER,
+                userRole,
                 requestServiceDto);
         return ResponseEntity.ok(deliveryPresentationMapper.toDetailAdminResponseDto(responseServiceDto));
     }
 
-    // 배송 전체 조회 (검색)
+    @Description(
+            "마스터 - 배송 전체 조회(검색)"
+    )
+    @RequiredRoles(UserRoleType.MASTER)
     @GetMapping
     public ResponseEntity<Page<DeliveryAdminResponseDto>> searchDelivery(
             HttpServletRequest request,
@@ -137,8 +151,6 @@ public class DeliveryAdminController {
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
 
-        // 권한 체크
-
         DeliverySearchRequestDto requestDto = new DeliverySearchRequestDto(
                 id,
                 orderId,
@@ -154,13 +166,16 @@ public class DeliveryAdminController {
         DeliverySearchRequestServiceDto requestServiceDto = deliveryPresentationMapper.toSearchServiceDto(requestDto, customPageable);
         Page<DeliveryResponseServiceDto> responseServiceDtos = deliveryAdminService.GetDeliveriesBySearch(
                 userId,
-                UserRoleType.COMPANY_DELIVERY_MANAGER,
+                userRole,
                 requestServiceDto);
 
         return ResponseEntity.ok(responseServiceDtos.map(deliveryPresentationMapper::toSearchAdminResponseDto));
     }
 
-    // 배송 경로 조회
+    @Description(
+            "마스터 - 배송 경로 조회"
+    )
+    @RequiredRoles(UserRoleType.MASTER)
     @GetMapping("/routes/{id}")
     public ResponseEntity<DeliveryRouteAdminResponseDto> getDeliveryRouteDetail(
             HttpServletRequest request,
@@ -169,17 +184,18 @@ public class DeliveryAdminController {
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
 
-        // 권한 체크
-
         DeliveryRouteDetailRequestServiceDto requestServiceDto = deliveryPresentationMapper.toRouteDetailServiceDto(id);
         DeliveryRouteResponseServiceDto responseServiceDto = deliveryAdminService.GetDeliveryRouteDetail(
                 userId,
-                UserRoleType.COMPANY_DELIVERY_MANAGER,
+                userRole,
                 requestServiceDto);
         return ResponseEntity.ok(deliveryPresentationMapper.toRouteDetailAdminResponseDto(responseServiceDto));
     }
 
-    // 배송 경로 전체 조회 (검색)
+    @Description(
+            "마스터 - 배송 경로 전체 조회(검색)"
+    )
+    @RequiredRoles(UserRoleType.MASTER)
     @GetMapping("/{id}/routes")
     public ResponseEntity<Page<DeliveryRouteAdminResponseDto>> searchDeliveryRoute(
             HttpServletRequest request,
@@ -200,7 +216,6 @@ public class DeliveryAdminController {
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
 
-        // 권한 체크
         DeliveryRouteSearchRequestDto requestDto = new DeliveryRouteSearchRequestDto(
                 routeId,
                 orderId,
@@ -217,12 +232,16 @@ public class DeliveryAdminController {
         DeliveryRouteSearchRequestServiceDto requestServiceDto = deliveryPresentationMapper.toRouteSearchServiceDto(id, requestDto, customPageable);
         Page<DeliveryRouteResponseServiceDto> responseServiceDtos = deliveryAdminService.GetDeliveryRoutesBySearch(
                 userId,
-                UserRoleType.COMPANY_DELIVERY_MANAGER,
+                userRole,
                 requestServiceDto);
 
         return ResponseEntity.ok(responseServiceDtos.map(deliveryPresentationMapper::toRouteSearchAdminResponseDto));
     }
 
+    @Description(
+            "마스터 - 배송 경로 상태 수정"
+    )
+    @RequiredRoles(UserRoleType.MASTER)
     @PutMapping("/routes/{id}/status")
     public ResponseEntity<DeliveryRouteUpdateStatusResponseDto> updateDeliveryRouteStatus(
             HttpServletRequest request,
@@ -232,12 +251,10 @@ public class DeliveryAdminController {
         Long userId = (Long) request.getAttribute("userId");
         UserRoleType userRole = (UserRoleType) request.getAttribute("userRole");
 
-        // 권한 체크
-
         DeliveryRouteUpdateStatusRequestServiceDto requestServiceDto = deliveryPresentationMapper.toUpdateRouteStatusServiceDto(id, requestDto);
         DeliveryRouteUpdateStatusResponseServiceDto responseServiceDto = deliveryAdminService.updateRouteStatusDelivery(
                 userId,
-                UserRoleType.COMPANY_DELIVERY_MANAGER,
+                userRole,
                 requestServiceDto);
         return ResponseEntity.ok(deliveryPresentationMapper.toUpdateRouteStatusResponseDto(responseServiceDto));
     }

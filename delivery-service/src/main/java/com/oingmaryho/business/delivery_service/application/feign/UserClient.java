@@ -1,6 +1,6 @@
 package com.oingmaryho.business.delivery_service.application.feign;
 
-import com.oingmaryho.business.delivery_service.domain.type.UserRoleType;
+import com.oingmaryho.business.common.domain.type.UserRoleType;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
