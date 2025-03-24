@@ -19,5 +19,7 @@ public interface HubRouteApplicationMapper {
 
 	@Mapping(target = "hubToHubTime", source = "hubRoute.routeInfo.hubToHubTime")
 	@Mapping(target = "distance", source = "hubRoute.routeInfo.distance")
-	HubRouteSearchResponseServiceDto toHubRouteSearchResponseServiceDto(HubRoute hubRoute);
+	@Mapping(target = "departureHubName", source = "departureHubName")
+	@Mapping(target = "arriveHubName", source = "arriveHubName")
+	HubRouteSearchResponseServiceDto toHubRouteSearchResponseServiceDto(HubRoute hubRoute, String departureHubName, String arriveHubName);
 }

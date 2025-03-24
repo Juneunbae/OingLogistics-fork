@@ -1,6 +1,7 @@
 package com.oingmaryho.business.hubservice.application.service;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -16,6 +17,7 @@ import com.oingmaryho.business.hubservice.application.dto.response.HubRouteSearc
 import com.oingmaryho.business.hubservice.domain.Hub;
 import com.oingmaryho.business.hubservice.domain.HubRoute;
 import com.oingmaryho.business.hubservice.domain.criteria.HubRouteSearchCriteria;
+import com.oingmaryho.business.hubservice.domain.repository.HubRepository;
 import com.oingmaryho.business.hubservice.domain.repository.HubRouteRepository;
 import com.oingmaryho.business.hubservice.domain.service.HubInfoService;
 import com.oingmaryho.business.hubservice.domain.service.HubPathService;
@@ -32,13 +34,18 @@ public class HubRouteService {
 	private final HubInfoService hubInfoService;
 	private final HubRouteApplicationMapper mapper;
 	private final HubRouteRepository hubRouteRepository;
+	private final HubRepository hubRepository;
 
 	@Transactional(readOnly = true)
 	@Cacheable(value = "hubRoute", key = "#requestDto.id()")
 	public HubRouteSearchResponseServiceDto getHubRouteById(HubRouteSearchRequestServiceDto requestDto) {
 		HubRoute hubRoute = hubRouteRepository.findByIdAndIsDeletedFalse(requestDto.id())
 			.orElseThrow(() -> new HubException(ErrorCode.NOT_FOUND_HUB_ROUTE));
-		return mapper.toHubRouteSearchResponseServiceDto(hubRoute);
+
+		String departureHubName = getHubName(hubRoute.getDepartureHubId());
+		String arriveHubName = getHubName(hubRoute.getArriveHubId());
+
+		return mapper.toHubRouteSearchResponseServiceDto(hubRoute, departureHubName, arriveHubName);
 	}
 
 	@Transactional(readOnly = true)
@@ -46,7 +53,12 @@ public class HubRouteService {
 	public Page<HubRouteSearchResponseServiceDto> searchHubRoutes(HubRoutesSearchRequestServiceDto requestDto, Pageable pageable) {
 		HubRouteSearchCriteria criteria = createHubRouteSearchCriteria(requestDto);
 		Page<HubRoute> response = hubRouteRepository.findDynamicQuery(criteria, pageable);
-		return response.map(mapper::toHubRouteSearchResponseServiceDto);
+		return response.map(hubRoute -> {
+				String departureHubName = getHubName(hubRoute.getDepartureHubId());
+				String arriveHubName = getHubName(hubRoute.getArriveHubId());
+				return mapper.toHubRouteSearchResponseServiceDto(hubRoute, departureHubName, arriveHubName);
+			}
+		);
 	}
 
 	@Transactional
@@ -55,8 +67,19 @@ public class HubRouteService {
 		Hub nearestHub = hubInfoService.getNearestHubFromAddress(requestDto.arriveAddress());
 		List<HubRoute> response = hubPathService.getOptimalHubPath(requestDto.departureHubId(), nearestHub.getId());
 		return response.stream()
-			.map(mapper::toHubRouteSearchResponseServiceDto)
+			.map(hubRoute -> {
+					String departureHubName = getHubName(hubRoute.getDepartureHubId());
+					String arriveHubName = getHubName(hubRoute.getArriveHubId());
+					return mapper.toHubRouteSearchResponseServiceDto(hubRoute, departureHubName, arriveHubName);
+				}
+			)
 			.toList();
+	}
+
+	private String getHubName(UUID hubId) {
+		return hubRepository.findById(hubId)
+			.orElseThrow(() -> new HubException(ErrorCode.NOT_FOUND_HUB))
+			.getName();
 	}
 
 	private HubRouteSearchCriteria createHubRouteSearchCriteria(HubRoutesSearchRequestServiceDto requestDto) {
