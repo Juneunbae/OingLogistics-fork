@@ -68,12 +68,10 @@ public class OrderController {
     @RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.HUB_DELIVERY_MANAGER, UserRoleType.COMPANY_DELIVERY_MANAGER, UserRoleType.COMPANY_MANAGER})
     public ResponseEntity<?> getOrder(HttpServletRequest request, @PathVariable UUID id) {
         Long userId = (Long) request.getAttribute("userId");
-        String username = (String) request.getAttribute("username");
-        String slackId = (String) request.getAttribute("slackId");
         String role = (String) request.getAttribute("role");
 
         OrderRequestServiceDto orderRequestServiceDto = orderPresentationMapper.toOrderServiceDto(id);
-        OrderResponseServiceDto response = orderService.getOrder(userId, username, slackId, role, orderRequestServiceDto);
+        OrderResponseServiceDto response = orderService.getOrder(userId, role, orderRequestServiceDto);
 
         return ResponseEntity.ok(orderPresentationMapper.toOrderResponseServiceDto(response));
     }
@@ -107,15 +105,14 @@ public class OrderController {
     @RequiredRoles({UserRoleType.HUB_MANAGER})
     public ResponseEntity<Void> updateOrder(HttpServletRequest request, @PathVariable UUID id, @RequestBody OrderUpdateRequestDto update) {
         Long userId = (Long) request.getAttribute("userId");
-        String username = (String) request.getAttribute("username");
-        String slackId = (String) request.getAttribute("slackId");
+        String role = (String) request.getAttribute("role");
 
         OrderUpdateServiceDto orderUpdateServiceDto = orderPresentationMapper.toOrderUpdateServiceDto(
             id, update, update.requestOrderDetails().stream().map(
                 orderPresentationMapper::toOrderDetailUpdateServiceDto
             ).toList()
         );
-        orderService.updateOrder(userId, username, slackId, orderUpdateServiceDto);
+        orderService.updateOrder(userId, role, orderUpdateServiceDto);
 
         return ResponseEntity.ok().build();
     }
@@ -127,11 +124,10 @@ public class OrderController {
     @RequiredRoles({UserRoleType.HUB_MANAGER})
     public ResponseEntity<Void> deleteOrder(HttpServletRequest request, @PathVariable UUID id) {
         Long userId = (Long) request.getAttribute("userId");
-        String username = (String) request.getAttribute("username");
-        String slackId = (String) request.getAttribute("slackId");
+        String role = (String) request.getAttribute("role");
 
         OrderDeleteServiceDto orderDeleteServiceDto = orderPresentationMapper.toOrderDeleteDto(id);
-        orderService.deleteOrder(userId, username, slackId, orderDeleteServiceDto);
+        orderService.deleteOrder(userId, role, orderDeleteServiceDto);
 
         return ResponseEntity.ok().build();
     }
@@ -143,11 +139,10 @@ public class OrderController {
     @DeleteMapping("/{id}/details/{orderDetailId}")
     public ResponseEntity<Void> deleteOrderDetail(HttpServletRequest request, @PathVariable UUID id, @PathVariable UUID orderDetailId) {
         Long userId = (Long) request.getAttribute("userId");
-        String username = (String) request.getAttribute("username");
-        String slackId = (String) request.getAttribute("slackId");
+        String role = (String) request.getAttribute("role");
 
         OrderDetailDeleteRequestServiceDto orderDetailDeleteRequestServiceDto = orderPresentationMapper.toOrderDetailDeleteRequestServiceDto(id, orderDetailId);
-        orderService.deleteOrderDetail(userId, username, slackId, orderDetailDeleteRequestServiceDto);
+        orderService.deleteOrderDetail(userId, role, orderDetailDeleteRequestServiceDto);
 
         return ResponseEntity.ok().build();
     }

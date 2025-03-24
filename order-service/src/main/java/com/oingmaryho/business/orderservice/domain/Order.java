@@ -41,6 +41,8 @@ public class Order extends BaseEntity {
     )
     private String requesterAddress;
 
+    private UUID requesterHubId;
+
     private Long requesterUserId;
 
     @Column(
