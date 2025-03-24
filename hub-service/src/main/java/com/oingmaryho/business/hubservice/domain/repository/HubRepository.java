@@ -8,7 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.oingmaryho.business.hubservice.domain.Hub;
-import com.oingmaryho.business.hubservice.domain.HubSearchCriteria;
+import com.oingmaryho.business.hubservice.domain.criteria.HubSearchCriteria;
 
 public interface HubRepository {
 	Hub save(Hub hub);

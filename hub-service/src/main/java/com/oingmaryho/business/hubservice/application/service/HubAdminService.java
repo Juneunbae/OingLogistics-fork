@@ -1,4 +1,4 @@
-package com.oingmaryho.business.hubservice.application;
+package com.oingmaryho.business.hubservice.application.service;
 
 import java.util.UUID;
 
@@ -21,7 +21,7 @@ import com.oingmaryho.business.hubservice.application.dto.response.HubSearchAdmi
 import com.oingmaryho.business.hubservice.application.dto.response.HubUpdateResponseServiceDto;
 import com.oingmaryho.business.hubservice.domain.Address;
 import com.oingmaryho.business.hubservice.domain.Hub;
-import com.oingmaryho.business.hubservice.domain.HubSearchCriteria;
+import com.oingmaryho.business.hubservice.domain.criteria.HubSearchCriteria;
 import com.oingmaryho.business.hubservice.domain.repository.HubRepository;
 import com.oingmaryho.business.hubservice.domain.service.HubCreateService;
 import com.oingmaryho.business.hubservice.domain.service.HubRouteDeleteService;

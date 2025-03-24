@@ -1,4 +1,4 @@
-package com.oingmaryho.business.hubservice.infrastructure;
+package com.oingmaryho.business.hubservice.infrastructure.map.dto;
 
 import java.util.List;
 

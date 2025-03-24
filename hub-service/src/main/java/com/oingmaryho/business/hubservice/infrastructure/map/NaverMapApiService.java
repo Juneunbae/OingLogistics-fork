@@ -1,4 +1,4 @@
-package com.oingmaryho.business.hubservice.infrastructure;
+package com.oingmaryho.business.hubservice.infrastructure.map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -7,6 +7,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import com.oingmaryho.business.hubservice.domain.Address;
 import com.oingmaryho.business.hubservice.domain.RouteInfo;
 import com.oingmaryho.business.hubservice.domain.service.GeoSpatialService;
+import com.oingmaryho.business.hubservice.infrastructure.map.dto.DirectionsResponse;
+import com.oingmaryho.business.hubservice.infrastructure.map.dto.GeocodingResponse;
 
 @Service
 public class NaverMapApiService implements GeoSpatialService {

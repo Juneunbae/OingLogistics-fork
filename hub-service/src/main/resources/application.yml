@@ -2,6 +2,6 @@ spring:
   config:
     import: "optional:configserver:http://localhost:8888/"
   profiles:
-    active: dev
+    active: prod
   application:
     name: hub-service

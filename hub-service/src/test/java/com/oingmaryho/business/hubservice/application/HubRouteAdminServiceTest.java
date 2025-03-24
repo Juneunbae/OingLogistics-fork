@@ -1,13 +1,11 @@
 package com.oingmaryho.business.hubservice.application;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 import java.util.UUID;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +19,7 @@ import com.oingmaryho.business.hubservice.application.dto.request.HubRouteDelete
 import com.oingmaryho.business.hubservice.application.dto.request.HubRouteUpdateRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteCreateResponseServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteUpdateResponseServiceDto;
+import com.oingmaryho.business.hubservice.application.service.HubRouteAdminService;
 import com.oingmaryho.business.hubservice.domain.HubRoute;
 import com.oingmaryho.business.hubservice.domain.RouteInfo;
 import com.oingmaryho.business.hubservice.domain.repository.HubRouteRepository;

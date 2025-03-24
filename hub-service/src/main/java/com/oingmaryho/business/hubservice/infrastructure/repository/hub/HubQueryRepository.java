@@ -1,4 +1,4 @@
-package com.oingmaryho.business.hubservice.infrastructure;
+package com.oingmaryho.business.hubservice.infrastructure.repository.hub;
 
 import static com.oingmaryho.business.hubservice.domain.QHub.*;
 
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import com.oingmaryho.business.hubservice.domain.Hub;
-import com.oingmaryho.business.hubservice.domain.HubSearchCriteria;
+import com.oingmaryho.business.hubservice.domain.criteria.HubSearchCriteria;
 import com.oingmaryho.business.hubservice.utils.QueryDslUtils;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;

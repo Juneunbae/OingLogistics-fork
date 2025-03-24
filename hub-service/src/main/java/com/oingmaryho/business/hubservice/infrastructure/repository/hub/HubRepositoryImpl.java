@@ -1,4 +1,4 @@
-package com.oingmaryho.business.hubservice.infrastructure;
+package com.oingmaryho.business.hubservice.infrastructure.repository.hub;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import com.oingmaryho.business.hubservice.domain.Hub;
-import com.oingmaryho.business.hubservice.domain.HubSearchCriteria;
+import com.oingmaryho.business.hubservice.domain.criteria.HubSearchCriteria;
 import com.oingmaryho.business.hubservice.domain.repository.HubRepository;
 
 import lombok.RequiredArgsConstructor;

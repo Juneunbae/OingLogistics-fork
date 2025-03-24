@@ -1,4 +1,4 @@
-package com.oingmaryho.business.hubservice.infrastructure;
+package com.oingmaryho.business.hubservice.infrastructure.repository.hubroute;
 
 import static com.oingmaryho.business.hubservice.domain.QHubRoute.*;
 
@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import com.oingmaryho.business.hubservice.domain.HubRoute;
-import com.oingmaryho.business.hubservice.domain.HubRouteSearchCriteria;
+import com.oingmaryho.business.hubservice.domain.criteria.HubRouteSearchCriteria;
 import com.oingmaryho.business.hubservice.utils.QueryDslUtils;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
