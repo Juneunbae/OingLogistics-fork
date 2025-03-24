@@ -25,5 +25,6 @@ public class RabbitMQMessagePublisher implements MessagePublisher {
   @Override
   public void publishSlackMessage(SlackMessageDto dto) {
     rabbitTemplate.convertAndSend(USER_EXCHANGE, USER_ROUTING_KEY, dto);
+    log.info("Message published successfully USER_EXCHANGE: ${}, USER_ROUTING_KEY: ${}, id: ${}, msg: ${}",USER_EXCHANGE, USER_ROUTING_KEY, dto.id(), dto.message());
   }
 }
