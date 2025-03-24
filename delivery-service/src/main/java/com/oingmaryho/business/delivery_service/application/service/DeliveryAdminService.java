@@ -108,8 +108,7 @@ public class DeliveryAdminService {
             throw new DeliveryException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
 
-        List<String> hubNames = new ArrayList<>();
-        hubNames.add(hubRoutes.get(0).departureHubName());
+        String hubNames = hubRoutes.get(0).departureHubName();
 
         // 4. 허브 배송 담당자 배정
         try {
@@ -143,9 +142,10 @@ public class DeliveryAdminService {
 
                 deliveryRoute.addRoute(delivery);
                 // 4-5. 경유 허브 이름 저장
-                hubNames.add(route.arriveHubName());
+                hubNames = hubNames + "," +route.arriveHubName();
             }
         } catch (Exception e) {
+            e.printStackTrace();
             // 예외 발생 시 Redis 값 복원
             redisTemplate.opsForValue().set(hubDeliveryManagerSequenceKey, backupHubDeliveryManagerSequence);
             // 예외 다시 던져서 트랜잭션 롤백 유도
@@ -172,7 +172,7 @@ public class DeliveryAdminService {
             throw new DeliveryException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
 
-        boolean companySeqIncremented = false;  // 업체 배송 담당자 배정 sequence 업데이트 전 예외가 발생했을 때 처리를 위한 flag
+        String companyDeliveryManagerSlackId = null;  // 업체 배송 담당자 배정 sequence 업데이트 전 예외가 발생했을 때 처리를 위한 flag
         try {
             // 5-1. 현재 배정해야 할 업체 배송 담당자 sequence 조회
             int companySequence = Optional.ofNullable(redisTemplate.opsForValue().get(companyDeliveryManagerSequenceKey))
@@ -184,6 +184,8 @@ public class DeliveryAdminService {
             DeliveryManager companyDeliveryManager = deliveryManagerRepository.findByHubIdAndTypeAndSequence(
                             arriveHubId, DeliveryManagerType.COMPANY_DELIVERY_MANAGER, companySequence % 10)
                     .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
+
+            companyDeliveryManagerSlackId = companyDeliveryManager.getSlackId();
 
             // 5-3. 업체 배송 담당자 배송 엔티티에 연결
             delivery.update(null, null, null, companyDeliveryManager);
@@ -215,7 +217,8 @@ public class DeliveryAdminService {
                     hubRoutes.get(0).departureHubName(),
                     hubNames,
                     hubRoutes.get(hubRoutes.size()-1).arriveHubName(),
-                    companyDeliveryManagerName);
+                    companyDeliveryManagerName,
+                    companyDeliveryManagerSlackId);
         } catch (DeliveryException e) {
             redisTemplate.opsForValue().increment(companyDeliveryManagerSequenceKey, -1);
             throw new DeliveryException(ErrorCode.DELIVERY_MANAGER_NOT_ASSIGNED);

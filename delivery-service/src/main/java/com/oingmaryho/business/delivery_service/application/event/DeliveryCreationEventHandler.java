@@ -34,8 +34,8 @@ public class DeliveryCreationEventHandler {
     @TransactionalEventListener(phase = AFTER_COMMIT)
     public void createDelivery(DeliveryCreationRequestDto requestDto) {
 
-        log.info("[Delivery Creation Request] orderId = {}, orderDetailId = {}",
-                requestDto.orderId(), requestDto.orderDetailId());
+        log.info("[Delivery Creation Request] orderId = {}, orderDetailId = {}, hubId = {}, address = {}",
+                requestDto.orderId(), requestDto.orderDetailId(), requestDto.recipientHubId(), requestDto.requesterAddress());
 
         DeliveryCreationRequestServiceDto requestServiceDto = new DeliveryCreationRequestServiceDto(
                 requestDto.orderId(),
@@ -58,9 +58,10 @@ public class DeliveryCreationEventHandler {
                     requestDto.orderDetailId(),
                     responseServiceDto.deliveryId(),
                     responseServiceDto.deliveryDepartureName(),
-                    responseServiceDto.deliveryStopoverName(),
+                    responseServiceDto.deliveryStopoverNames(),
                     responseServiceDto.deliveryDestinationName(),
-                    responseServiceDto.deliveryManagerName())
+                    responseServiceDto.deliveryManagerName(),
+                            responseServiceDto.deliveryManagerSlackId())
             );
 
             log.info("[Delivery Creation Success Message Issued] orderId = {}, orderDetailId = {}, deliveryId = {}",

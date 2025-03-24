@@ -1,5 +1,6 @@
 package com.oingmaryho.business.delivery_service.application.dto.response;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -8,7 +9,8 @@ public record DeliveryCreationResponseServiceDto(
         UUID orderDetailId,
         UUID deliveryId,
         String deliveryDepartureName,
-        List<String> deliveryStopoverName,
+        String deliveryStopoverNames,
         String deliveryDestinationName,
-        String deliveryManagerName){
+        String deliveryManagerName,
+        String deliveryManagerSlackId){
 }

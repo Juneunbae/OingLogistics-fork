@@ -26,7 +26,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
 					"/admin/v1/users/slack/confirm",
 					"/admin/v1/users/sign-in",
 					"/admin/v1/users/sign-out",
-					"/user-service/users/**"
+					"/user-service/users/**",
+					"/error/**"
 			);
 
 		// 일반 사용자 확인용 인터셉터
@@ -37,7 +38,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
 					"/api/v1/users/slack/confirm",
 					"/api/v1/users/sign-in",
 					"/api/v1/users/sign-out",
-					"/user-service/users/**"
+					"/user-service/users/**",
+					"/error/**"
 			);
 	}
 
