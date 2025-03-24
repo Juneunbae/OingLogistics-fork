@@ -71,4 +71,14 @@ public class UserFeignClientController {
 		return ResponseEntity.ok(userFeignService.userFeignServiceGetSlackId(requestServiceDto));
 	}
 
+	@Description("FeignClient - 슬랙 서비스에서 요청, User Id를 받아 user name 조회 api")
+	@GetMapping("/name")
+	public ResponseEntity<String> userFeignServiceGetUsernameIdById(
+			@RequestParam(name = "id", required = true) Long id
+	){
+		log.info("userFeignServiceGetUsernameIdById request : ${}", id);
+
+		return ResponseEntity.ok(userFeignService.userFeignServiceGetUsername(id));
+	}
+
 }

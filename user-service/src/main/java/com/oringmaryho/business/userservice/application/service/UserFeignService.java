@@ -22,6 +22,7 @@ import com.oringmaryho.business.userservice.presentation.dto.request.UserFromDel
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -67,5 +68,13 @@ public class UserFeignService {
 		User user = userRepository.findById(requestServiceDto.id())
 			.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
 		return user.getSlackId();
+	}
+
+	@Transactional(readOnly = true)
+	public String userFeignServiceGetUsername(Long id) {
+		User user = userRepository.findById(id)
+				.orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
+
+		return user.getUsername();
 	}
 }
