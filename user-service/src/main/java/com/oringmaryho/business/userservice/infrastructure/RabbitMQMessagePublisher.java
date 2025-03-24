@@ -19,6 +19,15 @@ public class RabbitMQMessagePublisher implements MessagePublisher {
   @Value("${rabbitmq.routing-keys.user}")
   private String USER_ROUTING_KEY;
 
+  @Value("${rabbitmq.routing-keys.hub}")
+  private String HUB_ROUTING_KEY;
+
+  @Value("${rabbitmq.routing-keys.delivery}")
+  private String DELIVERY_ROUTING_KEY;
+
+  @Value("${rabbitmq.routing-keys.product}")
+  private String PRODUCT_ROUTING_KEY;
+
   @Override
   public void publishSlackMessage(SlackMessageDto dto) {
     rabbitTemplate.convertAndSend(USER_EXCHANGE, USER_ROUTING_KEY, dto);
@@ -29,6 +38,9 @@ public class RabbitMQMessagePublisher implements MessagePublisher {
 
   @Override
   public void publishUserStatus(Long id) {
-
+    rabbitTemplate.convertAndSend(USER_EXCHANGE, HUB_ROUTING_KEY, id);
+    rabbitTemplate.convertAndSend(USER_EXCHANGE, DELIVERY_ROUTING_KEY, id);
+    rabbitTemplate.convertAndSend(USER_EXCHANGE, PRODUCT_ROUTING_KEY, id);
+    log.info("Message published successfully id: ${}", id);
   }
 }
