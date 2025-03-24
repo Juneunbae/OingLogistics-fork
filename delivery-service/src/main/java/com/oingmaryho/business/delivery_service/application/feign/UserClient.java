@@ -13,4 +13,9 @@ public interface UserClient {
     ResponseEntity<UserRoleType> getUserRoleById(
             @RequestParam("id") Long id);
 
+
+    @GetMapping("user-service/name")
+    ResponseEntity<String> getUserName(
+            @RequestParam("id") Long id);
+
 }

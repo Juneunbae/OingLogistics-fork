@@ -13,4 +13,9 @@ public class UserClientFallback implements UserClient {
     public ResponseEntity<UserRoleType> getUserRoleById(Long id) {
         throw new DeliveryException(ErrorCode.USER_SERVICE_UNAVAILABLE);
     }
+
+    @Override
+    public ResponseEntity<String> getUserName(Long id) {
+        throw new DeliveryException(ErrorCode.USER_SERVICE_UNAVAILABLE);
+    }
 }
