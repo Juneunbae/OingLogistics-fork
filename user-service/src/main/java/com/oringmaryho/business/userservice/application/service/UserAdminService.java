@@ -1,5 +1,7 @@
 package com.oringmaryho.business.userservice.application.service;
 
+import com.oringmaryho.business.userservice.application.dto.request.SlackMessageDto;
+import com.oringmaryho.business.userservice.application.messaging.MessagePublisher;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -66,6 +68,7 @@ public class UserAdminService {
 
 	private final DirectMessageAuthService directMessageAuthService;
 	private final CodeStorage codeStorage;
+	private final MessagePublisher messagePublisher;
 
 	@Value("${admin.key}")
 	private String adminKey;
@@ -395,11 +398,16 @@ public class UserAdminService {
 			throw new UserException(ErrorCode.SLACK_ALREADY_AUTH);
 		}
 
-		//슬랙 코드 생성 및 codestorage에 저장
+		//메시지 생성
 		String slackCode = directMessageAuthService.generateCode();
 
-		directMessageAuthService.sendDirectMessage(user.getSlackId(), slackCode);
+		String slackMessage = directMessageAuthService.makeDirectMessage(slackCode);
 
+		//슬랙 서비스에 요청
+		SlackMessageDto messageDto = userApplicationMapper.toSlackMessageDto(user.getId(), slackMessage);
+		messagePublisher.publishSlackMessage(messageDto);
+
+		//todo: 차후 사용자 경험을 위해 슬랙 서비스에서 발송 성공 시 성공 메시지 받아 실행하도록 수정
 		//이전에 요청한 적 있는 유저 id라면 스토리지에 있는 내용 삭제 후 다시 저장
 		if (codeStorage.hasKey(user.getUsername())) {
 			codeStorage.removeCode(user.getUsername());

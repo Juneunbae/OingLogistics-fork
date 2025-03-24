@@ -1,8 +1,8 @@
 package com.oringmaryho.business.slackservice.application.service;
 
-import com.oringmaryho.business.slackservice.application.dto.request.SlackAdminMessageCreateRequestServiceDto;
-import com.oringmaryho.business.slackservice.application.dto.request.SlackMessageCreateRequestServiceDto;
+import com.oringmaryho.business.slackservice.application.dto.request.SlackMessageDto;
 import com.oringmaryho.business.slackservice.application.feign.UserClient;
+import com.oringmaryho.business.slackservice.application.messaging.MessageHandler;
 import com.oringmaryho.business.slackservice.application.utils.DirectMessageService;
 import com.oringmaryho.business.slackservice.domain.SlackMessage;
 import com.oringmaryho.business.slackservice.exception.ErrorCode;
@@ -18,29 +18,30 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SlackMessageService {
+public class SlackMessageQueueService implements MessageHandler {
 
-  private final DirectMessageService directMessageService;
   private final UserClient userClient;
+  private final DirectMessageService directMessageService;
   private final SlackJpaRepository slackJpaRepository;
 
-  @Description(
-      "슬랙 메시지 생성: 슬랙 컨트롤러에서 받음"
-  )
-  public void createSlackMessage(SlackAdminMessageCreateRequestServiceDto requestDto) {
+  @Override
+  public void handleMessage(SlackMessageDto slackMessageDto) {
+    sendToSlack(slackMessageDto);
+  }
 
-    //user service에서 슬랙 아이디 받아오기
-    //인터페이스 설정
+  @Description(
+      "메시지 큐에서 dto를 받아 메시지를 보내는 서비스"
+  )
+  private void sendToSlack(SlackMessageDto requestDto) {
     ResponseEntity<String> response = userClient.getUserSlackIdById(requestDto.id());
     String slackId = response.getBody();
     log.info("slackId:{}", slackId);
     //slackClient 메시지 송신 메서드 호출
     String message = requestDto.message();
-    if (slackId == null || slackId.isEmpty()) {
+    if (slackId == null) {
       throw new SlackException(ErrorCode.SLACK_ID_EMPTY);
     }
     directMessageService.sendDirectMessage(slackId, message);
-
     //보낸 슬랙 메시지 저장
     SlackMessage slackMessage = SlackMessage.builder()
         .receiverId(requestDto.id())
@@ -49,5 +50,4 @@ public class SlackMessageService {
         .build();
     slackJpaRepository.save(slackMessage);
   }
-
 }

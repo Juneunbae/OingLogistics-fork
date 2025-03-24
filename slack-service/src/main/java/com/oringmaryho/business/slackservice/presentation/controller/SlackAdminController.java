@@ -1,6 +1,5 @@
 package com.oringmaryho.business.slackservice.presentation.controller;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.context.annotation.Description;
@@ -27,7 +26,7 @@ import com.oringmaryho.business.slackservice.application.service.SlackAdminMessa
 import com.oringmaryho.business.slackservice.config.pageable.PageableConfig;
 import com.oringmaryho.business.slackservice.presentation.dto.mapper.SlackPresentationMapper;
 import com.oringmaryho.business.slackservice.presentation.dto.request.SlackAdminMessageCreateRequestDto;
-import com.oringmaryho.business.slackservice.presentation.dto.request.SlackMessageRequestDto;
+import com.oringmaryho.business.slackservice.presentation.dto.request.SlackMessageUpdateRequestDto;
 import com.oringmaryho.business.slackservice.presentation.dto.request.SlackMessageSearchRequestDto;
 import com.oringmaryho.business.slackservice.presentation.dto.request.SlackMessageUpdateResponseDto;
 import com.oringmaryho.business.slackservice.presentation.dto.response.SlackMessageResponseDto;
@@ -97,7 +96,7 @@ public class SlackAdminController {
 	@PutMapping("/{id}")
 	public ResponseEntity<SlackMessageUpdateResponseDto> updateSlackMessage(
 		@PathVariable UUID id,
-		@RequestBody SlackMessageRequestDto requestDto
+		@RequestBody SlackMessageUpdateRequestDto requestDto
 	) {
 		SlackMessageUpdateRequestServiceDto requestServiceDto = slackPresentationMapper.toSlackMessageUpdateRequestServiceDto(
 			id, requestDto);
