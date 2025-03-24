@@ -22,7 +22,9 @@ public enum ErrorCode {
     COMPANY_SERVICE_UNAVAILABLE("C-001", "업체 서비스를 이용할 수 없습니다.", HttpStatus.SERVICE_UNAVAILABLE),
     COMPANY_NOT_FOUND("C-002", "해당 업체를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     USER_SERVICE_UNAVAILABLE("U-001", "유저 서비스를 이용할 수 없습니다.", HttpStatus.SERVICE_UNAVAILABLE),
-    USER_ROLE_NOT_FOUND("U-002","해당 유저 권한을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+    USER_ROLE_NOT_FOUND("U-002","해당 유저 권한을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+
+    LOCK_FAILED("L-001", "배송 담당자 배정을 위한 락 실패", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
     private final String message;

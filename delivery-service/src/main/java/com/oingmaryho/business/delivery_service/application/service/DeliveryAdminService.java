@@ -1,6 +1,7 @@
 package com.oingmaryho.business.delivery_service.application.service;
 
 import com.oingmaryho.business.common.domain.type.UserRoleType;
+import com.oingmaryho.business.delivery_service.application.DeliveryLockHelper;
 import com.oingmaryho.business.delivery_service.application.dto.mapper.DeliveryApplicationMapper;
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
@@ -45,6 +46,9 @@ public class DeliveryAdminService {
     private final DeliveryManagerRepository deliveryManagerRepository;
     private final DeliveryApplicationMapper deliveryApplicationMapper;
 
+    // --- helper --- //
+    private final DeliveryLockHelper deliveryLockHelper;
+
 
     @Transactional
     public DeliveryCreationResponseServiceDto createDelivery(
@@ -77,7 +81,6 @@ public class DeliveryAdminService {
                 .receiverSlackId(requestServiceDto.receiverSlackId())
                 .build();
 
-
         String hubDeliveryManagerSequenceKey = "hub:delivery:sequence";
 
         // 3. 현재 허브 배송 담당자 sequence 값 백업
@@ -92,14 +95,19 @@ public class DeliveryAdminService {
             redisTemplate.opsForValue().set(hubDeliveryManagerSequenceKey, 0);
         }
 
+        int routeSequence = 0;
+        String hubLockValue = UUID.randomUUID().toString();
+        boolean hubLocked = deliveryLockHelper.tryHubManagerLock(hubLockValue, 5);
+
+        if (!hubLocked) {
+            throw new DeliveryException(ErrorCode.LOCK_FAILED);
+        }
+
         // 4. 배송 담당자 배정
         try {
-            int routeSequence = 0;
             for (HubPathResponseDto route : hubRoutes) {
-
                 // 4-1. 현재 배정해야 할 허브 배송 담당자 sequence 조회
-                Object value = redisTemplate.opsForValue().get(hubDeliveryManagerSequenceKey);
-                int hubDeliveryManagerSequence = Optional.ofNullable(value)
+                int hubDeliveryManagerSequence = Optional.ofNullable(redisTemplate.opsForValue().get(hubDeliveryManagerSequenceKey))
                         .map(Object::toString)
                         .map(Integer::parseInt)
                         .orElse(0);
@@ -126,43 +134,48 @@ public class DeliveryAdminService {
                         .build();
 
                 deliveryRoute.addRoute(delivery);
-
             }
-        } catch (DeliveryException exception) {
+        } catch (Exception e) {
             // 예외 발생 시 Redis 값 복원
             redisTemplate.opsForValue().set(hubDeliveryManagerSequenceKey, backupHubDeliveryManagerSequence);
             // 예외 다시 던져서 트랜잭션 롤백 유도
-            throw new DeliveryException(ErrorCode.MANAGER_NOT_FOUND);
-        } catch (Exception exception) {
-            // 예외 다시 던져서 트랜잭션 롤백 유도
             throw new DeliveryException(ErrorCode.INTERNAL_SERVER_ERROR);
+        } finally {
+            deliveryLockHelper.releaseHubManagerLock(hubLockValue);
         }
 
+        UUID arriveHubId = hubRoutes.get(hubRoutes.size() - 1).arriveHubId();
+
         // 5. 배송에 업체 배송 담당자 배정
-        String companyDeliveryManagerSequenceKey = "company:delivery:sequence" + hubRoutes.get(hubRoutes.size() - 1).arriveHubId();
+        String companyDeliveryManagerSequenceKey = "company:delivery:sequence:" + arriveHubId;
         // redis 초기값 보장
         if (!redisTemplate.hasKey(companyDeliveryManagerSequenceKey)) {
             redisTemplate.opsForValue().set(companyDeliveryManagerSequenceKey, 0);
         }
 
-        // 5-1. 현재 배정해야 할 업체 배송 담당자 sequence 조회
-        Object value = redisTemplate.opsForValue().get(companyDeliveryManagerSequenceKey + hubRoutes.get(hubRoutes.size()-1).arriveHubId());
-        Integer companyDeliveryManagerSequence = Optional.ofNullable(value)
-                .map(Object::toString)
-                .map(Integer::parseInt)
-                .orElse(0); // 없으면 0번 sequence 업체 배송 담당자부터 배정
+        String companyLockValue = UUID.randomUUID().toString();
+        boolean companyLocked = deliveryLockHelper.tryCompanyManagerLock(arriveHubId, companyLockValue, 5);
 
-        // 5-2. 현재 sequence에 해당하는 업체 배송 담당자를 조회 (배송 경로 기준 마지막 경로의 도착지 허브에 있는 업체 배송 담당자 10명 - 순차 배정)
-        DeliveryManager companyDeliveryManager = deliveryManagerRepository.findByHubIdAndTypeAndSequence(
-                        delivery.getArriveHubId(), DeliveryManagerType.COMPANY_DELIVERY_MANAGER, companyDeliveryManagerSequence % 10)
-                .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
+        if (!companyLocked) {
+            throw new DeliveryException(ErrorCode.LOCK_FAILED);
+        }
 
-        // 5-3. redis 업체 배송 담당자 sequence 업데이트
-        redisTemplate.opsForValue().increment(companyDeliveryManagerSequenceKey);
-
-
-        // 6. 배송 생성
         try {
+            // 5-1. 현재 배정해야 할 업체 배송 담당자 sequence 조회
+            int companySequence = Optional.ofNullable(redisTemplate.opsForValue().get(companyDeliveryManagerSequenceKey))
+                    .map(Object::toString)
+                    .map(Integer::parseInt)
+                    .orElse(0);
+
+            // 5-2. 현재 sequence에 해당하는 업체 배송 담당자를 조회 (배송 경로 기준 마지막 경로의 도착지 허브에 있는 업체 배송 담당자 10명 - 순차 배정)
+            DeliveryManager companyDeliveryManager = deliveryManagerRepository.findByHubIdAndTypeAndSequence(
+                            arriveHubId, DeliveryManagerType.COMPANY_DELIVERY_MANAGER, companySequence % 10)
+                    .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
+
+            // 5-3. redis 업체 배송 담당자 sequence 업데이트
+            redisTemplate.opsForValue().increment(companyDeliveryManagerSequenceKey);
+
+            // 6. 배송 생성
             // 6-1. 업체 배송 담당자 배송 엔티티에 연결
             delivery.update(null, null, null, companyDeliveryManager);
             // 6-2. 배송 저장
@@ -176,6 +189,8 @@ public class DeliveryAdminService {
             // 실패 시 Redis 순번 복원
             redisTemplate.opsForValue().increment(companyDeliveryManagerSequenceKey, -1);
             throw new DeliveryException(ErrorCode.INTERNAL_SERVER_ERROR);
+        } finally {
+            deliveryLockHelper.releaseCompanyManagerLock(arriveHubId, companyLockValue);
         }
 
     }

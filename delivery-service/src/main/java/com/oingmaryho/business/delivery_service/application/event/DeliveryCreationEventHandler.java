@@ -8,6 +8,7 @@ import com.oingmaryho.business.delivery_service.presentation.dto.response.Delive
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -28,6 +29,7 @@ public class DeliveryCreationEventHandler {
     @Value("${message.queue.order}")
     private String queueOrder;
 
+    @RabbitListener(queues = "queueDelivery")
     @Transactional(propagation = REQUIRES_NEW)
     @TransactionalEventListener(phase = AFTER_COMMIT)
     public void createDelivery(DeliveryCreationRequestDto requestDto) {
