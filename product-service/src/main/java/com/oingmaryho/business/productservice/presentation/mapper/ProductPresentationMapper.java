@@ -26,7 +26,7 @@ public interface ProductPresentationMapper {
 	// in : presentation request -> service request
 	ProductDetailsSearchRequestServiceDto toDetailsSearchServiceDto(UUID id);
 	ProductCreateRequestServiceDto toCreateServiceDto(ProductCreateRequestDto productCreateRequestDto);
-	ProductSearchRequestServiceDto toProductSearchResponseServiceDto(ProductSearchRequestDto productSearchRequestDto);
+	ProductSearchRequestServiceDto toProductSearchRequestServiceDto(ProductSearchRequestDto productSearchRequestDto);
 	ProductUpdateRequestServiceDto toUpdateServiceDto(UUID id, ProductUpdateRequestDto productUpdateRequestDto);
 	ProductDeleteRequestServiceDto toDeleteServiceDto(UUID id);
 
