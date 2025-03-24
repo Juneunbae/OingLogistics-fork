@@ -25,11 +25,16 @@ public class SlackMessageListener {
     }
   }
 
-  //주문
-  @RabbitListener(queues = "${rabbitmq.queues.slack-order-queue}")
-  public void receiveOrderMessage(SlackMessageDto dto) {
-    log.info("Received from order queue: id={}, message={}", dto.id(), dto.message());
-    messageHandler.handleMessage(dto);
+  //그 외 서비스들
+  @RabbitListener(queues = "${rabbitmq.queues.slack}")
+  public void receiveOtherMessage(SlackMessageDto dto) {
+    try {
+      log.info("Received message: id={}, message={}", dto.id(), dto.message());
+      messageHandler.handleMessage(dto);
+    } catch (Exception e) {
+      log.error("Failed to process message: {}", dto, e);
+      throw new RuntimeException("Failed to process message", e);
+    }
   }
 
 }

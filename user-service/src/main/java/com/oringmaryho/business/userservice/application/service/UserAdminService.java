@@ -302,7 +302,7 @@ public class UserAdminService {
 
   @Transactional
   public void deleteUser(UserAdminDeleteRequestServiceDto requestServiceDto) {
-    
+
     User user = userRepository.findById(requestServiceDto.id())
         .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
 
