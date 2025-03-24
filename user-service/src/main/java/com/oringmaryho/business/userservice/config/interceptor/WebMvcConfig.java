@@ -1,12 +1,11 @@
 package com.oringmaryho.business.userservice.config.interceptor;
 
+import com.oingmaryho.business.common.presentation.interceptor.AdminCheckInterceptor;
+import com.oingmaryho.business.common.presentation.interceptor.UserCheckInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import com.oringmaryho.business.userservice.infrastructure.interceptor.AdminCheckInterceptor;
-import com.oringmaryho.business.userservice.infrastructure.interceptor.UserCheckInterceptor;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
@@ -21,11 +20,25 @@ public class WebMvcConfig implements WebMvcConfigurer {
 	public void addInterceptors(InterceptorRegistry registry) {
 		// admin 확인용 인터셉터
 		registry.addInterceptor(new AdminCheckInterceptor(redisTemplate))
-			.excludePathPatterns("/api/**");
+			.excludePathPatterns(
+					"/api/**",
+					"/admin/v1/users/slack/confirm-code",
+					"/admin/v1/users/slack/confirm",
+					"/admin/v1/users/sign-in",
+					"/admin/v1/users/sign-out",
+					"/user-service/users/**"
+			);
 
 		// 일반 사용자 확인용 인터셉터
 		registry.addInterceptor(new UserCheckInterceptor(redisTemplate))
-			.excludePathPatterns("/admin/**");
+			.excludePathPatterns(
+					"/admin/**",
+					"/api/v1/users/slack/confirm-code",
+					"/api/v1/users/slack/confirm",
+					"/api/v1/users/sign-in",
+					"/api/v1/users/sign-out",
+					"/user-service/users/**"
+			);
 	}
 
 }

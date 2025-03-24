@@ -303,7 +303,7 @@ public class UserAdminService {
     User user = userRepository.findById(requestServiceDto.id())
         .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
 
-    user.delete(user.getId());
+    user.softDelete(user.getId());
   }
 
   //username 형식에 맞는지 체크
