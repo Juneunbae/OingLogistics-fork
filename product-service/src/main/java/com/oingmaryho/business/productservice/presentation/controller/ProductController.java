@@ -90,9 +90,10 @@ public class ProductController {
 		UserRoleType role = UserRoleType.valueOf(roleStr);
 
 		Pageable pageable = PageableUtils.customPageable(page, size, sortDirection, by);
-		ProductSearchRequestDto requestDto = new ProductSearchRequestDto(id, productCode, name, manageHubId, companyId, companyName, minPrice, maxPrice, minStock,maxStock);
+		Boolean isDeleted = false;
+		ProductSearchRequestDto requestDto = new ProductSearchRequestDto(id, productCode, name, manageHubId, companyId, companyName, minPrice, maxPrice, minStock,maxStock,isDeleted);
 
-		Page<ProductSearchResponseServiceDto> responseDto = productService.searchProducts(productPresentationMapper.toProductSearchResponseServiceDto(requestDto), pageable, userId, role);
+		Page<ProductSearchResponseServiceDto> responseDto = productService.searchProducts(productPresentationMapper.toProductSearchRequestServiceDto(requestDto), pageable, userId, role);
 
 		return ResponseEntity.ok(responseDto.map(productPresentationMapper::toProductSearchResponseDto));
 	}

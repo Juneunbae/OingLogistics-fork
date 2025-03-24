@@ -50,16 +50,18 @@ public class ProductService {
 		UserRoleType role
 	){
 		UUID checkTargetId = (role == UserRoleType.HUB_MANAGER) ? productCreateRequestServiceDto.manageHubId() : productCreateRequestServiceDto.companyId();
-
+		CompanyDetailsSearchResponseDto company = companyClient(productCreateRequestServiceDto.companyId());
 		validateManagerPermission(checkTargetId, userId, role);
-		validateSupplierCompany(productCreateRequestServiceDto.companyId());
+		validateSupplierCompany(company);
+		// hub 존재 확인
+
 
 		String productCode = productCreateRequestServiceDto.productCode();
 		if (productRepository.existsByProductCodeAndIsDeletedFalse(productCode)) {
 			throw new ProductException(ErrorCode.ALREADY_REGISTERED_PRODUCT);
 		}
 
-		Product product = productApplicationMapper.toCreateEntity(productCreateRequestServiceDto);
+		Product product = productApplicationMapper.toCreateEntity(productCreateRequestServiceDto,company.name());
 		Product saveProduct = productRepository.save(product);
 		return new ProductCreateResponseServiceDto(saveProduct.getId());
 	}
@@ -85,7 +87,8 @@ public class ProductService {
 				requestDto.minPrice(),
 				requestDto.maxPrice(),
 				requestDto.minStock(),
-				requestDto.maxStock()
+				requestDto.maxStock(),
+				requestDto.isDeleted()
 			);
 		}
 		validateSearchCriteria(createProductSearchCriteria(requestDto));
@@ -133,7 +136,6 @@ public class ProductService {
 
 		product.update(
 			requestServiceDto.manageHubId(),
-			requestServiceDto.companyName(),
 			requestServiceDto.name(),
 			requestServiceDto.price(),
 			requestServiceDto.stock()
@@ -170,6 +172,7 @@ public class ProductService {
 			.maxPrice(requestDto.maxPrice())
 			.minStock(requestDto.minStock())
 			.maxStock(requestDto.maxStock())
+			.isDeleted(requestDto.isDeleted())
 			.build();
 	}
 	private void validateSearchCriteria(ProductSearchCriteria searchCriteria) {
@@ -204,16 +207,16 @@ public class ProductService {
 		}
 	}
 
-	private void validateSupplierCompany(UUID companyId) {
-		CompanyDetailsSearchResponseDto company = companyClient.isManagerOfCompany(companyId)
+	private CompanyDetailsSearchResponseDto companyClient(UUID companyId) {
+		return companyClient.isManagerOfCompany(companyId)
 			.orElseThrow(() -> new ProductException(ErrorCode.COMPANY_NOT_FOUND));
+
+	}
+
+	private void validateSupplierCompany(CompanyDetailsSearchResponseDto company) {
 
 		if (!company.type().equals("SUPPLIER")) {
 			throw new ProductException(ErrorCode.INVALID_COMPANY_TYPE);
 		}
 	}
-
-
-
-
 }
