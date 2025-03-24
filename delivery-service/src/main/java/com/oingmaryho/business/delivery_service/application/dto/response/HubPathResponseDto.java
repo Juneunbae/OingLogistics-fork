@@ -6,5 +6,7 @@ public record HubPathResponseDto(
         UUID departureHubId,
         UUID arriveHubId,
         Integer hubToHubTime,
-        Double distance){
+        Double distance,
+        String departureHubName,
+        String arriveHubName){
 }

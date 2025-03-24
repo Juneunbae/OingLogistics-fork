@@ -56,7 +56,13 @@ public class DeliveryCreationEventHandler {
             rabbitTemplate.convertAndSend(queueOrder, new DeliveryCreationResponseDto(
                     requestDto.orderId(),
                     requestDto.orderDetailId(),
-                    responseServiceDto.deliveryId()));
+                    responseServiceDto.deliveryId(),
+                    responseServiceDto.deliveryDepartureName(),
+                    responseServiceDto.deliveryStopoverName(),
+                    responseServiceDto.deliveryDestinationName(),
+                    responseServiceDto.deliveryManagerName())
+            );
+
             log.info("[Delivery Creation Success Message Issued] orderId = {}, orderDetailId = {}, deliveryId = {}",
                     responseServiceDto.orderId(),responseServiceDto.orderDetailId(), responseServiceDto.deliveryId());
         } catch (AmqpException e) {
