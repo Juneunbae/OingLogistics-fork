@@ -1,5 +1,7 @@
 package com.oringmaryho.business.userservice.presentation.controller;
 
+import com.oingmaryho.business.common.domain.type.UserRoleType;
+import com.oingmaryho.business.common.infrastructure.annotation.RequiredRoles;
 import org.springframework.context.annotation.Description;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -61,6 +63,7 @@ public class UserAdminController {
 	@Description(
 		"username, password, slackId, key를 입력 받아 회원가입"
 	)
+	@RequiredRoles(UserRoleType.MASTER)
 	@PostMapping("/sign-up")
 	public ResponseEntity<Void> signUpMasterUser(
 		@RequestBody UserAdminSignUpRequestDto requestDto) {
@@ -73,6 +76,7 @@ public class UserAdminController {
 	@Description(
 		"username, password를 입력받아 로그인"
 	)
+	@RequiredRoles(UserRoleType.MASTER)
 	@PostMapping("/sign-in")
 	public ResponseEntity<UserSignInResponseDto> signInUser(
 		@RequestBody UserAdminSignInRequestDto requestDto) {
@@ -85,6 +89,7 @@ public class UserAdminController {
 	@Description(
 		"로그인했던 사용자 id를 받아 로그아웃"
 	)
+	@RequiredRoles(UserRoleType.MASTER)
 	@PostMapping("/sign-out")
 	public ResponseEntity<?> signOutUser(
 		@RequestAttribute("userId") Long userId
@@ -98,6 +103,7 @@ public class UserAdminController {
 		"사용자의 username, password, slackId를 받아 사용자 생성."
 			+ "사용자 role, status는 설정 불가"
 	)
+	@RequiredRoles(UserRoleType.MASTER)
 	@PostMapping()
 	public ResponseEntity<Void> createUser(
 		@RequestBody UserAdminCreateRequestDto requestDto) {
@@ -110,6 +116,7 @@ public class UserAdminController {
 	@Description(
 		"모든 사용자 리스트 중 id가 일치하는 사용자 조회"
 	)
+	@RequiredRoles(UserRoleType.MASTER)
 	@GetMapping("/{id}")
 	public ResponseEntity<?> findUserMaster(@PathVariable Long id) {
 		UserAdminFindRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminFindRequestServiceDto(
@@ -120,6 +127,7 @@ public class UserAdminController {
 	@Description(
 		"사용자 정보를 선택적으로 파라미터로 받아 검색하는 api"
 	)
+	@RequiredRoles(UserRoleType.MASTER)
 	@GetMapping()
 	public ResponseEntity<Page<UserAdminSearchResponseDto>> searchUsers(
 		@RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
@@ -138,6 +146,7 @@ public class UserAdminController {
 	@Description(
 		"업데이트 할 사용자 정보를 파라미터로 받아 정보 갱신"
 	)
+	@RequiredRoles(UserRoleType.MASTER)
 	@PutMapping("/{id}")
 	public ResponseEntity<?> updateUserMaster(@PathVariable Long id,
 		@RequestBody UserAdminUpdateRequestDto requestDto) {
@@ -150,6 +159,7 @@ public class UserAdminController {
 	@Description(
 		"사용자 권한 부여"
 	)
+	@RequiredRoles(UserRoleType.MASTER)
 	@PutMapping("/{id}/grant")
 	public ResponseEntity<UserAdminGrantRoleResponseDto> grantRoleUserMaster(@PathVariable Long id,
 		@RequestBody UserAdminGrantRoleRequestDto requestDto) {
@@ -162,6 +172,7 @@ public class UserAdminController {
 	@Description(
 		"사용자 권한 업데이트"
 	)
+	@RequiredRoles(UserRoleType.MASTER)
 	@PutMapping("/roles/{id}")
 	public ResponseEntity<UserAdminUpdateRoleResponseDto> updateRoleUserMaster(@PathVariable Long id,
 		@RequestBody UserAdminUpdateRoleRequestDto requestDto) {
@@ -175,6 +186,7 @@ public class UserAdminController {
 	@Description(
 		"사용자 권한 회수(삭제)"
 	)
+	@RequiredRoles(UserRoleType.MASTER)
 	@DeleteMapping("/roles/{id}")
 	public ResponseEntity<?> deleteRoleUserMaster(@PathVariable Long id) {
 		UserAdminDeleteRoleRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminDeleteRoleRequestServiceDto(
@@ -186,6 +198,7 @@ public class UserAdminController {
 	@Description(
 		"사용자 삭제"
 	)
+	@RequiredRoles(UserRoleType.MASTER)
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deleteUserMaster(@PathVariable Long id) {
 		UserAdminDeleteRequestServiceDto requestServiceDto = userPresentationMapper.toUserAdminDeleteRequestServiceDto(
@@ -197,6 +210,7 @@ public class UserAdminController {
 	@Description(
 		"slack 인증을 위한 코드 전송 요청"
 	)
+	@RequiredRoles(UserRoleType.MASTER)
 	@PostMapping("/slack/confirm-code")
 	public ResponseEntity<Void> slackCodeRequestUser(
 		@RequestBody UserAdminSlackCodeRequestDto requestDto) {
@@ -209,6 +223,7 @@ public class UserAdminController {
 	@Description(
 		"slack 인증 코드로 인증 확인"
 	)
+	@RequiredRoles(UserRoleType.MASTER)
 	@PostMapping("/slack/confirm")
 	public ResponseEntity<Void> slackConfirmUser(
 		@RequestBody UserSlackConfirmRequestDto userSlackConfirmRequestDto) {

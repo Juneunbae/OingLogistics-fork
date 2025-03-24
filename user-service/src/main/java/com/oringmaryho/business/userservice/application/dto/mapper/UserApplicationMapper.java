@@ -1,5 +1,6 @@
 package com.oringmaryho.business.userservice.application.dto.mapper;
 
+import com.oringmaryho.business.userservice.application.dto.request.SlackMessageDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.data.domain.Page;
@@ -46,4 +47,8 @@ public interface UserApplicationMapper {
 	@Mapping(target = "role", source = "role")
 	@Mapping(target = "status", source = "status")
 	UserSearchResponseDto toUserSearchResponseDto(User user);
+
+	@Mapping(target = "id", source = "id")
+	@Mapping(target = "message", source = "slackMessage")
+  SlackMessageDto toSlackMessageDto(Long id, String slackMessage);
 }

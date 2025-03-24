@@ -100,46 +100,6 @@ public class SlackAdminMessageService {
 		slackJpaRepository.save(slackMessage);
 	}
 
-	@Description(
-		"슬랙 메시지 생성: 사용자 큐에서 받음"
-	)
-	public SlackAdminMessageCreateRequestServiceDto createSlackMessageFromUserService(
-		SlackAdminMessageCreateRequestDto requestDto) {
-		//todo: 실제 생성 로직 구현
-
-		return null;
-	}
-
-	@Description(
-		"슬랙 메시지 생성: 배송 큐에서 받음"
-	)
-	public SlackAdminMessageCreateRequestServiceDto createSlackMessageFromUserDelivery(
-		SlackAdminMessageCreateRequestDto requestDto) {
-		//todo: 실제 생성 로직 구현
-
-		return null;
-	}
-
-	@Description(
-		"슬랙 메시지 생성: 상품 큐에서 받음"
-	)
-	public SlackAdminMessageCreateRequestServiceDto createSlackMessageFromUserProduct(
-		SlackAdminMessageCreateRequestDto requestDto) {
-		//todo: 실제 생성 로직 구현
-
-		return null;
-	}
-
-	@Description(
-		"슬랙 메시지 생성: 주문 큐에서 받음"
-	)
-	public SlackAdminMessageCreateRequestServiceDto createSlackMessageFromUserOrder(
-		SlackAdminMessageCreateRequestDto requestDto) {
-		//todo: 실제 생성 로직 구현
-
-		return null;
-	}
-
 	@Description("슬랙 메시지 수정")
 	@Transactional
 	public SlackMessageUpdateResponseDto updateSlackMessage(SlackMessageUpdateRequestServiceDto requestServiceDto) {

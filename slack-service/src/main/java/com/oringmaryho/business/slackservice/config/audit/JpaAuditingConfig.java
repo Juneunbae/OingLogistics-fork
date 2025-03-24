@@ -1,6 +1,7 @@
-package com.oringmaryho.business.slackservice.config;
+package com.oringmaryho.business.slackservice.config.audit;
 
 import java.util.Optional;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
@@ -16,13 +17,13 @@ public class JpaAuditingConfig {
 	public AuditorAware<Long> auditorProvider() {
 		return () -> {
 			ServletRequestAttributes attributes =
-				(ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
+					(ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 
 			if (attributes == null) {
 				return Optional.empty();
 			}
 
-			String userId = attributes.getRequest().getHeader("userId");
+			String userId = attributes.getRequest().getHeader("X-User-Id");
 
 			if (userId != null) {
 				try {

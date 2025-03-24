@@ -8,6 +8,4 @@ public interface DirectMessageService {
 
 	void sendDirectMessage(String slackUsername, String code);
 
-	String generateCode();
-
 }
