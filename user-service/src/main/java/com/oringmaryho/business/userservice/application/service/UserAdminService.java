@@ -309,6 +309,7 @@ public class UserAdminService {
     user.softDelete(user.getId());
 
     messagePublisher.publishUserStatus(user.getId());
+    //todo: 레디스 삭제
   }
 
   //username 형식에 맞는지 체크

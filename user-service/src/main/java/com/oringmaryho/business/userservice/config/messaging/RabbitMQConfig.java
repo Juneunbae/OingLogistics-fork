@@ -13,55 +13,113 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Description;
 
 @Configuration
 public class RabbitMQConfig {
 
-	// Exchanges
 	@Value("${rabbitmq.exchanges.user}")
 	private String USER_EXCHANGE;
 
-	// Queues
 	@Value("${rabbitmq.queues.slack-user-queue}")
 	private String SLACK_USER_QUEUE;
 
-	// Routing Keys
+	@Value("${rabbitmq.queues.user-hub-queue}")
+	private String USER_HUB_QUEUE;
+
+	@Value("${rabbitmq.queues.user-delivery-queue}")
+	private String USER_DELIVERY_QUEUE;
+
+	@Value("${rabbitmq.queues.user-product-queue}")
+	private String USER_PRODUCT_QUEUE;
+
+	@Value("${rabbitmq.queues.user-order-queue}")
+	private String USER_ORDER_QUEUE;
+
 	@Value("${rabbitmq.routing-keys.user}")
 	private String USER_ROUTING_KEY;
 
-	// 슬랙 서비스에서 사용할 큐 생성
+	@Value("${rabbitmq.routing-keys.hub}")
+	private String HUB_ROUTING_KEY;
+
+	@Value("${rabbitmq.routing-keys.delivery}")
+	private String DELIVERY_ROUTING_KEY;
+
+	@Value("${rabbitmq.routing-keys.product}")
+	private String PRODUCT_ROUTING_KEY;
+
+	@Value("${rabbitmq.routing-keys.order}")
+	private String ORDER_ROUTING_KEY;
+
 	@Bean
 	public Queue slackUserQueue() {
 		return new Queue(SLACK_USER_QUEUE, true);
 	}
 
-	// 배송 서비스 Exchange
+	@Bean
+	public Queue userHubQueue() {
+		return new Queue(USER_HUB_QUEUE, true);
+	}
+
+	@Bean
+	public Queue userDeliveryQueue() {
+		return new Queue(USER_DELIVERY_QUEUE, true);
+	}
+
+	@Bean
+	public Queue userProductQueue() {
+		return new Queue(USER_PRODUCT_QUEUE, true);
+	}
+
+	@Bean
+	public Queue userOrderQueue() {
+		return new Queue(USER_ORDER_QUEUE, true);
+	}
+
 	@Bean
 	public TopicExchange userExchange() {
 		return new TopicExchange(USER_EXCHANGE);
 	}
 
-	@Description(
-		"사용자 서비스와 바인딩 (사용자 슬랙 id 인증 메시지 요청 메시지를 받음)"
-	)
 	@Bean
 	public Binding bindSlackToUser(Queue slackUserQueue, TopicExchange userExchange) {
 		return BindingBuilder.bind(slackUserQueue).to(userExchange).with(USER_ROUTING_KEY);
 	}
 
 	@Bean
+	public Binding bindHubQueue(Queue userHubQueue, TopicExchange userExchange) {
+		return BindingBuilder.bind(userHubQueue).to(userExchange).with(HUB_ROUTING_KEY);
+	}
+
+	@Bean
+	public Binding bindDeliveryQueue(Queue userDeliveryQueue, TopicExchange userExchange) {
+		return BindingBuilder.bind(userDeliveryQueue).to(userExchange).with(DELIVERY_ROUTING_KEY);
+	}
+
+	@Bean
+	public Binding bindProductQueue(Queue userProductQueue, TopicExchange userExchange) {
+		return BindingBuilder.bind(userProductQueue).to(userExchange).with(PRODUCT_ROUTING_KEY);
+	}
+
+	@Bean
+	public Binding bindOrderQueue(Queue userOrderQueue, TopicExchange userExchange) {
+		return BindingBuilder.bind(userOrderQueue).to(userExchange).with(ORDER_ROUTING_KEY);
+	}
+
+	@Bean
 	public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
 		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY); // __TypeId__ 설정
+		objectMapper.activateDefaultTyping(
+				LaissezFaireSubTypeValidator.instance,
+				ObjectMapper.DefaultTyping.NON_FINAL,
+				JsonTypeInfo.As.PROPERTY
+		);
 		return new Jackson2JsonMessageConverter(objectMapper);
 	}
 
 	@Bean
 	public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
 		RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-		rabbitTemplate.setMessageConverter(new Jackson2JsonMessageConverter());
+		rabbitTemplate.setMessageConverter(producerJackson2MessageConverter()); // 빈 참조로 수정
 		return rabbitTemplate;
 	}
-
 }

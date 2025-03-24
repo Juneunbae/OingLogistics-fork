@@ -14,7 +14,7 @@ public class SlackMessageListener {
 
   private final MessageHandler messageHandler;
 
-  @RabbitListener(queues = "${rabbitmq.queues.slack-user-queue}")
+  @RabbitListener(queues = "${message.queue.slack-user-queue}")
   public void receiveUserMessage(SlackMessageDto dto) {
     try {
       log.info("Received message: id={}, message={}", dto.id(), dto.message());
@@ -26,7 +26,7 @@ public class SlackMessageListener {
   }
 
   //그 외 서비스들
-  @RabbitListener(queues = "${rabbitmq.queues.slack}")
+  @RabbitListener(queues = "${message.queue.slack-others-queue}")
   public void receiveOtherMessage(SlackMessageDto dto) {
     try {
       log.info("Received message: id={}, message={}", dto.id(), dto.message());

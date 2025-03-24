@@ -28,6 +28,9 @@ public class RabbitMQMessagePublisher implements MessagePublisher {
   @Value("${rabbitmq.routing-keys.product}")
   private String PRODUCT_ROUTING_KEY;
 
+  @Value("${rabbitmq.routing-keys.order}")
+  private String ORDER_ROUTING_KEY;
+
   @Override
   public void publishSlackMessage(SlackMessageDto dto) {
     rabbitTemplate.convertAndSend(USER_EXCHANGE, USER_ROUTING_KEY, dto);
@@ -41,6 +44,7 @@ public class RabbitMQMessagePublisher implements MessagePublisher {
     rabbitTemplate.convertAndSend(USER_EXCHANGE, HUB_ROUTING_KEY, id);
     rabbitTemplate.convertAndSend(USER_EXCHANGE, DELIVERY_ROUTING_KEY, id);
     rabbitTemplate.convertAndSend(USER_EXCHANGE, PRODUCT_ROUTING_KEY, id);
+    rabbitTemplate.convertAndSend(USER_EXCHANGE, ORDER_ROUTING_KEY, String.valueOf(id));
     log.info("Message published successfully id: ${}", id);
   }
 }
