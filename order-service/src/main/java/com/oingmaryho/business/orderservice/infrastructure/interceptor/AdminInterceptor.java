@@ -1,7 +1,10 @@
 package com.oingmaryho.business.orderservice.infrastructure.interceptor;
 
-import com.oingmaryho.business.orderservice.domain.UserRole;
-import com.oingmaryho.business.orderservice.domain.UserStatus;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.oingmaryho.business.common.domain.type.UserConfirmStatus;
+import com.oingmaryho.business.common.domain.type.UserRoleType;
+import com.oingmaryho.business.common.exception.BaseException;
+import com.oingmaryho.business.common.exception.CommonErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,55 +18,70 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AdminInterceptor implements HandlerInterceptor {
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        log.info("admin preHandle");
-        String userIdAttr = request.getHeader("X-User-Id");
+        try {
+            log.info("admin preHandle");
 
-        if (userIdAttr == null) {
-            return false;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE
-        }
+            String userIdAttr = request.getHeader("X-User-Id");
+            log.info("userIdAttr: {}", userIdAttr);
 
-        long userId = Long.parseLong(userIdAttr);
+            if (userIdAttr == null) {
+                throw new BaseException(CommonErrorCode.UNAUTHORIZED);
+            }
 
-        if (!redisTemplate.hasKey("user:info:" + userId)) {
-            return false;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE
-        }
+            long userId = Long.parseLong(userIdAttr);
+            String redisKey = "user:info:" + userId;
 
-        Map<Object, Object> userInfo = redisTemplate.opsForHash().entries("user:info:" + userId);
+            if (!redisTemplate.hasKey(redisKey)) {
+                throw new BaseException(CommonErrorCode.USER_NOT_FOUND);
+            }
 
-        if (userInfo.isEmpty()) {
-            return false;    // TODO 테스트 끝난 후 로그인 기능 구현되면 FALSE
-        }
+            Map<Object, Object> userInfo = redisTemplate.opsForHash().entries(redisKey);
+            if (userInfo.isEmpty()) {
+                throw new BaseException(CommonErrorCode.USER_NOT_FOUND);
+            }
 
-        if (!userInfo.get("status").equals(UserStatus.CONFIRMED.name())) {
+            if (!UserConfirmStatus.CONFIRMED.name().equals(userInfo.get("status"))) {
+                throw new BaseException(CommonErrorCode.INVALID_USER_STATUS);
+            }
+
+            if (!UserRoleType.MASTER.name().equals(userInfo.get("role"))) {
+                throw new BaseException(CommonErrorCode.FORBIDDEN);
+            }
+
+            if (!userInfo.containsKey("username") || !userInfo.containsKey("slackId") || !userInfo.containsKey("role")) {
+                throw new BaseException(CommonErrorCode.MISSING_USER_INFO);
+            }
+
+            // 사용자 정보를 request 에 주입
+            request.setAttribute("userId", userId);
+            request.setAttribute("username", userInfo.get("username"));
+            request.setAttribute("slackId", userInfo.get("slackId"));
+            request.setAttribute("role", userInfo.get("role"));
+
+            log.info("admin interceptor 완료");
+            return true;
+
+        } catch (BaseException ex) {
+            response.setStatus(ex.getErrorCode().getStatus().value());
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+
+            String body = objectMapper.writeValueAsString(AdminInterceptor.ErrorResponse.of(
+                ex.getErrorCode().getErrorCode(),
+                ex.getErrorCode().getMessage()
+            ));
+            response.getWriter().write(body);
             return false;
         }
+    }
 
-        if (!userInfo.get("role").equals(UserRole.MASTER.name())) {
-            return false;
+    private record ErrorResponse(String errorCode, String message) {
+        static AdminInterceptor.ErrorResponse of(String errorCode, String message) {
+            return new AdminInterceptor.ErrorResponse(errorCode, message);
         }
-
-        // 사용자 정보를 request 에 주입
-        request.setAttribute("userId", userId);
-
-        if (!userInfo.containsKey("username")) {
-            return false;   // TODO throw Exception
-        }
-        request.setAttribute("username", userInfo.get("username"));
-
-        if (!userInfo.containsKey("slackId")) {
-            return false;   // TODO throw Exception
-        }
-        request.setAttribute("slackId", userInfo.get("slackId"));
-
-        if (!userInfo.containsKey("role")) {
-            return false;   // TODO throw Exception
-        }
-        request.setAttribute("role", userInfo.get("role"));
-
-        log.info("admin interceptor 완료");
-        return true;
     }
 }

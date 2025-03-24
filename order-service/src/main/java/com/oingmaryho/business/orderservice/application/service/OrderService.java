@@ -1,20 +1,25 @@
 package com.oingmaryho.business.orderservice.application.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.oingmaryho.business.common.domain.type.UserRoleType;
 import com.oingmaryho.business.orderservice.application.dto.mapper.OrderApplicationMapper;
 import com.oingmaryho.business.orderservice.application.dto.request.*;
+import com.oingmaryho.business.orderservice.application.dto.response.HubSearchResponseDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.event.OrderEvent;
 import com.oingmaryho.business.orderservice.application.service.feignclient.CompanyClient;
+import com.oingmaryho.business.orderservice.application.service.feignclient.HubClient;
 import com.oingmaryho.business.orderservice.application.service.feignclient.ProductClient;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
+import com.oingmaryho.business.orderservice.domain.OrderSearchCriteria;
 import com.oingmaryho.business.orderservice.domain.Status;
 import com.oingmaryho.business.orderservice.domain.repository.OrderRepository;
 import com.oingmaryho.business.orderservice.exception.ErrorCode;
 import com.oingmaryho.business.orderservice.exception.OrderException;
 import com.oingmaryho.business.orderservice.infrastructure.OrderJPARepository;
+import com.oingmaryho.business.orderservice.infrastructure.OrderQueryRepository;
 import com.oingmaryho.business.orderservice.presentation.dto.response.CompanyDetailsSearchResponseDto;
 import com.oingmaryho.business.orderservice.presentation.dto.response.ProductDetailsSearchResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -35,12 +40,14 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
+    private final HubClient hubClient;
     private final CacheManager cacheManager;
     private final CompanyClient companyClient;
     private final ProductClient productClient;
@@ -48,6 +55,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ApplicationEventPublisher publisher;
     private final OrderJPARepository orderJPARepository;
+    private final OrderQueryRepository orderQueryRepository;
     private final OrderApplicationMapper orderApplicationMapper;
 
     @Value("${message.queue.product}")
@@ -61,11 +69,17 @@ public class OrderService {
     public Page<OrderResponseServiceDto> getOrders(Long userId, String username, String slackId, String role, OrdersRequestServiceDto ordersRequestServiceDto) {
         // TODO: Role - HubManager, HubDeliveryManager, CompanyDeliveryManager, CompanyManager 설정하기
 
-        log.info("{}, {}, {}, {}", userId, username, slackId, role);
+        // HubManager - orderDetails 내 hub_id
+        HubSearchResponseDto hubInfo = getHubInfo(userId);
+
+        log.info("{}, {}, {}, {}, {}", userId, username, slackId, role, hubInfo);
 
         Pageable customPageable = ordersRequestServiceDto.customPageable();
-        Page<Order> orders = orderJPARepository.findAll(customPageable);
-        // TODO: QueryDSL 반영하여 LIKE 문 수정하기
+//        Page<Order> orders = orderJPARepository.findAll(customPageable);
+        Page<Order> orders = orderQueryRepository.findDynamicQuery(
+            createOrderSearchCriteria(ordersRequestServiceDto),
+            customPageable
+        );
 
         List<OrderResponseServiceDto> ordersDto = orders.stream().map(
             order -> orderApplicationMapper.toOrderResponseServiceDto(
@@ -80,11 +94,30 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public OrderResponseServiceDto getOrder(Long userId, String username, String slackId, String role, OrderRequestServiceDto orderRequestServiceDto) {
-        // TODO: Role 검사하기
-
+    public OrderResponseServiceDto getOrder(Long userId, String role, OrderRequestServiceDto orderRequestServiceDto) {
         UUID orderId = orderRequestServiceDto.orderId();
         Order order = getByOrderId(orderId);
+
+        if (Objects.equals(role, UserRoleType.HUB_MANAGER.name())) {
+            HubSearchResponseDto hubInfo = hubClient.getHubById(userId);
+
+            UUID hubId = hubInfo.id();
+            if (!order.getRequesterId().equals(hubId)) {
+                evictCache(order);
+                throw new OrderException(ErrorCode.HUB_NOT_MATCH);
+            }
+        }
+
+        if (
+            Objects.equals(role, UserRoleType.COMPANY_MANAGER.name())
+                || Objects.equals(role, UserRoleType.HUB_DELIVERY_MANAGER.name())
+                || Objects.equals(role, UserRoleType.COMPANY_DELIVERY_MANAGER.name())
+        ) {
+            if (!order.getRequesterUserId().equals(userId)) {
+                evictCache(order);
+                throw new OrderException(ErrorCode.FORBIDDEN);
+            }
+        }
 
         return orderApplicationMapper.toOrderResponseServiceDto(
             order,
@@ -108,6 +141,7 @@ public class OrderService {
             .requesterSlackId(create.slackId())
             .requesterName(requestCompanyInfo.name())
             .requesterAddress(requestCompanyInfo.address())
+            .requesterHubId(requestCompanyInfo.manageHubId())
             .requesterUserId(create.userId())
             .requesterUsername(create.username())
             .status(Status.ORDERING)
@@ -179,11 +213,20 @@ public class OrderService {
     }
 
     @Transactional
-    public void updateOrder(Long userId, String username, String slackId, OrderUpdateServiceDto update) {
+    public void updateOrder(Long userId, String role, OrderUpdateServiceDto update) {
         int totalPrice = 0;
         UUID orderId = update.id();
 
         Order order = getByOrderId(orderId);
+
+        if (Objects.equals(role, UserRoleType.HUB_MANAGER.name())) {
+            HubSearchResponseDto hubInfo = hubClient.getHubById(userId);
+
+            UUID hubId = hubInfo.id();
+            if (!order.getRequesterId().equals(hubId)) {
+                throw new OrderException(ErrorCode.HUB_NOT_MATCH);
+            }
+        }
 
         if (update.orderDetails() != null) {
             for (OrderDetailUpdateResponseServiceDto orderDetailDto : update.orderDetails()) {
@@ -210,10 +253,19 @@ public class OrderService {
     }
 
     @Transactional
-    public void deleteOrder(Long userId, String username, String slackId, OrderDeleteServiceDto delete) {
+    public void deleteOrder(Long userId, String role, OrderDeleteServiceDto delete) {
         UUID orderId = delete.orderId();
 
         Order order = getByOrderId(orderId);
+
+        if (Objects.equals(role, UserRoleType.HUB_MANAGER.name())) {
+            HubSearchResponseDto hubInfo = hubClient.getHubById(userId);
+
+            UUID hubId = hubInfo.id();
+            if (!order.getRequesterId().equals(hubId)) {
+                throw new OrderException(ErrorCode.HUB_NOT_MATCH);
+            }
+        }
 
         for (OrderDetail orderDetail : order.getOrderDetails()) {
             orderDetail.delete();
@@ -227,10 +279,20 @@ public class OrderService {
     }
 
     @Transactional
-    public void deleteOrderDetail(Long userId, String username, String slackId, OrderDetailDeleteRequestServiceDto request) {
+    public void deleteOrderDetail(Long userId, String role, OrderDetailDeleteRequestServiceDto request) {
         UUID orderId = request.orderId();
 
         Order order = getByOrderId(orderId);
+
+        if (Objects.equals(role, UserRoleType.HUB_MANAGER.name())) {
+            HubSearchResponseDto hubInfo = hubClient.getHubById(userId);
+
+            UUID hubId = hubInfo.id();
+            if (!order.getRequesterId().equals(hubId)) {
+                throw new OrderException(ErrorCode.HUB_NOT_MATCH);
+            }
+        }
+
         OrderDetail orderDetail = getByOrderDetailId(order, request.orderDetailId());
 
         orderDetail.delete();
@@ -244,8 +306,21 @@ public class OrderService {
     }
 
     private Order getByOrderId(UUID orderId) {
-        return orderJPARepository.findById(orderId)
+        Cache cache = cacheManager.getCache("order");
+        Order cachedOrder = cache.get(orderId, Order.class);
+
+        if (cachedOrder != null) {
+            log.info("캐시된 주문 조회 반환 성공");
+            return cachedOrder;
+        }
+
+        Order order = orderRepository.findByIdAndIsDeletedIsFalse(orderId)
             .orElseThrow(() -> new OrderException(ErrorCode.NOT_FOUND));
+
+        cache.put(orderId, order);
+        log.info("주문 캐시 저장 완료");
+
+        return order;
     }
 
     private OrderDetail getByOrderDetailId(Order order, UUID orderDetailId) {
@@ -299,5 +374,18 @@ public class OrderService {
     private ProductDetailsSearchResponseDto getProductInfo(UUID productId) {
         return productClient.getProduct(productId)
             .orElseThrow(() -> new OrderException(ErrorCode.PRODUCT_NOT_FOUND));
+    }
+
+    private HubSearchResponseDto getHubInfo(Long managerId) {
+        return hubClient.getHubById(managerId);
+    }
+
+    private OrderSearchCriteria createOrderSearchCriteria(OrdersRequestServiceDto requestDto) {
+        return OrderSearchCriteria.builder()
+            .productName(requestDto.productName())
+            .recipientName(requestDto.recipientName())
+            .requesterName(requestDto.requesterName())
+            .isDeleted(requestDto.isDeleted())
+            .build();
     }
 }

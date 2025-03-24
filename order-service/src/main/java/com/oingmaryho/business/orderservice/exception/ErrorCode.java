@@ -13,7 +13,10 @@ public enum ErrorCode {
     PRODUCT_NOT_FOUND("0-004", "상품 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     PRODUCT_OUT_OF_STOCK("0-005", "상품 재고가 부족합니다.", HttpStatus.BAD_REQUEST),
     COMPANY_NOT_MATCH("0-006", "회사 정보가 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
-    PRODUCT_SERVER_ERROR("0-007", "상품 정보를 가져오는데 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    PRODUCT_SERVER_ERROR("0-007", "상품 정보를 가져오는데 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    HUB_NOT_FOUND("0-008", "허브 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    HUB_NOT_MATCH("0-009", "허브 정보가 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
+    FORBIDDEN("0-010", "접근 권한이 없습니다.", HttpStatus.FORBIDDEN);
 
     private final String errorCode;
     private final String message;
