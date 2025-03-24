@@ -16,6 +16,7 @@ import com.oringmaryho.business.userservice.application.dto.request.UserAdminUpd
 import com.oringmaryho.business.userservice.application.dto.request.UserSignOutRequestServiceDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserAdminFindResponseDto;
 import com.oringmaryho.business.userservice.application.dto.response.UserSignInResponseServiceDto;
+import com.oringmaryho.business.userservice.application.messaging.MessagePublisher;
 import com.oringmaryho.business.userservice.application.messaging.UserMessageService;
 import com.oringmaryho.business.userservice.application.utils.CodeStorage;
 import com.oringmaryho.business.userservice.application.utils.DirectMessageAuthService;
@@ -66,6 +67,8 @@ public class UserAdminService {
   private final UserMessageService userMessageService;
   private final DirectMessageAuthService directMessageAuthService;
   private final CodeStorage codeStorage;
+  private final MessagePublisher messagePublisher;
+
   @Value("${admin.key}")
   private String adminKey;
   @Value("${slack.code.ttl}")
@@ -299,11 +302,13 @@ public class UserAdminService {
 
   @Transactional
   public void deleteUser(UserAdminDeleteRequestServiceDto requestServiceDto) {
-    //todo: 삭제 시 메시지 큐에 메시지 날리기
+    
     User user = userRepository.findById(requestServiceDto.id())
         .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND));
 
     user.softDelete(user.getId());
+
+    messagePublisher.publishUserStatus(user.getId());
   }
 
   //username 형식에 맞는지 체크
