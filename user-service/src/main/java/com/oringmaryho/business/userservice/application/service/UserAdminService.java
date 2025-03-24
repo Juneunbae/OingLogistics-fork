@@ -309,7 +309,11 @@ public class UserAdminService {
     user.softDelete(user.getId());
 
     messagePublisher.publishUserStatus(user.getId());
-    //todo: 레디스 삭제
+
+    String userInfoKey = "user:info:" + user.getId();
+    String tokenKey = "user:token:" + user.getId();
+    redisTemplate.delete(userInfoKey);
+    redisTemplate.delete(tokenKey);
   }
 
   //username 형식에 맞는지 체크

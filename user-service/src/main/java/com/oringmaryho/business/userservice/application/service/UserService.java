@@ -180,7 +180,6 @@ public class UserService {
     codeStorage.storeCode(requestServiceDto.username(), user.getSlackId(), slackCode,
         SLACK_CODE_TTL);
 
-    //todo: slack 코드 생성하고 ttl 만큼 살려두고 삭제하는 테스트 작성하기
   }
 
   @Transactional

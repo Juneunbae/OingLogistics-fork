@@ -44,7 +44,7 @@ public class RabbitMQMessagePublisher implements MessagePublisher {
     rabbitTemplate.convertAndSend(USER_EXCHANGE, HUB_ROUTING_KEY, id);
     rabbitTemplate.convertAndSend(USER_EXCHANGE, DELIVERY_ROUTING_KEY, id);
     rabbitTemplate.convertAndSend(USER_EXCHANGE, PRODUCT_ROUTING_KEY, id);
-    rabbitTemplate.convertAndSend(USER_EXCHANGE, ORDER_ROUTING_KEY, String.valueOf(id));
+    rabbitTemplate.convertAndSend(USER_EXCHANGE, ORDER_ROUTING_KEY, id);
     log.info("Message published successfully id: ${}", id);
   }
 }
