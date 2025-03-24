@@ -35,7 +35,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class CompanyService {
+public class CompanyAdminService {
 	private final HubClient hubClient;
 	private final CompanyRepository companyRepository;
 	private final CustomCompanyRepository companyCustomRepository;
@@ -43,10 +43,8 @@ public class CompanyService {
 
 	@Transactional
 	public CompanyCreateResponseServiceDto createCompany(
-		CompanyCreateRequestServiceDto companyCreateRequestServiceDto,
-		Long requesterId) {
-
-		validateManageHubPermission(requesterId, companyCreateRequestServiceDto.manageHubId());
+		CompanyCreateRequestServiceDto companyCreateRequestServiceDto
+	) {
 
 		String address = companyCreateRequestServiceDto.address();
 		if (companyRepository.existsByAddressAndIsDeletedFalse(address)) {
@@ -73,10 +71,10 @@ public class CompanyService {
 
 	@CacheEvict(value = CacheType.COMPANY_CACHE, key = "#requestServiceDto.id")
 	@Transactional
-	public CompanyUpdateResponseServiceDto updateCompany(Long requesterId, UserRoleType role,CompanyUpdateRequestServiceDto requestServiceDto) {
+	public CompanyUpdateResponseServiceDto updateCompany(CompanyUpdateRequestServiceDto requestServiceDto) {
 		Company company = companyRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
 			.orElseThrow(() -> new CompanyException(ErrorCode.NOT_FOUND));
-		validateUpdatePermission(requesterId,role, company);
+
 		company.update(
 			requestServiceDto.name(),
 			requestServiceDto.type(),
@@ -92,8 +90,6 @@ public class CompanyService {
 	public void deleteCompany(Long requesterId, CompanyDeleteRequestServiceDto requestServiceDto) {
 		Company company = companyRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
 			.orElseThrow(() -> new CompanyException(ErrorCode.NOT_FOUND));
-
-		validateManageHubPermission(requesterId, company.getManageHubId());
 
 		company.softDelete(requesterId);
 	}
@@ -111,32 +107,5 @@ public class CompanyService {
 
 	}
 
-	private void validateManageHubPermission(Long requesterId, UUID targetHubId) {
-
-		HubSearchResponseDto managedHub = hubClient.isManagerOfHub(requesterId)
-			.orElseThrow(() -> new CompanyException(ErrorCode.HUB_NOT_FOUND));
-
-		if (!managedHub.id().equals(targetHubId)) {
-			throw new CompanyException(ErrorCode.NO_PERMISSION);
-		}
-	}
-	private void validateUpdatePermission(Long requesterId, UserRoleType role, Company company) {
-		switch (role) {
-			case HUB_MANAGER -> {
-				Optional<HubSearchResponseDto> optionalHub = hubClient.isManagerOfHub(requesterId);
-				if (optionalHub.isPresent() && optionalHub.get().id().equals(company.getManageHubId())) {
-					return;
-				}
-				throw new CompanyException(ErrorCode.NO_PERMISSION);
-			}
-			case COMPANY_MANAGER -> {
-				if (company.getManagerId().equals(requesterId)) {
-					return;
-				}
-				throw new CompanyException(ErrorCode.NO_PERMISSION);
-			}
-			default -> throw new CompanyException(ErrorCode.NO_PERMISSION);
-		}
-	}
 
 }

@@ -9,6 +9,7 @@ public record CompanySearchResponseServiceDto(
 	String type,
 	Long managerId,
 	UUID manageHubId,
-	String address
+	String address,
+	Boolean isDeleted
 ) {
 }
