@@ -49,7 +49,7 @@ public class ProductAdminService {
 	){
 		// company, hub 존재 확인
 		CompanyDetailsSearchResponseDto company = companyClient(productCreateRequestServiceDto.companyId());
-		// HubSearchResponseDto hub = hubClient(productCreateRequestServiceDto.manageHubId());
+		HubSearchResponseDto hub = hubClient(productCreateRequestServiceDto.manageHubId());
 		validateSupplierCompany(company);
 
 		String productCode = productCreateRequestServiceDto.productCode();
@@ -57,7 +57,7 @@ public class ProductAdminService {
 			throw new ProductException(ErrorCode.ALREADY_REGISTERED_PRODUCT);
 		}
 
-		Product product = productApplicationMapper.toCreateEntity(productCreateRequestServiceDto,company.name());
+		Product product = productApplicationMapper.toCreateEntity(productCreateRequestServiceDto,company.name(),hub.id());
 		Product saveProduct = productRepository.save(product);
 		return new ProductCreateResponseServiceDto(saveProduct.getId());
 	}
@@ -95,10 +95,10 @@ public class ProductAdminService {
 		Product product = productRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
 			.orElseThrow(() -> new ProductException(ErrorCode.NOT_FOUND));
 
-		//허브 존재하는지
+		HubSearchResponseDto hubSearchResponseDto = hubClient(requestServiceDto.manageHubId());
 
 		product.update(
-			requestServiceDto.manageHubId(),
+			hubSearchResponseDto.id(),
 			requestServiceDto.name(),
 			requestServiceDto.price(),
 			requestServiceDto.stock()
@@ -158,13 +158,14 @@ public class ProductAdminService {
 	}
 
 	private CompanyDetailsSearchResponseDto companyClient(UUID companyId) {
-		return companyClient.isManagerOfCompany(companyId)
+		return companyClient.getCompanyById(companyId)
 			.orElseThrow(() -> new ProductException(ErrorCode.COMPANY_NOT_FOUND));
 
 	}
 
-	// private HubSearchResponseDto hubClient(UUID manageHubId) {
-	// 	return hubClient.isManagerOfHub(manageHubId)
-	// }
+	private HubSearchResponseDto hubClient(UUID manageHubId) {
+		return hubClient.getHubById(manageHubId)
+			.orElseThrow(() -> new ProductException(ErrorCode.HUB_NOT_FOUND));
+	}
 
 }

@@ -26,7 +26,8 @@ public interface ProductApplicationMapper {
 	@Mapping(target = "isDeleted", ignore = true)
 	@Mapping(target = "id", ignore = true)
 	@Mapping(source = "companyName", target = "companyName")
-	Product toCreateEntity(ProductCreateRequestServiceDto productCreateRequestServiceDto, String companyName);
+	@Mapping(source = "manageHubId", target = "manageHubId")
+	Product toCreateEntity(ProductCreateRequestServiceDto productCreateRequestServiceDto, String companyName, UUID manageHubId);
 
 	// out : entity -> application response dto
 	@BeanMapping(ignoreByDefault = true)

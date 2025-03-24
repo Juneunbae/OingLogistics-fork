@@ -51,9 +51,10 @@ public class ProductService {
 	){
 		UUID checkTargetId = (role == UserRoleType.HUB_MANAGER) ? productCreateRequestServiceDto.manageHubId() : productCreateRequestServiceDto.companyId();
 		CompanyDetailsSearchResponseDto company = companyClient(productCreateRequestServiceDto.companyId());
+		HubSearchResponseDto hub = hubClient(productCreateRequestServiceDto.manageHubId());
 		validateManagerPermission(checkTargetId, userId, role);
 		validateSupplierCompany(company);
-		// hub 존재 확인
+
 
 
 		String productCode = productCreateRequestServiceDto.productCode();
@@ -61,7 +62,7 @@ public class ProductService {
 			throw new ProductException(ErrorCode.ALREADY_REGISTERED_PRODUCT);
 		}
 
-		Product product = productApplicationMapper.toCreateEntity(productCreateRequestServiceDto,company.name());
+		Product product = productApplicationMapper.toCreateEntity(productCreateRequestServiceDto,company.name(),hub.id());
 		Product saveProduct = productRepository.save(product);
 		return new ProductCreateResponseServiceDto(saveProduct.getId());
 	}
@@ -134,8 +135,10 @@ public class ProductService {
 		UUID checkTargetId = (role == UserRoleType.HUB_MANAGER) ?  product.getManageHubId() :product.getCompanyId();
 		validateManagerPermission(checkTargetId, userId, role);
 
+		HubSearchResponseDto hubSearchResponseDto = hubClient(requestServiceDto.manageHubId());
+
 		product.update(
-			requestServiceDto.manageHubId(),
+			hubSearchResponseDto.id(),
 			requestServiceDto.name(),
 			requestServiceDto.price(),
 			requestServiceDto.stock()
@@ -198,7 +201,7 @@ public class ProductService {
 				throw new ProductException(ErrorCode.NO_PERMISSION);
 			}
 		} else if (role == UserRoleType.COMPANY_MANAGER) {
-			CompanyDetailsSearchResponseDto company = companyClient.isManagerOfCompany(manageId)
+			CompanyDetailsSearchResponseDto company = companyClient.getCompanyById(manageId)
 				.orElseThrow(() -> new ProductException(ErrorCode.COMPANY_NOT_FOUND));
 
 			if (!company.managerId().equals(userId)) {
@@ -207,8 +210,13 @@ public class ProductService {
 		}
 	}
 
+	private HubSearchResponseDto hubClient(UUID manageHubId) {
+		return hubClient.getHubById(manageHubId)
+			.orElseThrow(() -> new ProductException(ErrorCode.HUB_NOT_FOUND));
+	}
+
 	private CompanyDetailsSearchResponseDto companyClient(UUID companyId) {
-		return companyClient.isManagerOfCompany(companyId)
+		return companyClient.getCompanyById(companyId)
 			.orElseThrow(() -> new ProductException(ErrorCode.COMPANY_NOT_FOUND));
 
 	}
