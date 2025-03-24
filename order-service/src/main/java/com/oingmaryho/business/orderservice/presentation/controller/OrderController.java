@@ -33,7 +33,7 @@ public class OrderController {
         "허브 관리자, 허브 배송 담당자, 업체 배송 담당자, 업체 담당자 - 주문 전제 조회"
     )
     @GetMapping
-    @RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.HUB_DELIVERY_MANAGER, UserRoleType.COMPANY_DELIVERY_MANAGER, UserRoleType.COMPANY_MANAGER})
+    @RequiredRoles({UserRoleType.HUB_DELIVERY_MANAGER, UserRoleType.COMPANY_DELIVERY_MANAGER, UserRoleType.COMPANY_MANAGER, UserRoleType.HUB_MANAGER})
     public ResponseEntity<?> getOrders(
         HttpServletRequest request,
         @Min(value = 1, message = "페이지 번호는 1 이상이어야 합니다.")
@@ -47,8 +47,6 @@ public class OrderController {
         @RequestParam(value = "isDeleted", required = false, defaultValue = "false") Boolean isDeleted
     ) {
         Long userId = (Long) request.getAttribute("userId");
-        String username = (String) request.getAttribute("username");
-        String slackId = (String) request.getAttribute("slackId");
         String role = (String) request.getAttribute("role");
 
         Pageable customPageable = PageableUtils.customPageable(page, size, sortDirection, by);
@@ -56,7 +54,7 @@ public class OrderController {
         OrdersRequestServiceDto ordersRequestServiceDto = orderPresentationMapper.toOrdersServiceDto(
             productName, recipientName, requesterName, isDeleted, customPageable
         );
-        Page<OrderResponseServiceDto> response = orderService.getOrders(userId, username, slackId, role, ordersRequestServiceDto);
+        Page<OrderResponseServiceDto> response = orderService.getOrders(userId, role, ordersRequestServiceDto);
 
         return ResponseEntity.ok(response.map(orderPresentationMapper::toOrderResponseServiceDto));
     }

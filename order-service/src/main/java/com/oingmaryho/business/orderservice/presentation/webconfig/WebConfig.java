@@ -1,7 +1,8 @@
 package com.oingmaryho.business.orderservice.presentation.webconfig;
 
-import com.oingmaryho.business.orderservice.infrastructure.interceptor.AdminInterceptor;
-import com.oingmaryho.business.orderservice.infrastructure.interceptor.UserInterceptor;
+
+import com.oingmaryho.business.common.presentation.interceptor.AdminCheckInterceptor;
+import com.oingmaryho.business.common.presentation.interceptor.UserCheckInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -15,10 +16,9 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new UserInterceptor(redisTemplate))
-            .excludePathPatterns("/order-service/**");
-        registry.addInterceptor(new AdminInterceptor(redisTemplate))
-            .excludePathPatterns("/api/**")
-            .excludePathPatterns("/order-service/**");
+        registry.addInterceptor(new UserCheckInterceptor(redisTemplate))
+            .excludePathPatterns("/error", "/order-service/**");
+        registry.addInterceptor(new AdminCheckInterceptor(redisTemplate))
+            .excludePathPatterns("/api/**", "/order-service/**", "/error");
     }
 }

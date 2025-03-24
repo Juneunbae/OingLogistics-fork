@@ -3,12 +3,14 @@ package com.oingmaryho.business.orderservice.domain;
 import com.oingmaryho.business.orderservice.application.dto.request.OrderUpdateRequestServiceDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -78,8 +80,9 @@ public class Order extends BaseEntity {
     )
     private Boolean isDeleted;
 
+    @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<OrderDetail> orderDetails;
+    private List<OrderDetail> orderDetails = new ArrayList<>();
 
     public void update(OrderUpdateRequestServiceDto orderUpdateRequestServiceDto) {
         if (orderUpdateRequestServiceDto.requests() != null) {
