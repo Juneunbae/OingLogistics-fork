@@ -18,7 +18,6 @@ import com.oingmaryho.business.orderservice.domain.Status;
 import com.oingmaryho.business.orderservice.domain.repository.OrderRepository;
 import com.oingmaryho.business.orderservice.exception.ErrorCode;
 import com.oingmaryho.business.orderservice.exception.OrderException;
-import com.oingmaryho.business.orderservice.infrastructure.OrderJPARepository;
 import com.oingmaryho.business.orderservice.infrastructure.OrderQueryRepository;
 import com.oingmaryho.business.orderservice.presentation.dto.response.CompanyDetailsSearchResponseDto;
 import com.oingmaryho.business.orderservice.presentation.dto.response.ProductDetailsSearchResponseDto;
@@ -38,10 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -54,7 +50,6 @@ public class OrderService {
     private final RabbitTemplate rabbitTemplate;
     private final OrderRepository orderRepository;
     private final ApplicationEventPublisher publisher;
-    private final OrderJPARepository orderJPARepository;
     private final OrderQueryRepository orderQueryRepository;
     private final OrderApplicationMapper orderApplicationMapper;
 
@@ -66,20 +61,10 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = "orders")
-    public Page<OrderResponseServiceDto> getOrders(Long userId, String username, String slackId, String role, OrdersRequestServiceDto ordersRequestServiceDto) {
-        // TODO: Role - HubManager, HubDeliveryManager, CompanyDeliveryManager, CompanyManager 설정하기
-
-        // HubManager - orderDetails 내 hub_id
-        HubSearchResponseDto hubInfo = getHubInfo(userId);
-
-        log.info("{}, {}, {}, {}, {}", userId, username, slackId, role, hubInfo);
-
+    public Page<OrderResponseServiceDto> getOrders(Long userId, String role, OrdersRequestServiceDto ordersRequestServiceDto) {
         Pageable customPageable = ordersRequestServiceDto.customPageable();
-//        Page<Order> orders = orderJPARepository.findAll(customPageable);
-        Page<Order> orders = orderQueryRepository.findDynamicQuery(
-            createOrderSearchCriteria(ordersRequestServiceDto),
-            customPageable
-        );
+
+        Page<Order> orders = checkRole(userId, role, ordersRequestServiceDto, customPageable);
 
         List<OrderResponseServiceDto> ordersDto = orders.stream().map(
             order -> orderApplicationMapper.toOrderResponseServiceDto(
@@ -132,9 +117,7 @@ public class OrderService {
         int totalPrice = 0;
         ArrayList<OrderDetail> details = new ArrayList<>();
 
-        log.info("-");
         CompanyDetailsSearchResponseDto requestCompanyInfo = getCompanyInfo(create.requesterId());
-        log.info("requestCompanyInfo: {}", requestCompanyInfo);
 
         Order order = Order.builder()
             .requesterId(requestCompanyInfo.id())
@@ -169,7 +152,6 @@ public class OrderService {
             );
 
             Object response = rabbitTemplate.convertSendAndReceive(queueProduct, QueueRequest);
-            log.info("성공");
 
             if (response == null) {
                 rabbitTemplate.convertAndSend(queueErrProduct, QueueRequest);
@@ -372,7 +354,7 @@ public class OrderService {
     }
 
     private ProductDetailsSearchResponseDto getProductInfo(UUID productId) {
-        return productClient.getProduct(productId)
+        return productClient.getProductById(productId)
             .orElseThrow(() -> new OrderException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 
@@ -387,5 +369,33 @@ public class OrderService {
             .requesterName(requestDto.requesterName())
             .isDeleted(requestDto.isDeleted())
             .build();
+    }
+
+    private Page<Order> checkRole(Long userId, String role, OrdersRequestServiceDto ordersRequestServiceDto, Pageable customPageable) {
+        if (Objects.equals(role, UserRoleType.HUB_MANAGER.name())) {
+            log.info("Role check success - {}", role);
+
+            HubSearchResponseDto hubInfo = getHubInfo(userId);
+            UUID hubId = hubInfo.id();
+
+            return orderQueryRepository.findDynamicQueryForHubManager(
+                createOrderSearchCriteria(ordersRequestServiceDto),
+                customPageable,
+                hubId
+            );
+        } else if (
+            Objects.equals(role, UserRoleType.COMPANY_MANAGER.name())
+                || Objects.equals(role, UserRoleType.COMPANY_DELIVERY_MANAGER.name())
+                || Objects.equals(role, UserRoleType.HUB_DELIVERY_MANAGER.name())
+        ) {
+            log.info("Role check success - {}", role);
+            return orderQueryRepository.findDynamicQueryForOther(
+                createOrderSearchCriteria(ordersRequestServiceDto),
+                customPageable,
+                userId
+            );
+        }
+
+        return new PageImpl<>(Collections.emptyList(), customPageable, 0);
     }
 }
