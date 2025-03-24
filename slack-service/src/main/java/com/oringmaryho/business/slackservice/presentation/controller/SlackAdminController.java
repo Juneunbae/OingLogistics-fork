@@ -1,5 +1,7 @@
 package com.oringmaryho.business.slackservice.presentation.controller;
 
+import com.oingmaryho.business.common.domain.type.UserRoleType;
+import com.oingmaryho.business.common.infrastructure.annotation.RequiredRoles;
 import java.util.UUID;
 
 import org.springframework.context.annotation.Description;
@@ -48,6 +50,7 @@ public class SlackAdminController {
 	@Description(
 		"슬랙 메세지 전체 조회"
 	)
+	@RequiredRoles(UserRoleType.MASTER)
 	@GetMapping
 	public ResponseEntity<Page<SlackMessageResponseDto>> getSlackMessages(
 		@RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
@@ -66,6 +69,7 @@ public class SlackAdminController {
 	@Description(
 		"슬랙 메세지 상세 조회"
 	)
+	@RequiredRoles(UserRoleType.MASTER)
 	@GetMapping("/{id}")
 	public ResponseEntity<SlackMessageResponseDto> getSlackMessageById(
 		@PathVariable UUID id
@@ -79,6 +83,7 @@ public class SlackAdminController {
 	@Description(
 		"슬랙 메세지 생성"
 	)
+	@RequiredRoles(UserRoleType.MASTER)
 	@PostMapping
 	public ResponseEntity<Void> createSlackMessage(
 		@RequestBody SlackAdminMessageCreateRequestDto requestDto
@@ -93,6 +98,7 @@ public class SlackAdminController {
 	@Description(
 		"슬랙 메세지 수정"
 	)
+	@RequiredRoles(UserRoleType.MASTER)
 	@PutMapping("/{id}")
 	public ResponseEntity<SlackMessageUpdateResponseDto> updateSlackMessage(
 		@PathVariable UUID id,
@@ -107,6 +113,7 @@ public class SlackAdminController {
 	@Description(
 		"슬랙 메세지 삭제"
 	)
+	@RequiredRoles(UserRoleType.MASTER)
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteSlackMessage(
 		@PathVariable UUID id,
