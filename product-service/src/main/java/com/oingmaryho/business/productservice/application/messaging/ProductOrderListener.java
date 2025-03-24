@@ -1,33 +1,30 @@
 package com.oingmaryho.business.productservice.application.messaging;
 
-import java.io.IOException;
-import java.util.Optional;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.oingmaryho.business.productservice.application.dto.request.ProductQueueRequestDto;
+import com.oingmaryho.business.productservice.domain.Product;
+import com.oingmaryho.business.productservice.domain.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.oingmaryho.business.productservice.application.dto.request.ProductQueueRequestDto;
-import com.oingmaryho.business.productservice.domain.Product;
-import com.oingmaryho.business.productservice.domain.repository.ProductRepository;
+import java.io.IOException;
+import java.util.Optional;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class ProductOrderListener {
 
 	private final ProductRepository productRepository;
+	private final ObjectMapper objectMapper;
 
 	@RabbitListener(queues = "queueProduct")
 	@Transactional
-	public String handleQueueProduct(String event) throws IOException {
-		ObjectMapper objectMapper = new ObjectMapper();
-		ProductQueueRequestDto requestDto = objectMapper.readValue(event, ProductQueueRequestDto.class);
-
+	public String handleQueueProduct(ProductQueueRequestDto requestDto) throws IOException {
 		log.info("Received message: {}", requestDto);
 
 		Optional<Product> optional = productRepository.findByIdAndIsDeletedFalse(requestDto.productId());
