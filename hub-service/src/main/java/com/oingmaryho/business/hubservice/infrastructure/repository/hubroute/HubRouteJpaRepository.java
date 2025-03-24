@@ -1,4 +1,4 @@
-package com.oingmaryho.business.hubservice.infrastructure;
+package com.oingmaryho.business.hubservice.infrastructure.repository.hubroute;
 
 import java.util.List;
 import java.util.Optional;

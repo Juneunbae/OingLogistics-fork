@@ -1,4 +1,4 @@
-package com.oingmaryho.business.hubservice.infrastructure;
+package com.oingmaryho.business.hubservice.infrastructure.map;
 
 import java.util.ArrayList;
 import java.util.Arrays;

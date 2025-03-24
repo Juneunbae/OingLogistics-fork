@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.oingmaryho.business.common.domain.type.UserRoleType;
 import com.oingmaryho.business.common.infrastructure.annotation.RequiredRoles;
-import com.oingmaryho.business.hubservice.application.HubRouteAdminService;
+import com.oingmaryho.business.hubservice.application.service.HubRouteAdminService;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteCreateResponseServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteSearchAdminResponseServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubRouteUpdateResponseServiceDto;

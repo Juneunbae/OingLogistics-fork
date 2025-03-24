@@ -21,6 +21,7 @@ import com.oingmaryho.business.hubservice.application.dto.mapper.HubApplicationM
 import com.oingmaryho.business.hubservice.application.dto.request.HubSearchRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.request.HubsSearchRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubSearchResponseServiceDto;
+import com.oingmaryho.business.hubservice.application.service.HubService;
 import com.oingmaryho.business.hubservice.domain.Address;
 import com.oingmaryho.business.hubservice.domain.Hub;
 import com.oingmaryho.business.hubservice.domain.repository.HubRepository;

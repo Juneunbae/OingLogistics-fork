@@ -1,4 +1,4 @@
-package com.oingmaryho.business.hubservice.application;
+package com.oingmaryho.business.hubservice.application.service;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -11,7 +11,7 @@ import com.oingmaryho.business.hubservice.application.dto.request.HubSearchReque
 import com.oingmaryho.business.hubservice.application.dto.request.HubsSearchRequestServiceDto;
 import com.oingmaryho.business.hubservice.application.dto.response.HubSearchResponseServiceDto;
 import com.oingmaryho.business.hubservice.domain.Hub;
-import com.oingmaryho.business.hubservice.domain.HubSearchCriteria;
+import com.oingmaryho.business.hubservice.domain.criteria.HubSearchCriteria;
 import com.oingmaryho.business.hubservice.domain.repository.HubRepository;
 import com.oingmaryho.business.hubservice.exception.ErrorCode;
 import com.oingmaryho.business.hubservice.exception.HubException;

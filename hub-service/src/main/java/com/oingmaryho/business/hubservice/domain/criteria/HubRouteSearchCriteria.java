@@ -1,4 +1,4 @@
-package com.oingmaryho.business.hubservice.domain;
+package com.oingmaryho.business.hubservice.domain.criteria;
 
 import java.util.UUID;
 

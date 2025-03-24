@@ -8,7 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.oingmaryho.business.hubservice.domain.HubRoute;
-import com.oingmaryho.business.hubservice.domain.HubRouteSearchCriteria;
+import com.oingmaryho.business.hubservice.domain.criteria.HubRouteSearchCriteria;
 
 public interface HubRouteRepository {
 
