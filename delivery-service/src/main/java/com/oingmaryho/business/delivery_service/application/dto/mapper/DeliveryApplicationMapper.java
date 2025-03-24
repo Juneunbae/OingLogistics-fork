@@ -9,6 +9,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,10 +29,11 @@ public interface DeliveryApplicationMapper {
     DeliveryCreationResponseServiceDto toCreationResponseServiceDto(UUID orderId,
                                                                     UUID orderDetailId,
                                                                     UUID deliveryId,
-                                                                    String DeliveryDepartureName,
-                                                                    List<String> DeliveryStopoverName,
-                                                                    String DeliveryDestinationName,
-                                                                    String DeliveryManagerName);
+                                                                    String deliveryDepartureName,
+                                                                    String deliveryStopoverNames,
+                                                                    String deliveryDestinationName,
+                                                                    String deliveryManagerName,
+                                                                    String deliveryManagerSlackId);
 
     DeliveryUpdateResponseServiceDto toUpdateResponseServiceDto(UUID id);
     DeliveryUpdateStatusResponseServiceDto toUpdateStatusResponseServiceDto(UUID id);

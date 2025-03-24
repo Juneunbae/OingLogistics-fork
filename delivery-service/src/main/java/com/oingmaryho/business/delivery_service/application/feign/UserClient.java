@@ -14,7 +14,7 @@ public interface UserClient {
             @RequestParam("id") Long id);
 
 
-    @GetMapping("user-service/name")
+    @GetMapping("user-service/users/name")
     ResponseEntity<String> getUserName(
             @RequestParam("id") Long id);
 
