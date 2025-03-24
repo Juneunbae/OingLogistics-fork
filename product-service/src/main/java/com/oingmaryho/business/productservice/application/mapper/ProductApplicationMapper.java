@@ -11,6 +11,7 @@ import com.oingmaryho.business.productservice.application.dto.response.ProductSe
 import com.oingmaryho.business.productservice.application.dto.response.ProductUpdateResponseServiceDto;
 import com.oingmaryho.business.productservice.domain.Product;
 import com.oingmaryho.business.productservice.application.dto.request.ProductCreateRequestServiceDto;
+import com.oingmaryho.business.productservice.presentation.dto.response.CompanyDetailsSearchResponseDto;
 
 @Mapper(componentModel = "spring")
 public interface ProductApplicationMapper {
@@ -24,7 +25,9 @@ public interface ProductApplicationMapper {
 	@Mapping(target = "updatedBy", ignore = true)
 	@Mapping(target = "isDeleted", ignore = true)
 	@Mapping(target = "id", ignore = true)
-	Product toCreateEntity(ProductCreateRequestServiceDto productCreateRequestServiceDto);
+	@Mapping(source = "companyName", target = "companyName")
+	@Mapping(source = "manageHubId", target = "manageHubId")
+	Product toCreateEntity(ProductCreateRequestServiceDto productCreateRequestServiceDto, String companyName, UUID manageHubId);
 
 	// out : entity -> application response dto
 	@BeanMapping(ignoreByDefault = true)

@@ -1,5 +1,6 @@
 package com.oingmaryho.business.productservice.domain.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,6 +12,6 @@ import com.oingmaryho.business.productservice.domain.Product;
 public interface ProductRepository {
 	Optional<Product> findByIdAndIsDeletedFalse(UUID id);
 	boolean existsByProductCodeAndIsDeletedFalse(String productCode);
-
+	List<Product> findAllByCompanyIdAndIsDeletedFalse(UUID companyId);
 	Product save(Product product);
 }

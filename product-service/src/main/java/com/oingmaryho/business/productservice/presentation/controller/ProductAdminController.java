@@ -18,19 +18,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.oingmaryho.business.common.domain.type.UserRoleType;
 import com.oingmaryho.business.common.infrastructure.annotation.RequiredRoles;
+import com.oingmaryho.business.productservice.application.dto.request.ProductCreateRequestServiceDto;
+import com.oingmaryho.business.productservice.application.dto.request.ProductDeleteRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.request.ProductDetailsSearchRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.request.ProductUpdateRequestServiceDto;
+import com.oingmaryho.business.productservice.application.dto.response.ProductCreateResponseServiceDto;
 import com.oingmaryho.business.productservice.application.dto.response.ProductDetailsSearchResponseServiceDto;
 import com.oingmaryho.business.productservice.application.dto.response.ProductSearchResponseServiceDto;
 import com.oingmaryho.business.productservice.application.dto.response.ProductUpdateResponseServiceDto;
-import com.oingmaryho.business.productservice.application.service.ProductService;
-import com.oingmaryho.business.productservice.application.dto.request.ProductCreateRequestServiceDto;
-import com.oingmaryho.business.productservice.application.dto.response.ProductCreateResponseServiceDto;
+import com.oingmaryho.business.productservice.application.service.ProductAdminService;
 import com.oingmaryho.business.productservice.presentation.dto.request.ProductCreateRequestDto;
 import com.oingmaryho.business.productservice.presentation.dto.request.ProductSearchRequestDto;
 import com.oingmaryho.business.productservice.presentation.dto.request.ProductUpdateRequestDto;
 import com.oingmaryho.business.productservice.presentation.dto.response.ProductCreateResponseDto;
-import com.oingmaryho.business.productservice.application.dto.request.ProductDeleteRequestServiceDto;
 import com.oingmaryho.business.productservice.presentation.dto.response.ProductDetailsSearchResponseDto;
 import com.oingmaryho.business.productservice.presentation.dto.response.ProductSearchResponseDto;
 import com.oingmaryho.business.productservice.presentation.dto.response.ProductUpdateResponseDto;
@@ -42,31 +42,27 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/products")
-public class ProductController {
+@RequestMapping("/admin/v1/products")
+public class ProductAdminController {
 
-	private final ProductService productService;
+	private final ProductAdminService productService;
 	private final ProductPresentationMapper productPresentationMapper;
 
-	@Description("일반 - 상품 등록")
-	@RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.COMPANY_MANAGER})
+	@Description("마스터 - 상품 등록")
+	@RequiredRoles(UserRoleType.MASTER)
 	@PostMapping
 	public ResponseEntity<ProductCreateResponseDto> createProduct(
-		@RequestBody ProductCreateRequestDto productCreateRequestDto,
-		HttpServletRequest request
+		@RequestBody ProductCreateRequestDto productCreateRequestDto
 	) {
-		Long userId = (Long) request.getAttribute("userId");
-		String roleStr = (String) request.getAttribute("role");
-		UserRoleType role = UserRoleType.valueOf(roleStr);
 
 		ProductCreateRequestServiceDto requestServiceDto = productPresentationMapper.toCreateServiceDto(productCreateRequestDto);
-		ProductCreateResponseServiceDto responseServiceDto = productService.createProduct(requestServiceDto, userId, role);
+		ProductCreateResponseServiceDto responseServiceDto = productService.createProduct(requestServiceDto);
 		ProductCreateResponseDto responseDto = productPresentationMapper.toCreateDto(responseServiceDto);
 		return ResponseEntity.ok(responseDto);
 	}
 
-	@Description("일반 - 상품 전체 조회")
-	@RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.COMPANY_MANAGER, UserRoleType.COMPANY_DELIVERY_MANAGER, UserRoleType.HUB_DELIVERY_MANAGER})
+	@Description("마스터 - 상품 전체 조회")
+	@RequiredRoles(UserRoleType.MASTER)
 	@GetMapping
 	public ResponseEntity<Page<ProductSearchResponseDto>> getProducts(
 		@RequestParam(name = "page", defaultValue = "0") int page,
@@ -83,67 +79,54 @@ public class ProductController {
 		@RequestParam(name = "maxPrice", required = false) Integer maxPrice,
 		@RequestParam(name = "minStock", required = false) Integer minStock,
 		@RequestParam(name = "maxStock", required = false) Integer maxStock,
-		HttpServletRequest request
+		@RequestParam(name = "isDeleted", required = false) Boolean isDeleted
 	){
-		Long userId = (Long) request.getAttribute("userId");
-		String roleStr = (String) request.getAttribute("role");
-		UserRoleType role = UserRoleType.valueOf(roleStr);
 
 		Pageable pageable = PageableUtils.customPageable(page, size, sortDirection, by);
-		Boolean isDeleted = false;
-		ProductSearchRequestDto requestDto = new ProductSearchRequestDto(id, productCode, name, manageHubId, companyId, companyName, minPrice, maxPrice, minStock,maxStock,isDeleted);
+		ProductSearchRequestDto requestDto = new ProductSearchRequestDto(id, productCode, name, manageHubId, companyId, companyName, minPrice, maxPrice, minStock,maxStock, isDeleted);
 
-		Page<ProductSearchResponseServiceDto> responseDto = productService.searchProducts(productPresentationMapper.toProductSearchRequestServiceDto(requestDto), pageable, userId, role);
+		Page<ProductSearchResponseServiceDto> responseDto = productService.searchProducts(productPresentationMapper.toProductSearchRequestServiceDto(requestDto), pageable);
 
 		return ResponseEntity.ok(responseDto.map(productPresentationMapper::toProductSearchResponseDto));
 	}
 
-	@Description("일반 - 상품 상세 조회")
-	@RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.COMPANY_MANAGER, UserRoleType.COMPANY_DELIVERY_MANAGER, UserRoleType.HUB_DELIVERY_MANAGER})
+	@Description("마스터 - 상품 상세 조회")
+	@RequiredRoles(UserRoleType.MASTER)
 	@GetMapping("/{id}")
 	public ResponseEntity<ProductDetailsSearchResponseDto> getProductById(
-		@PathVariable UUID id,
-		HttpServletRequest request
+		@PathVariable UUID id
 	) {
-		Long userId = (Long) request.getAttribute("userId");
-		String roleStr = (String) request.getAttribute("role");
-		UserRoleType role = UserRoleType.valueOf(roleStr);
 
 		ProductDetailsSearchRequestServiceDto requestServiceDto = productPresentationMapper.toDetailsSearchServiceDto(id);
-		ProductDetailsSearchResponseServiceDto responseServiceDto = productService.getProductDetails(requestServiceDto, userId, role);
+		ProductDetailsSearchResponseServiceDto responseServiceDto = productService.getProductDetails(requestServiceDto);
 		ProductDetailsSearchResponseDto response = productPresentationMapper.toDetailsSearchDto(responseServiceDto);
 		return ResponseEntity.ok(response);
 	}
 
-	@Description("일반 - 상품 수정")
-	@RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.COMPANY_MANAGER})
+	@Description("마스터 - 상품 수정")
+	@RequiredRoles(UserRoleType.MASTER)
 	@PutMapping("/{id}")
 	public ResponseEntity<ProductUpdateResponseDto> updateProduct(
 		@PathVariable UUID id,
-		@RequestBody ProductUpdateRequestDto productUpdateRequestDto,
-		HttpServletRequest request
+		@RequestBody ProductUpdateRequestDto productUpdateRequestDto
 	){
-		Long userId = (Long) request.getAttribute("userId");
-		String roleStr = (String) request.getAttribute("role");
-		UserRoleType role = UserRoleType.valueOf(roleStr);
+
 		ProductUpdateRequestServiceDto requestServiceDto = productPresentationMapper.toUpdateServiceDto(id, productUpdateRequestDto);
-		ProductUpdateResponseServiceDto responseServiceDto = productService.updateProduct(requestServiceDto, userId, role);
+		ProductUpdateResponseServiceDto responseServiceDto = productService.updateProduct(requestServiceDto);
 		ProductUpdateResponseDto responseDto = productPresentationMapper.toUpdateResponseDto(responseServiceDto);
 		return ResponseEntity.ok(responseDto);
 	}
 
 	@Description("일반 상품 삭제")
-	@RequiredRoles({UserRoleType.HUB_MANAGER})
+	@RequiredRoles(UserRoleType.MASTER)
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteProduct(
 		@PathVariable UUID id,
 		HttpServletRequest request
 	){
 		Long userId = (Long) request.getAttribute("userId");
-		String roleStr = (String) request.getAttribute("role");
-		UserRoleType role = UserRoleType.valueOf(roleStr);
 		ProductDeleteRequestServiceDto requestServiceDto = productPresentationMapper.toDeleteServiceDto(id);
-		productService.deleteProduct(requestServiceDto,userId,role);
+		productService.deleteProduct(requestServiceDto,userId);
 		return ResponseEntity.noContent().build();
 	}
 }

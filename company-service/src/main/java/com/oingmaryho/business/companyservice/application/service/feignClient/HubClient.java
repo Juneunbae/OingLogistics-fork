@@ -1,9 +1,11 @@
 package com.oingmaryho.business.companyservice.application.service.feignClient;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.oingmaryho.business.companyservice.presentation.dto.response.HubSearchResponseDto;
@@ -14,5 +16,9 @@ public interface HubClient {
 	@GetMapping("/hub-service")
 	Optional<HubSearchResponseDto> isManagerOfHub(
 		@RequestParam("managerId") Long managerId
+	);
+	@GetMapping("/hub-service/{id}")
+	Optional<HubSearchResponseDto> getHubById(
+		@PathVariable UUID id
 	);
 }

@@ -13,7 +13,7 @@ import com.oingmaryho.business.productservice.presentation.dto.response.CompanyD
 public interface CompanyClient {
 
 	@GetMapping("/company-service/companies/{id}")
-	Optional<CompanyDetailsSearchResponseDto> isManagerOfCompany(
+	Optional<CompanyDetailsSearchResponseDto> getCompanyById(
 		@PathVariable UUID id
 	);
 }

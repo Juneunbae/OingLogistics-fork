@@ -21,8 +21,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
 		registry.addInterceptor(new UserCheckInterceptor(redisTemplate))
 			.excludePathPatterns("/product-service/**");
 		registry.addInterceptor(new AdminCheckInterceptor(redisTemplate))
-			.excludePathPatterns("/api/**")
-			.excludePathPatterns("/product-service/**");
+			.excludePathPatterns("/api/**", "/product-service/**");
 	}
-
 }

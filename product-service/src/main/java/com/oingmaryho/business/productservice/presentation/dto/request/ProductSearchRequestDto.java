@@ -12,6 +12,7 @@ public record ProductSearchRequestDto(
 	Integer minPrice,
 	Integer maxPrice,
 	Integer minStock,
-	Integer maxStock
+	Integer maxStock,
+	Boolean isDeleted
 ) {
 }

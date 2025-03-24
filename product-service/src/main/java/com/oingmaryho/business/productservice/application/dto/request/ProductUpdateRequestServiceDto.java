@@ -4,7 +4,6 @@ import java.util.UUID;
 
 public record ProductUpdateRequestServiceDto(
 	UUID id,
-	String companyName,
 	String name,
 	UUID manageHubId,
 	Integer price,

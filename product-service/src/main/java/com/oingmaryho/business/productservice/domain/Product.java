@@ -53,17 +53,9 @@ public class Product extends BaseEntity {
 	@Column(nullable = false)
 	private Integer price;
 
-	public void update(UUID manageHubId,String companyName, String name, Integer price, Integer stock) {
+	public void update(UUID manageHubId, String name, Integer price, Integer stock) {
 		Optional.ofNullable(manageHubId)
 			.ifPresent(value -> this.manageHubId = value);
-
-		Optional.ofNullable(companyName)
-			.ifPresent(value -> {
-				if (value.isBlank()) {
-					throw new ProductException(ErrorCode.INVALID_COMPANY_NAME);
-				}
-				this.companyName = value;
-			});
 
 		Optional.ofNullable(name)
 			.ifPresent(value -> {
