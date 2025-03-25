@@ -1,6 +1,5 @@
 # OingLogistics
 
-
 OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플랫폼으로,
 다양한 기업 간의 물류 흐름을 효율적으로 처리하고 모듈화된 아키텍처를 통해 유연한 확장성과 유지보수성을 지향합니다.
 도메인 주도 설계(DDD)를 적용하여 각 비즈니스 도메인을 명확히 분리하고,
@@ -8,8 +7,6 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
 
 
 ## :walking: 프로젝트 소개
-
-- OingLogistics는 MSA 기반 B2B 물류 시스템입니다.
 
 ### :walking: 서비스 목표
 
@@ -49,17 +46,17 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
   - **코드 컨벤션 및 패턴을 통일**하여 일관성 있는 코드베이스를 유지하였습니다.
 
 
-## :memo: 개발 노션
+## :memo: 개발 노션 및 산출물
 
-(노션링크)
+[(wiki)](https://github.com/5ingMaryho/OingLogistics/wiki)
 
 ## :construction_worker: 팀원 역할 분담
 
 | 김기훈 | 이예본 | 이지언 | 이하은 | 전은배 |
 |--------|--------|--------|--------|--------|
-| ![김기훈]() | ![이예본]() | ![이지언(팀장)]() | ![이하은]() | ![전은배]() |
-| (사용자, 슬랙, Gateway) | (멀티 모듈, 업체, 상품) | (허브, infra 관리, Docker) | (배송, Config) | (주문, DB관리, 캐싱) |
-| [GitHub 링크]() | [GitHub 링크](https://github.com/ybon1107) | [GitHub 링크]() | [GitHub 링크]() | [GitHub 링크]() |
+| ![김기훈](https://github.com/user-attachments/assets/84fb1bd5-32f5-4cce-bc65-3f6daf89c144) | ![이예본](https://github.com/user-attachments/assets/24347135-3c55-409f-af30-81bf898b2c6e) | ![이지언(팀장)](https://github.com/user-attachments/assets/bf8f40c5-89ea-4945-a3eb-c690fb62c145) | ![이하은](https://github.com/user-attachments/assets/220ea7de-5ba8-4d4c-841b-cac92aa5a648) | ![전은배](https://github.com/user-attachments/assets/e418f56b-5e91-4046-9f79-a6482f0237e7)
+| (사용자, 슬랙, Gateway) | (멀티 모듈, 업체, 상품) | (허브, infra 관리, Docker) | (배송, 담당자 관리, Config) | (주문, DB관리, 캐싱) |
+| [GitHub](https://github.com/oneul0) | [GitHub](https://github.com/ybon1107) | [GitHub](https://github.com/Leejieon) | [GitHub](https://github.com/haisley77) | [GitHub](https://github.com/Juneunbae) |
 
 
 ## :calendar: 개발 기간
@@ -75,9 +72,9 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
 |--------------------|-------------------------------------------|
 | **IDE**            | IntelliJ IDEA                             |
 | **Language**       | Java 17                                   |
-| **Framework**      | Spring Boot 3.4.2                         |
+| **Framework**      | Spring Boot 3.4.3                         |
 | **Build Tool**     | Gradle 8.1                                |
-| **Database**       | PostgreSQL 16.3                           |
+| **Database**       | PostgreSQL 17                             |
 | **In-Memory DB**   | Redis                                     |
 | **Local Cache**    | Caffeine                                  |
 | **Message Queue**  | RabbitMQ                                  |
@@ -105,6 +102,8 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
 
 ## :building_construction: 아키텍처
 
+![Image](https://github.com/user-attachments/assets/fe26d45d-a856-4ee3-a670-9c4f9814ce41)
+
 ## :memo: ERD
 
 ![Image](https://github.com/user-attachments/assets/5d41c648-9bf0-4d0c-8e56-6109679b2122)
@@ -116,8 +115,180 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
 
 ![Image](https://github.com/user-attachments/assets/faeb0ffd-998b-4249-947a-7607930f91f2)
 
-### 기능 요약
-[기능 요약](https://github.com/5ingMaryho/OingLogistics/wiki/%F0%9F%94%A7%EA%B8%B0%EB%8A%A5-%EC%A0%95%EB%A6%AC)
+### 프로젝트 주요 기능
+
+<details>
+<summary>업체 (delivery-service)</summary>
+
+ ### Company (업체 관리)
+
+- **CompanyAdminController (/admin/v1/companies)**
+    - 새로운 업체 생성
+    - 업체 목록 전체 조회
+    - 특정 업체 상세 조회
+    - 특정 업체 정보 수정
+    - 특정 업체 삭제
+- **CompanyController (/api/v1/companies)**
+    - 새로운 업체 생성
+    - 업체 목록 전체 조회
+    - 특정 업체 상세 조회
+    - 특정 업체 정보 수정
+    - 특정 업체 삭제
+- **CompanyFeignClientController (/company-service/companies)**
+    - 특정 업체 상세 조회
+      
+</details>
+<details>
+<summary>배송 (delivery-service)</summary>
+
+ ### Delivery (배송 관리)
+
+- **DeliveryAdminController (/admin/v1/deliveries)**
+    - 새로운 배송 생성 (테스트 용도, 메시지큐 도입으로 사용 중단)
+    - 특정 배송 정보 수정
+    - 특정 배송 상태 수정
+    - 특정 배송 삭제
+    - 특정 배송 상세 조회
+    - 배송 목록 전체 조회
+    - 특정 배송 경로 상세 조회
+    - 특정 배송의 경로 목록 조회
+    - 특정 배송 경로 상태 수정
+- **DeliveryController (/api/v1/deliveries)**
+    - 특정 배송 정보 수정
+    - 특정 배송 상태 수정
+    - 특정 배송 삭제
+    - 특정 배송 상세 조회
+    - 배송 목록 전체 조회
+    - 특정 배송 경로 상세 조회
+    - 특정 배송의 경로 목록 조회
+    - 특정 배송 경로 상태 수정
+- **DeliveryManagerController (/api/v1/deliveries/managers)**
+    - 특정 배송 담당자 상세 조회
+    - 특정 배송 담당자 전체 조회
+- **DeliveryManagerAdminController (/admin/v1/deliveries/managers)**
+    - 특정 배송 담당자 상세 조회
+    - 특정 배송 담당자 전체 조회
+      
+</details>
+<details>
+<summary>허브 (delivery-service)</summary>
+
+ ### Hub (허브 관리)
+
+- **HubAdminController (/admin/v1/hubs)**
+    - 특정 허브 상세 조회
+    - 허브 목록 전체 조회
+    - 새로운 허브 생성
+    - 특정 허브 정보 수정
+    - 특정 허브 삭제
+- **HubController (/api/v1/hubs)**
+    - 허브 목록 전체 조회
+    - 특정 허브 상세 조회
+- **HubFeignClientController (/hub-service)**
+    - managerId로 허브 정보 조회
+    - 최적의 허브 경로 조회
+    - 특정 허브 상세 조회
+- **HubRouteAdminController (/admin/v1/hub-routes)**
+    - 새로운 허브 경로 생성
+    - 특정 허브 경로 상세 조회
+    - 허브 경로 목록 전체 조회
+    - 특정 허브 경로 정보 수정
+    - 특정 허브 경로 삭제
+      
+</details>
+<details>
+<summary>주문 (delivery-service)</summary>
+
+ ### Order (주문 관리)
+
+- **OrderAdminController (/admin/v1/orders)**
+    - 주문 목록 전체 조회
+    - 새로운 주문 생성
+    - 특정 주문 상세 조회
+    - 특정 주문 정보 수정
+    - 특정 주문 삭제
+    - 특정 주문의 상세 주문 삭제
+- **OrderController (/api/v1/orders)**
+    - 주문 목록 전체 조회
+    - 특정 주문 상세 조회
+    - 새로운 주문 생성
+    - 특정 주문 정보 수정
+    - 특정 주문 삭제
+    - 특정 주문의 상세 주문 삭제
+- **OrderFeignClientController (/order-service/orders)**
+    - 특정 주문 조회
+      
+</details>
+<details>
+<summary>상품 (delivery-service)</summary>
+
+ ### Product (상품 관리)
+
+- **ProductAdminController (/admin/v1/products)**
+    - 새로운 상품 등록
+    - 상품 목록 전체 조회
+    - 특정 상품 상세 조회
+    - 특정 상품 정보 수정
+    - 특정 상품 삭제
+- **ProductController (/api/v1/products)**
+    - 새로운 상품 등록
+    - 상품 목록 전체 조회
+    - 특정 상품 상세 조회
+    - 특정 상품 정보 수정
+    - 특정 상품 삭제
+- **ProductFeignClientController (/product-service/products)**
+    - 특정 상품 상세 조회
+      
+</details>
+<details>
+<summary>알림 (delivery-service)</summary>
+
+ ### Slack (슬랙 메시지 관리)
+
+- **SlackAdminController (/admin/v1/slack-messages)**
+    - 슬랙 메시지 목록 전체 조회
+    - 특정 슬랙 메시지 상세 조회
+    - 새로운 슬랙 메시지 생성
+    - 특정 슬랙 메시지 수정
+    - 특정 슬랙 메시지 삭제
+- **SlackController (/api/v1/slack-messages)**
+    - 새로운 슬랙 메시지 생성 (발송)
+      
+</details>
+<details>
+<summary>사용자 (delivery-service)</summary>
+
+ ### User (사용자 관리)
+
+- **UserAdminController (/admin/v1/users)**
+    - 사용자 회원가입
+    - 사용자 로그인
+    - 사용자 로그아웃
+    - 새로운 사용자 생성
+    - 특정 사용자 조회
+    - 사용자 목록 전체 조회
+    - 특정 사용자 정보 수정
+    - 특정 사용자에게 권한 부여
+    - 특정 사용자 권한 업데이트
+    - 특정 사용자 권한 삭제
+    - 특정 사용자 삭제
+    - 슬랙 인증 코드 요청
+    - 슬랙 인증 코드 확인
+- **UserController (/api/v1/users)**
+    - 사용자 회원가입
+    - 사용자 로그인
+    - 사용자 로그아웃
+    - 특정 사용자 조회
+    - 슬랙 인증 코드 요청
+    - 슬랙 인증 코드 확인
+- **UserFeignClientController (/user-service/users)**
+    - 역할별 사용자 목록 조회
+    - 배송 서비스 요청으로 역할별 사용자 맵 조회
+    - 사용자 ID로 역할 조회
+    - 사용자 ID로 슬랙 ID 조회
+    - 사용자 ID로 사용자 이름 조회
+      
+</details>
 
 ## :computer: 트러블슈팅
 
@@ -127,6 +298,8 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
 
 3. [멀티 모듈 구조 적용](https://github.com/5ingMaryho/OingLogistics/wiki/%F0%9F%A7%A9%EB%A9%80%ED%8B%B0-%EB%AA%A8%EB%93%88-%EA%B5%AC%EC%A1%B0-%EC%A0%81%EC%9A%A9)
 
+4. [동시성 제어와 이벤트 리스너 트랜잭션 관리](https://github.com/5ingMaryho/OingLogistics/wiki/%EB%8F%99%EC%8B%9C%EC%84%B1-%EC%A0%9C%EC%96%B4%EC%99%80-%EB%B6%84%EC%82%B0%EB%9D%BD,-%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98-%EB%B6%84%EB%A6%AC)
+
 ## :package: 프로젝트 구조
 
 ### Backend
@@ -134,5 +307,19 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
 ```
 
 ```
+
+## 프로젝트 회고
+
+### 프로젝트 개선점 및 고도화 계획
+- 주문 - 상품 동시성 제어
+- 분산 환경에서의 데이터 정합성과 부하를 최소화하는 방안을 탐색
+
+### 협업 시 우리 팀이 잘한 점
+- 문제나 궁금한 점을 바로 공유하고 함께 해결 방법을 고민하며 함께 성장하는 팀 분위기를 만들었습니다.
+- PR 규칙을 정하고 알고 있는 내용, 배운 내용, 고민사항, 설계를 적극적으로 공유하여 팀 전체의 개발 역량을 향상시켰습니다.
+
+### 협업 시 아쉽거나 부족했던 부분들
+- 트러블 슈팅 기록과 오류 정리를 체계화해 유사한 문제가 발생했을 때 원인 파악과 해결 시간을 단축하고자 합니다.
+- API 구현 및 새로운 기술에 대한 러닝커브로 예상보다 많은 시간이 소요되어 테스트 코드 작성이나 개발 진행이 지연되었습니다. 깃허브 이슈 관리를 통해, 이런 상황을 최소화하고자 노력했습니다.
 
 
