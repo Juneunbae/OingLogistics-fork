@@ -116,18 +116,8 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
 
 ![Image](https://github.com/user-attachments/assets/faeb0ffd-998b-4249-947a-7607930f91f2)
 
-### 회원
-
-### 상품
-
-### 업체
-
-### 주문
-
-### 배송
-
-### 허브
-
+### 기능 요약
+[기능 요약](https://github.com/5ingMaryho/OingLogistics/wiki/%F0%9F%94%A7%EA%B8%B0%EB%8A%A5-%EC%A0%95%EB%A6%AC)
 
 ## :computer: 트러블슈팅
 
