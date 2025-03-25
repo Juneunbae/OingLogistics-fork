@@ -25,7 +25,7 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
 	- 요청-응답 기반 통신은 FeignClient, 비동기 이벤트 기반 처리는 RabbitMQ를 활용하여 상황에 따라 최적의 방식으로 서비스 간 통신을 구성하였습니다.
 
 - **역할 기반 권한 처리 및 접근 제어**
-  - **인증(Authentication)**은 API Gateway에서 처리하고, **인가(Authorization)**는 각 마이크로서비스 내부에서 처리하도록 분리 설계하였습니다.
+  - 인증(Authentication)은 API Gateway에서 처리하고, 인가(Authorization)는 각 마이크로서비스 내부에서 처리하도록 분리 설계하였습니다.
   - 사용자 요청 시 Http Header와 Redis에 저장된 로그인 정보를 비교하여 권한 유효성을 검증합니다.
   - Spring MVC의 Interceptor의 preHandle() 단계를 활용해 Controller 진입 전 권한 확인을 수행합니다.
   - API별로 사용자 역할이 상이할 경우, **Service 레이어에서 추가적인 역할 검증** 수행하여 보안성을 강화하였습니다.
