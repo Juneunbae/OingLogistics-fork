@@ -357,7 +357,7 @@ public class OrderAdminService {
     }
 
     private ProductDetailsSearchResponseDto getProductInfo(UUID productId) {
-        return productClient.getProduct(productId)
+        return productClient.getProductById(productId)
             .orElseThrow(() -> new OrderException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 }
