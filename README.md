@@ -1,18 +1,52 @@
 # OingLogistics
 
-<div align=center>
 
-(사진)
+OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플랫폼으로,
+다양한 기업 간의 물류 흐름을 효율적으로 처리하고 모듈화된 아키텍처를 통해 유연한 확장성과 유지보수성을 지향합니다.
+도메인 주도 설계(DDD)를 적용하여 각 비즈니스 도메인을 명확히 분리하고,
+서비스 간 통신은 FeignClient와 RabbitMQ를 혼합 활용하여 상황에 따라 최적화된 방식으로 데이터 흐름을 처리하고 있습니다.
 
-</div>
 
 ## :walking: 프로젝트 소개
 
 - OingLogistics는 MSA 기반 B2B 물류 시스템입니다.
 
-### :walking: 프로젝트 목적
+### :walking: 서비스 목표
 
-### :walking: 프로젝트 상세
+- **B2B 환경에 최적화된 주문-배송-재고 관리 시스템 구축**  
+  - 다양한 기업 고객을 대상으로 주문 접수, 물류 허브 이동, 배송 추적, 재고 모니터링 등 전 과정을 통합 관리할 수 있는 플랫폼을 제공합니다.
+
+- **실시간 알림 자동화**
+	- 배송 시작 및 도착, 배송 담당자 배정 등 주요 이벤트 발생 시 Slack 연동을 통한 실시간 알림 기능을 제공하여, 이벤트 추적과 운영 효율성을 높였습니다.
+
+- **확장 가능하고 유연한 구조**
+	- 도메인별 마이크로서비스 아키텍처를 기반으로 설계하여, 새로운 기능이나 비즈니스 요구사항에 대한 빠른 대응과 유연한 확장을 가능하게 하였습니다.
+
+### :walking: 기술적 목표
+
+- **서비스 간 유연한 통신 전략 구현**
+	- 요청-응답 기반 통신은 FeignClient, 비동기 이벤트 기반 처리는 RabbitMQ를 활용하여 상황에 따라 최적의 방식으로 서비스 간 통신을 구성하였습니다.
+
+- **역할 기반 권한 처리 및 접근 제어**
+  - **인증(Authentication)**은 API Gateway에서 처리하고, **인가(Authorization)**는 각 마이크로서비스 내부에서 처리하도록 분리 설계하였습니다.
+  - 사용자 요청 시 Http Header와 Redis에 저장된 로그인 정보를 비교하여 권한 유효성을 검증합니다.
+  - Spring MVC의 Interceptor의 preHandle() 단계를 활용해 Controller 진입 전 권한 확인을 수행합니다.
+  - API별로 사용자 역할이 상이할 경우, **Service 레이어에서 추가적인 역할 검증** 수행하여 보안성을 강화하였습니다.
+
+- **캐싱 및 성능 최적화**
+	- 사용자 로그인 정보 및 인증 관련 데이터는 Redis에 캐싱하여 분산 환경에서도 안정적인 세션 관리와 빠른 인증 처리를 가능하게 하였습니다.
+	- **조회 빈도가 높은 정적 데이터(예: 업체 정보, 허브 목록 등)**는 Caffeine Cache를 이용한 로컬 캐싱으로 처리하여 응답 속도와 처리 성능을 크게 향상시켰습니다.
+	- 두 캐시 전략을 역할 및 데이터 특성에 따라 분리 적용함으로써, 서비스의 응답성, 확장성, 효율성을 모두 고려한 최적의 캐싱 구조를 구성하였습니다.
+
+- **DB 성능 최적화**
+	- QueryDSL을 활용한 동적 쿼리를 통해 복잡한 조건 검색에서도 안정적인 성능을 유지하였습니다.
+	- 동일 Aggregate에 속한 엔티티 간 조인 시, N+1 문제를 방지하기 위해 IN 절 및 LEFT JOIN 전략을 활용하였습니다.
+
+- **코드 재사용성과 유지보수성 향상**  
+  - 여러 명의 백엔드 개발자가 협업할 때, **공통 유틸리티 및 서비스 계층을 적극 활용하여 중복 코드 최소화** 에 초점을 두고자 합니다.
+  - SOLID 원칙과 DRY(Don’t Repeat Yourself) 원칙을 기반으로 객체지향적인 설계를 지향하였습니다.
+  - 각 기능은 **단일 책임 원칙(Single Responsibility Principle)**에 따라 모듈화하여 유지보수성을 높였습니다.
+  - **코드 컨벤션 및 패턴을 통일**하여 일관성 있는 코드베이스를 유지하였습니다.
 
 
 ## :memo: 개발 노션
@@ -21,13 +55,36 @@
 
 ## :construction_worker: 팀원 역할 분담
 
-(표)
+| 김기훈 | 이예본 | 이지언 | 이하은 | 전은배 |
+|--------|--------|--------|--------|--------|
+| ![김기훈]() | ![이예본]() | ![이지언(팀장)]() | ![이하은]() | ![전은배]() |
+| (사용자, 슬랙, Gateway) | (멀티 모듈, 업체, 상품) | (허브, infra 관리, Docker) | (배송, Config) | (주문, DB관리, 캐싱) |
+| [GitHub 링크]() | [GitHub 링크](https://github.com/ybon1107) | [GitHub 링크]() | [GitHub 링크]() | [GitHub 링크]() |
+
 
 ## :calendar: 개발 기간
 
 2025.03.10 - 2025.03.25 (2주)
 
-## :hammer_and_wrench: 기술 스택
+## :hammer_and_wrench: 사용 기술
+
+### 🛠 버전
+
+
+| 분류               | 상세                                      |
+|--------------------|-------------------------------------------|
+| **IDE**            | IntelliJ IDEA                             |
+| **Language**       | Java 17                                   |
+| **Framework**      | Spring Boot 3.4.2                         |
+| **Build Tool**     | Gradle 8.1                                |
+| **Database**       | PostgreSQL 16.3                           |
+| **In-Memory DB**   | Redis                                     |
+| **Local Cache**    | Caffeine                                  |
+| **Message Queue**  | RabbitMQ                                  |
+| **API 통신**       | REST API, FeignClient                     |
+| **컨테이너화**     | Docker                                    |
+
+### 🛠 주요 기술 스택
 
 #### Back-end
 
@@ -39,18 +96,18 @@
 
 #### 버전 및 이슈관리
 
-<img src="https://img.shields.io/badge/git-F05032?style=flat-square&logo=git&logoColor=white"> <img src="https://img.shields.io/badge/github-181717?style=flat-square&logo=github&logoColor=white">
+<img src="https://img.shields.io/badge/git-F05032?style=flat-square&logo=git&logoColor=white"> <img src="https://img.shields.io/badge/github-181717?style=flat-square&logo=github&logoColor=white"> <img src="https://img.shields.io/badge/notion-000000?style=flat-square&logo=notion&logoColor=white">
 
-#### 협업 툴
+#### Infra
 
-<img src="https://img.shields.io/badge/notion-000000?style=flat-square&logo=notion&logoColor=white">
+<img src="https://img.shields.io/badge/docker-2496ED?style=flat-square&logo=docker&logoColor=white">
 
 
 ## :building_construction: 아키텍처
 
 ## :memo: ERD
 
-![Image](https://github.com/user-attachments/assets/3e9345ec-1409-4e8c-a610-8c16cc49ba1d)
+![Image](https://github.com/user-attachments/assets/5d41c648-9bf0-4d0c-8e56-6109679b2122)
 
 
 ## :movie_camera: 기능
