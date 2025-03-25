@@ -1,0 +1,149 @@
+version: '1.0'
+
+services:
+  eureka-server:
+    build:
+      context: .
+      dockerfile: ./eureka-service/Dockerfile
+    ports:
+      - "8761:8761"
+    networks:
+      - soupang-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  config-server:
+    build:
+      context: .
+      dockerfile: ./config-service/Dockerfile
+    ports:
+      - "8888:8888"
+    networks:
+      - soupang-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8888/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./gateway-service/Dockerfile
+    ports:
+      - "8000:8000"
+    networks:
+      - soupang-network
+    depends_on:
+      - eureka-server
+      - config-server
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  user-service:
+    build:
+      context: .
+      dockerfile: ./user-service/Dockerfile
+    networks:
+      - soupang-network
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+
+  product-service:
+    build:
+      context: .
+      dockerfile: ./product-service/Dockerfile
+    networks:
+      - soupang-network
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+
+  order-service:
+    build:
+      context: .
+      dockerfile: ./order-service/Dockerfile
+    networks:
+      - soupang-network
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+
+  company-service:
+    build:
+      context: .
+      dockerfile: ./company-service/Dockerfile
+    networks:
+      - soupang-network
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+
+  hub-service:
+    build:
+      context: .
+      dockerfile: ./hub-service/Dockerfile
+    networks:
+      - soupang-network
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+
+  delivery-service:
+    build:
+      context: .
+      dockerfile: ./delivery-service/Dockerfile
+    networks:
+      - soupang-network
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+
+  slack-service:
+    build:
+      context: .
+      dockerfile: ./slack-service/Dockerfile
+    networks:
+      - soupang-network
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+
+networks:
+  soupang-network:
+    driver: bridge
