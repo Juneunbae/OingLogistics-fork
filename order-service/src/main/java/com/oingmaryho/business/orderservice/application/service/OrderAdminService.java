@@ -224,30 +224,30 @@ public class OrderAdminService {
     }
 
     @Transactional
-    public void deleteOrder(OrderDeleteServiceDto delete) {
+    public void deleteOrder(Long userId, OrderDeleteServiceDto delete) {
         UUID orderId = delete.orderId();
 
         Order order = getByOrderId(orderId);
 
         for (OrderDetail orderDetail : order.getOrderDetails()) {
-            orderDetail.delete();
+            orderDetail.softDeleted(userId);
             log.info("상세 주문 삭제 완료");
         }
 
-        order.delete();
+        order.softDeleted(userId);
         log.info("주문 삭제 완료");
 
         evictCache(order);
     }
 
     @Transactional
-    public void deleteOrderDetail(OrderDetailDeleteRequestServiceDto request) {
+    public void deleteOrderDetail(Long userId, OrderDetailDeleteRequestServiceDto request) {
         UUID orderId = request.orderId();
 
         Order order = getByOrderId(orderId);
         OrderDetail orderDetail = getByOrderDetailId(order, request.orderDetailId());
 
-        orderDetail.delete();
+        orderDetail.softDeleted(userId);
         log.info("주문: {}, 상세 주문: {}, 삭제 완료", order.getId(), orderDetail.getId());
 
         Integer orderDetailPrice = (orderDetail.getQuantity() * orderDetail.getPrice());

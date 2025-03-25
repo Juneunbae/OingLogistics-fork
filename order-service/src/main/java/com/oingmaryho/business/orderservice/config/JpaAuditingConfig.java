@@ -11,7 +11,8 @@ import java.util.Optional;
 
 @Configuration
 @EnableJpaAuditing
-public class Auditing {
+public class JpaAuditingConfig {
+
     @Bean
     public AuditorAware<Long> auditorProvider() {
         return () -> {
@@ -22,7 +23,7 @@ public class Auditing {
                 return Optional.empty();
             }
 
-            String userId = attributes.getRequest().getHeader("userId");
+            String userId = attributes.getRequest().getHeader("X-User-Id");
 
             if (userId != null) {
                 try {
