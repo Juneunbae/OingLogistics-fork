@@ -43,6 +43,11 @@ public interface DeliveryPresentationMapper {
     @Mapping(target = "id", source = "id")
     DeliveryRouteUpdateStatusRequestServiceDto toUpdateRouteStatusServiceDto(UUID id, DeliveryRouteUpdateStatusRequestDto requestDto);
 
+    DeliveryManagerDetailRequestServiceDto toManagerDetailRequestDto(UUID id);
+
+    @Mapping(target = "customPageable", source = "customPageable")
+    DeliveryManagerSearchRequestServiceDto toManagerSearchRequestDto(DeliveryManagerSearchRequestDto requestDto, Pageable customPageable);
+
     // ResponseServiceDto -> ResponseDto
     DeliveryCreationResponseDto toCreationResponseDto(DeliveryCreationResponseServiceDto responseServiceDto);
 
@@ -55,6 +60,7 @@ public interface DeliveryPresentationMapper {
 
     // 배송 검색
     DeliveryResponseDto toSearchResponseDto(DeliveryResponseServiceDto responseServiceDto);
+
 
     // 배송 경로 조회
     DeliveryRouteResponseDto toRouteDetailResponseDto(DeliveryRouteResponseServiceDto responseServiceDto);
@@ -75,5 +81,11 @@ public interface DeliveryPresentationMapper {
     DeliveryRouteAdminResponseDto toRouteSearchAdminResponseDto(DeliveryRouteResponseServiceDto responseServiceDto);
 
     DeliveryRouteUpdateStatusResponseDto toUpdateRouteStatusResponseDto(DeliveryRouteUpdateStatusResponseServiceDto responseServiceDto);
+
+    // 배송 담당자 검색
+    DeliveryManagerResponseDto toMangerResponseDto(DeliveryManagerResponseServiceDto responseServiceDto);
+
+    // 배송 담당자 검색 (admin)
+    DeliveryManagerAdminResponseDto toMangerAdminResponseDto(DeliveryManagerResponseServiceDto responseServiceDto);
 
 }

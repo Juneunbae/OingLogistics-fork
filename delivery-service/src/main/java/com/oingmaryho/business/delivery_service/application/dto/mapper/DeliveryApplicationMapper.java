@@ -3,6 +3,7 @@ package com.oingmaryho.business.delivery_service.application.dto.mapper;
 import com.oingmaryho.business.delivery_service.application.dto.request.DeliveryCreationRequestServiceDto;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
 import com.oingmaryho.business.delivery_service.domain.entity.Delivery;
+import com.oingmaryho.business.delivery_service.domain.entity.DeliveryManager;
 import com.oingmaryho.business.delivery_service.domain.entity.DeliveryRoute;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
@@ -46,6 +47,9 @@ public interface DeliveryApplicationMapper {
     @Mapping(target = "deliveryId", source = "route.delivery.id")
     @Mapping(target = "managerId", source = "delivery.manager.id")
     DeliveryRouteResponseServiceDto toRouteResponseServiceDto(DeliveryRoute route);
+
+    // 배송 담당자 정보
+    DeliveryManagerResponseServiceDto toManagerResponseServiceDto(DeliveryManager manager);
 
 
 

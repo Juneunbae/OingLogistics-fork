@@ -1,8 +1,10 @@
 package com.oingmaryho.business.delivery_service.infrastructure.repository;
 
+import com.oingmaryho.business.delivery_service.domain.criteria.DeliveryManagerSearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.criteria.DeliveryRouteSearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.criteria.DeliverySearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.entity.Delivery;
+import com.oingmaryho.business.delivery_service.domain.entity.DeliveryManager;
 import com.oingmaryho.business.delivery_service.domain.entity.DeliveryRoute;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,4 +18,5 @@ public interface DeliveryCustomRepository {
     Optional<DeliveryRoute> findRouteById(UUID routeId);    // admin
     Optional<DeliveryRoute> findRouteByIdAndIsDeletedFalse(UUID routeId);
 
+    Page<DeliveryManager> searchManager(DeliveryManagerSearchCriteria criteria, Pageable pageable);
 }

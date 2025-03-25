@@ -5,6 +5,7 @@ import com.oingmaryho.business.delivery_service.application.dto.mapper.DeliveryA
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
 import com.oingmaryho.business.delivery_service.application.feign.*;
+import com.oingmaryho.business.delivery_service.domain.criteria.DeliveryManagerSearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.criteria.DeliveryRouteSearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.criteria.DeliverySearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.entity.Delivery;
@@ -539,6 +540,80 @@ public class DeliveryService {
 
     }
 
+    @Transactional(readOnly = true)
+    public DeliveryManagerResponseServiceDto GetDeliveryManagerDetail(
+            Long userId,
+            UserRoleType userRole,
+            DeliveryManagerDetailRequestServiceDto requestServiceDto) {
+
+        DeliveryManager manager = deliveryManagerRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
+                .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
+
+        // 허브 관리자 : 본인이 담당하는 허브 id 조회
+        if (userRole == UserRoleType.HUB_MANAGER) {
+            HubSearchResponseDto hubDto = Optional.ofNullable(
+                    hubClient.getHubByManagerId(userId).getBody()
+            ).orElseThrow(() -> new DeliveryException(ErrorCode.HUB_NOT_FOUND));
+
+            if (hubDto.id() != manager.getId()) {
+                throw new DeliveryException(ErrorCode.UNAUTHORIZED);
+            }
+        }
+
+        return deliveryApplicationMapper.toManagerResponseServiceDto(manager);
+
+    }
+
+
+    @Transactional(readOnly = true)
+    public Page<DeliveryManagerResponseServiceDto> GetDeliveryManagerBySearch(
+            Long userId,
+            UserRoleType userRole,
+            DeliveryManagerSearchRequestServiceDto requestServiceDto) {
+
+        UUID hubId = null;
+
+        // 허브 관리자 : 본인이 담당하는 허브 id 조회
+        if (userRole == UserRoleType.HUB_MANAGER) {
+            HubSearchResponseDto hubDto = Optional.ofNullable(
+                    hubClient.getHubByManagerId(userId).getBody()
+            ).orElseThrow(() -> new DeliveryException(ErrorCode.HUB_NOT_FOUND));
+            hubId = hubDto.id();
+        }
+
+        DeliveryManagerSearchCriteria criteria = null;
+        if (userRole.equals(UserRoleType.HUB_DELIVERY_MANAGER) || userRole.equals(UserRoleType.COMPANY_DELIVERY_MANAGER)) {
+            // 허브 배송 담당자, 업체 배송 담당자는 managerId 값에 본인 userId를 넣어 조회
+            criteria = createDeliveryManagerSearchCriteria(
+                    requestServiceDto.id(),
+                    requestServiceDto.slackId(),
+                    requestServiceDto.hubId(),
+                    userId,
+                    requestServiceDto.type(),
+                    requestServiceDto.sequence()
+            );
+        } else {
+            // 허브 관리자, 업체 담당자는 본인이 담당하는 허브 id를 넣어 조회
+            criteria = createDeliveryManagerSearchCriteria(
+                    requestServiceDto.id(),
+                    requestServiceDto.slackId(),
+                    hubId,
+                    requestServiceDto.managerId(),
+                    requestServiceDto.type(),
+                    requestServiceDto.sequence()
+            );
+        }
+
+        Page<DeliveryManager> managers = deliveryRepository.searchManager(
+                criteria,
+                requestServiceDto.customPageable());
+
+        return managers.map(deliveryApplicationMapper::toManagerResponseServiceDto);
+
+    }
+
+
+
     // 배송 조회 검색 조건 생성 (일반 사용자)
     private DeliverySearchCriteria createDeliverySearchCriteria(
             UUID id,
@@ -585,6 +660,27 @@ public class DeliveryService {
                 .managerId(managerId)       // 배송 담당자 id (Long)
                 .status(status)
                 .isDeleted(Boolean.FALSE)   // 삭제되지 않은 데이터만 조회
+                .build();
+    }
+
+    // 배송 담당자 검색 조건 생성 (일반 사용자)
+    private DeliveryManagerSearchCriteria createDeliveryManagerSearchCriteria(
+            UUID id,
+            String slackId,
+            UUID hubId,
+            Long managerId,
+            DeliveryManagerType type,
+            Integer sequence) {
+
+
+        return DeliveryManagerSearchCriteria.builder()
+                .id(id)
+                .slackId(slackId)
+                .hubId(hubId)
+                .managerId(managerId)
+                .type(type)
+                .sequence(sequence)
+                .isDeleted(Boolean.FALSE)
                 .build();
     }
 }
