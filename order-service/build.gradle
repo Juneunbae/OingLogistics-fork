@@ -25,6 +25,8 @@ ext {
 }
 
 dependencies {
+    implementation project(':common')
+
     // spring-cloud
     implementation 'org.springframework.cloud:spring-cloud-starter-config'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
