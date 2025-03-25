@@ -6,6 +6,7 @@ import com.oingmaryho.business.delivery_service.application.dto.mapper.DeliveryA
 import com.oingmaryho.business.delivery_service.application.dto.request.*;
 import com.oingmaryho.business.delivery_service.application.dto.response.*;
 import com.oingmaryho.business.delivery_service.application.feign.*;
+import com.oingmaryho.business.delivery_service.domain.criteria.DeliveryManagerSearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.criteria.DeliveryRouteSearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.criteria.DeliverySearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.entity.Delivery;
@@ -28,7 +29,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -108,7 +108,7 @@ public class DeliveryAdminService {
             throw new DeliveryException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
 
-        String hubNames = hubRoutes.get(0).departureHubName();
+        StringBuilder hubNames = new StringBuilder(hubRoutes.get(0).departureHubName());
 
         // 4. 허브 배송 담당자 배정
         try {
@@ -142,10 +142,9 @@ public class DeliveryAdminService {
 
                 deliveryRoute.addRoute(delivery);
                 // 4-5. 경유 허브 이름 저장
-                hubNames = hubNames + "," +route.arriveHubName();
+                hubNames.append(",").append(route.arriveHubName());
             }
         } catch (Exception e) {
-            e.printStackTrace();
             // 예외 발생 시 Redis 값 복원
             redisTemplate.opsForValue().set(hubDeliveryManagerSequenceKey, backupHubDeliveryManagerSequence);
             // 예외 다시 던져서 트랜잭션 롤백 유도
@@ -215,7 +214,7 @@ public class DeliveryAdminService {
                     savedDelivery.getOrderDetailId(),
                     savedDelivery.getId(),
                     hubRoutes.get(0).departureHubName(),
-                    hubNames,
+                    hubNames.toString(),
                     hubRoutes.get(hubRoutes.size()-1).arriveHubName(),
                     companyDeliveryManagerName,
                     companyDeliveryManagerSlackId);
@@ -436,6 +435,44 @@ public class DeliveryAdminService {
 
     }
 
+    @Transactional(readOnly = true)
+    public DeliveryManagerResponseServiceDto GetDeliveryManagerDetail(
+            Long userId,
+            UserRoleType userRole,
+            DeliveryManagerDetailRequestServiceDto requestServiceDto) {
+
+        DeliveryManager manager = deliveryManagerRepository.findById(requestServiceDto.id())
+                .orElseThrow(() -> new DeliveryException(ErrorCode.MANAGER_NOT_FOUND));
+
+        return deliveryApplicationMapper.toManagerResponseServiceDto(manager);
+
+    }
+
+
+    @Transactional(readOnly = true)
+    public Page<DeliveryManagerResponseServiceDto> GetDeliveryManagerBySearch(
+            Long userId,
+            UserRoleType userRole,
+            DeliveryManagerSearchRequestServiceDto requestServiceDto) {
+
+        DeliveryManagerSearchCriteria criteria = createDeliveryManagerSearchCriteria(
+                requestServiceDto.id(),
+                requestServiceDto.slackId(),
+                requestServiceDto.hubId(),
+                requestServiceDto.managerId(),
+                requestServiceDto.type(),
+                requestServiceDto.sequence(),
+                requestServiceDto.isDeleted()
+        );
+
+        Page<DeliveryManager> managers = deliveryRepository.searchManager(
+                criteria,
+                requestServiceDto.customPageable());
+
+        return managers.map(deliveryApplicationMapper::toManagerResponseServiceDto);
+
+    }
+
     // 배송 조회 검색 조건 생성 (admin)
     private DeliverySearchCriteria createDeliverySearchCriteria(
             UUID id,
@@ -486,6 +523,28 @@ public class DeliveryAdminService {
                 .status(status)
                 .isDeleted(isDeleted == null ? null:                // 전체 조회
                         isDeleted ?  Boolean.TRUE : Boolean.FALSE)  // 필터 조건이 들어올 경우 해당하는 결과만 조회
+                .build();
+    }
+
+    // 배송 담당자 검색 조건 생성 (admin)
+    private DeliveryManagerSearchCriteria createDeliveryManagerSearchCriteria(
+            UUID id,
+            String slackId,
+            UUID hubId,
+            Long managerId,
+            DeliveryManagerType type,
+            Integer sequence,
+            Boolean isDeleted) {
+
+
+        return DeliveryManagerSearchCriteria.builder()
+                .id(id)
+                .slackId(slackId)
+                .hubId(hubId)
+                .managerId(managerId)
+                .type(type)
+                .sequence(sequence)
+                .isDeleted(isDeleted)
                 .build();
     }
 

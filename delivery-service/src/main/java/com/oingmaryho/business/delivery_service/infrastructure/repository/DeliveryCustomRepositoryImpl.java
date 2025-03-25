@@ -1,8 +1,10 @@
 package com.oingmaryho.business.delivery_service.infrastructure.repository;
 
+import com.oingmaryho.business.delivery_service.domain.criteria.DeliveryManagerSearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.criteria.DeliveryRouteSearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.criteria.DeliverySearchCriteria;
 import com.oingmaryho.business.delivery_service.domain.entity.*;
+import com.oingmaryho.business.delivery_service.domain.type.DeliveryManagerType;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryRouteStatus;
 import com.oingmaryho.business.delivery_service.domain.type.DeliveryStatus;
 import com.oingmaryho.business.delivery_service.utils.QueryDslUtils;
@@ -263,6 +265,71 @@ public class DeliveryCustomRepositoryImpl implements DeliveryCustomRepository {
                         )
                         .fetchOne()
         );
+    }
+
+    @Override
+    public Page<DeliveryManager> searchManager(DeliveryManagerSearchCriteria criteria,
+                                               Pageable pageable) {
+        UUID id = criteria.getId();
+        String slackId = criteria.getSlackId();
+        UUID hubId = criteria.getHubId();
+        Long managerId = criteria.getManagerId();
+        DeliveryManagerType type = criteria.getType();
+        Integer sequence = criteria.getSequence();
+        Boolean isDeleted = criteria.getIsDeleted();
+
+
+        if (id != null) {
+            builder.and(qDeliveryManager.id.eq(id));
+        }
+
+        if (slackId != null) {
+            builder.and(qDeliveryManager.slackId.eq(slackId));
+        }
+
+        if (hubId != null) {
+            builder.and(qDeliveryManager.hubId.eq(hubId));
+        }
+
+        if (managerId != null) {
+            builder.and(qDeliveryManager.managerId.eq(managerId));
+        }
+
+        if (type != null) {
+            builder.and(qDeliveryManager.type.eq(type));
+        }
+
+        if (sequence != null) {
+            builder.and(qDeliveryManager.sequence.eq(sequence));
+        }
+
+        if (isDeleted != null) {
+            builder.and(qDeliveryManager.isDeleted.eq(isDeleted));
+        }
+
+        // 조회 쿼리
+        List<DeliveryManager> managers = queryFactory.selectDistinct(qDeliveryManager)
+                .from(qDeliveryManager)
+                .where(builder)
+                .orderBy(qDeliveryManager.sequence.asc())
+//                .orderBy(QueryDslUtils.getOrderSpecifiers(pageable.getSort(), DeliveryManager.class))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+
+        // Count 쿼리
+        Long total = queryFactory.select(qDeliveryManager.id.count())
+                .from(qDeliveryManager)
+                .where(builder)
+                .fetchOne();
+
+        return new PageImpl<>(
+                managers,
+                PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()),
+                total != null ? total : 0L);
+
+
     }
 
 }
