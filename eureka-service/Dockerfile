@@ -3,8 +3,8 @@ FROM gradle:8.1-jdk17 AS builder
 WORKDIR /app
 
 # 빌드 캐시를 위해 Gradle 파일 먼저 복사
-COPY build.gradle settings.gradle ./
-COPY gradle ./gradle
+COPY eureka-service/build.gradle eureka-service/settings.gradle ./
+COPY eureka-service/gradle ./gradle
 
 # 의존성 다운로드 (캐싱 활용)
 RUN gradle dependencies --no-daemon
