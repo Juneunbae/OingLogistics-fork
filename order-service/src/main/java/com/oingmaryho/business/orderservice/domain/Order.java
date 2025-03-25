@@ -74,12 +74,6 @@ public class Order extends BaseEntity {
     )
     private String requests;
 
-    @Column(
-        nullable = false,
-        columnDefinition = "boolean default false"
-    )
-    private Boolean isDeleted;
-
     @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrderDetail> orderDetails = new ArrayList<>();
@@ -92,10 +86,6 @@ public class Order extends BaseEntity {
         if (orderUpdateRequestServiceDto.totalPrice() != null) {
             this.totalPrice = orderUpdateRequestServiceDto.totalPrice();
         }
-    }
-
-    public void delete() {
-        this.isDeleted = true;
     }
 
     public void updateTotalPrice(Integer totalPrice) {

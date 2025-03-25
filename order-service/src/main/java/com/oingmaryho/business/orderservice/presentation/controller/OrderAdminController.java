@@ -115,9 +115,11 @@ public class OrderAdminController {
     )
     @DeleteMapping("/{id}")
     @RequiredRoles({UserRoleType.MASTER})
-    public ResponseEntity<Void> deleteOrder(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteOrder(HttpServletRequest request, @PathVariable UUID id) {
+        Long userId = (Long) request.getAttribute("userId");
+
         OrderDeleteServiceDto orderDeleteServiceDto = orderPresentationMapper.toOrderDeleteDto(id);
-        orderAdminService.deleteOrder(orderDeleteServiceDto);
+        orderAdminService.deleteOrder(userId, orderDeleteServiceDto);
 
         return ResponseEntity.ok().build();
     }
@@ -127,9 +129,11 @@ public class OrderAdminController {
     )
     @RequiredRoles({UserRoleType.MASTER})
     @DeleteMapping("/{id}/details/{orderDetailId}")
-    public ResponseEntity<Void> deleteOrderDetail(@PathVariable UUID id, @PathVariable UUID orderDetailId) {
-        OrderDetailDeleteRequestServiceDto request = orderPresentationMapper.toOrderDetailDeleteRequestServiceDto(id, orderDetailId);
-        orderAdminService.deleteOrderDetail(request);
+    public ResponseEntity<Void> deleteOrderDetail(HttpServletRequest request, @PathVariable UUID id, @PathVariable UUID orderDetailId) {
+        Long userId = (Long) request.getAttribute("userId");
+
+        OrderDetailDeleteRequestServiceDto orderDetailDeleteRequestServiceDto = orderPresentationMapper.toOrderDetailDeleteRequestServiceDto(id, orderDetailId);
+        orderAdminService.deleteOrderDetail(userId, orderDetailDeleteRequestServiceDto);
 
         return ResponseEntity.ok().build();
     }
