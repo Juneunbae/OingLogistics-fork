@@ -1,19 +1,19 @@
-FROM gradle:8.5-jdk17 AS builder
+FROM gradle:8.5-jdk17 AS build
 
-WORKDIR /app
+WORKDIR /build
 
-# 전체 프로젝트 복사
-COPY . .
+COPY --chown=gradle:gradle . .
 
-# 특정 모듈만 빌드
-RUN ./gradlew :delivery-service:build -x test
+RUN gradle :delivery-service:bootJar
 
-# 실행 스테이지
 FROM openjdk:17-jdk-slim
 
 WORKDIR /app
 
-# 빌드된 JAR 파일 복사
-COPY --from=builder /app/delivery-service/build/libs/*.jar app.jar
+COPY --from=build /build/delivery-service/build/libs/*.jar app.jar
+COPY --from=build /build/delivery-service/build/libs /app/libs
+
+COPY common/build.gradle /build/common/
+COPY common/src /build/common/src
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

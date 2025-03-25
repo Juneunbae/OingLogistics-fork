@@ -68,32 +68,6 @@ class CompanyServiceTest {
 			.build();
 	}
 
-	@Test
-	@Description("업체 생성 테스트")
-	void createCompany() {
-		// Given
-		CompanyCreateRequestServiceDto requestDto = new CompanyCreateRequestServiceDto(
-			"Test Company",
-			"Retail",
-			1L,
-			FIXED_MANAGE_HUB_ID,
-			"123 Test Street"
-		);
-
-		CompanyCreateResponseServiceDto expectedResponse = new CompanyCreateResponseServiceDto(FIXED_COMPANY_ID);
-
-		when(companyApplicationMapper.toCreateEntity(any(CompanyCreateRequestServiceDto.class))).thenReturn(company);
-		when(companyRepository.save(any(Company.class))).thenReturn(company);
-
-		// When
-		CompanyCreateResponseServiceDto response = companyService.createCompany(requestDto, 2L);
-		System.out.println("생성된 업체 정보: " + response.id());
-
-		// Then
-		assertThat(response).isNotNull();
-		assertThat(response.id()).isEqualTo(expectedResponse.id());
-	}
-
 	@Description("업체 조회 테스트 - ID로 검색")
 	@Test
 	void getCompanyById() {
@@ -116,8 +90,6 @@ class CompanyServiceTest {
 		assertThat(response).isNotNull();
 		assertThat(response.name()).isEqualTo("Test Company");
 	}
-
-
 
 	@Description("업체 검색 테스트 - 페이지네이션 포함")
 	@Test

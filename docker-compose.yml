@@ -1,20 +1,4 @@
-version: '1.0'
-
 services:
-  eureka-server:
-    build:
-      context: .
-      dockerfile: ./eureka-service/Dockerfile
-    ports:
-      - "8761:8761"
-    networks:
-      - soupang-network
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   config-server:
     build:
       context: .
@@ -28,8 +12,30 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
 
-  api-gateway:
+  eureka-server:
+    build:
+      context: .
+      dockerfile: ./eureka-service/Dockerfile
+    ports:
+      - "8761:8761"
+    networks:
+      - soupang-network
+    depends_on:
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  gateway-service:
     build:
       context: .
       dockerfile: ./gateway-service/Dockerfile
@@ -38,8 +44,10 @@ services:
     networks:
       - soupang-network
     depends_on:
-      - eureka-server
-      - config-server
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/actuator/health" ]
       interval: 10s
@@ -53,11 +61,11 @@ services:
     networks:
       - soupang-network
     depends_on:
-      eureka-server:
-        condition: service_healthy
       config-server:
         condition: service_healthy
-      api-gateway:
+      eureka-server:
+        condition: service_healthy
+      gateway-service:
         condition: service_healthy
 
   product-service:
@@ -67,11 +75,11 @@ services:
     networks:
       - soupang-network
     depends_on:
-      eureka-server:
-        condition: service_healthy
       config-server:
         condition: service_healthy
-      api-gateway:
+      eureka-server:
+        condition: service_healthy
+      gateway-service:
         condition: service_healthy
 
   order-service:
@@ -81,11 +89,11 @@ services:
     networks:
       - soupang-network
     depends_on:
-      eureka-server:
-        condition: service_healthy
       config-server:
         condition: service_healthy
-      api-gateway:
+      eureka-server:
+        condition: service_healthy
+      gateway-service:
         condition: service_healthy
 
   company-service:
@@ -95,11 +103,11 @@ services:
     networks:
       - soupang-network
     depends_on:
-      eureka-server:
-        condition: service_healthy
       config-server:
         condition: service_healthy
-      api-gateway:
+      eureka-server:
+        condition: service_healthy
+      gateway-service:
         condition: service_healthy
 
   hub-service:
@@ -109,11 +117,11 @@ services:
     networks:
       - soupang-network
     depends_on:
-      eureka-server:
-        condition: service_healthy
       config-server:
         condition: service_healthy
-      api-gateway:
+      eureka-server:
+        condition: service_healthy
+      gateway-service:
         condition: service_healthy
 
   delivery-service:
@@ -123,11 +131,11 @@ services:
     networks:
       - soupang-network
     depends_on:
-      eureka-server:
-        condition: service_healthy
       config-server:
         condition: service_healthy
-      api-gateway:
+      eureka-server:
+        condition: service_healthy
+      gateway-service:
         condition: service_healthy
 
   slack-service:
@@ -137,11 +145,11 @@ services:
     networks:
       - soupang-network
     depends_on:
-      eureka-server:
-        condition: service_healthy
       config-server:
         condition: service_healthy
-      api-gateway:
+      eureka-server:
+        condition: service_healthy
+      gateway-service:
         condition: service_healthy
 
 networks:

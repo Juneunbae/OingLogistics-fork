@@ -30,14 +30,14 @@ public interface OrderApplicationMapper {
 
     ProductQueueRequestDto toProductQueueRequestDto(UUID productId, Integer quantity);
 
-    @Mapping(target = "orderId", source = "order.id")
-    @Mapping(target = "requesterId", source = "order.requesterId")
-    @Mapping(target = "requesterName", source = "order.requesterName")
-    @Mapping(target = "requesterAddress", source = "order.requesterAddress")
-    @Mapping(target = "requesterSlackId", source = "order.requesterSlackId")
-    @Mapping(target = "orderDetailId", source = "orderDetail.id")
-    @Mapping(target = "recipientId", source = "orderDetail.recipientId")
-    @Mapping(target = "recipientName", source = "orderDetail.recipientName")
-    @Mapping(target = "recipientHubId", source = "orderDetail.recipientHubId")
+    // @Mapping(target = "orderId", source = "order.id")
+    // @Mapping(target = "requesterId", source = "order.requesterId")
+    // @Mapping(target = "requesterName", source = "order.requesterName")
+    // @Mapping(target = "requesterAddress", source = "order.requesterAddress")
+    // @Mapping(target = "requesterSlackId", source = "order.requesterSlackId")
+    // @Mapping(target = "orderDetailId", source = "orderDetail.id")
+    // @Mapping(target = "recipientId", source = "orderDetail.recipientId")
+    // @Mapping(target = "recipientName", source = "orderDetail.recipientName")
+    // @Mapping(target = "recipientHubId", source = "orderDetail.recipientHubId")
     DeliveryCreationRequestDto toDeliveryCreationRequestDto(Order order, OrderDetail orderDetail);
 }
