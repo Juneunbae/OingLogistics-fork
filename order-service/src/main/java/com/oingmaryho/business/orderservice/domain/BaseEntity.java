@@ -1,6 +1,7 @@
 package com.oingmaryho.business.orderservice.domain;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -18,6 +19,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean isDeleted = false;
+
     @Column(updatable = false)
     private Long deletedBy;
 
@@ -41,4 +46,10 @@ public abstract class BaseEntity {
 
     @LastModifiedBy
     private Long updatedBy;
+
+    public void softDeleted(Long userId) {
+        this.isDeleted = true;
+        this.deletedBy = userId;
+        this.deletedAt = LocalDateTime.now();
+    }
 }

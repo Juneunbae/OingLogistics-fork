@@ -250,11 +250,11 @@ public class OrderService {
         }
 
         for (OrderDetail orderDetail : order.getOrderDetails()) {
-            orderDetail.delete();
+            orderDetail.softDeleted(userId);
             log.info("상세 주문 삭제 완료");
         }
 
-        order.delete();
+        order.softDeleted(userId);
         log.info("주문 삭제 완료");
 
         evictCache(order);
@@ -277,7 +277,7 @@ public class OrderService {
 
         OrderDetail orderDetail = getByOrderDetailId(order, request.orderDetailId());
 
-        orderDetail.delete();
+        orderDetail.softDeleted(userId);
         log.info("주문: {}, 상세 주문: {}, 삭제 완료", order.getId(), orderDetail.getId());
 
         Integer orderDetailPrice = (orderDetail.getQuantity() * orderDetail.getPrice());
@@ -354,7 +354,7 @@ public class OrderService {
     }
 
     private ProductDetailsSearchResponseDto getProductInfo(UUID productId) {
-        return productClient.getProductById(productId)
+        return productClient.getProduct(productId)
             .orElseThrow(() -> new OrderException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 

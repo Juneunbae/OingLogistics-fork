@@ -3,14 +3,19 @@ package com.oringmaryho.business.slackservice.config.messaging;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMQConfig {
+
+  @Value("${message.queue.slack-others-queue}")
+  String queueSlack;
 
   @Bean
   public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
@@ -27,4 +32,8 @@ public class RabbitMQConfig {
     return rabbitTemplate;
   }
 
+  @Bean
+  public Queue queueSlack() {
+    return new Queue(queueSlack);
+  }
 }
