@@ -8,7 +8,7 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
 
 ## :walking: 프로젝트 소개
 
-### :walking: 서비스 목표
+### 서비스 목표
 
 - **B2B 환경에 최적화된 주문-배송-재고 관리 시스템 구축**  
   - 다양한 기업 고객을 대상으로 주문 접수, 물류 허브 이동, 배송 추적, 재고 모니터링 등 전 과정을 통합 관리할 수 있는 플랫폼을 제공합니다.
@@ -19,7 +19,7 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
 - **확장 가능하고 유연한 구조**
 	- 도메인별 마이크로서비스 아키텍처를 기반으로 설계하여, 새로운 기능이나 비즈니스 요구사항에 대한 빠른 대응과 유연한 확장을 가능하게 하였습니다.
 
-### :walking: 기술적 목표
+### 기술적 목표
 
 - **서비스 간 유연한 통신 전략 구현**
 	- 요청-응답 기반 통신은 FeignClient, 비동기 이벤트 기반 처리는 RabbitMQ를 활용하여 상황에 따라 최적의 방식으로 서비스 간 통신을 구성하였습니다.
@@ -48,7 +48,7 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
 
 ## :memo: 개발 노션 및 산출물
 
-[(wiki)](https://github.com/5ingMaryho/OingLogistics/wiki)
+[프로젝트 설계 및 구현 산출물](https://github.com/5ingMaryho/OingLogistics/wiki)
 
 ## :construction_worker: 팀원 역할 분담
 
@@ -81,23 +81,16 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
 | **API 통신**       | REST API, FeignClient                     |
 | **컨테이너화**     | Docker                                    |
 
+
 ### 🛠 주요 기술 스택
 
-#### Back-end
+| 분류               | 상세                                      |
+|--------------------|-------------------------------------------|
+| **Backend**            | <img src="https://img.shields.io/badge/java-007396?style=flat-square&logo=java&logoColor=white"/> <img src="https://img.shields.io/badge/SpringBoot-6DB33F?style=flat-square&logo=SpringBoot&logoColor=white"/> <img src="https://img.shields.io/badge/SpringSecurity-6DB33F?style=flat-square&logo=springsecurity&logoColor=white"/> <img src="https://img.shields.io/badge/RabbitMQ-FF6600?style=flat-square&logo=rabbitmq&logoColor=white"/>                           |
+| **Database**       | <img src="https://img.shields.io/badge/postgresql-4169E1?style=flat-square&logo=postgresql&logoColor=white"/> <img src="https://img.shields.io/badge/redis-FF4438?style=flat-square&logo=redis&logoColor=white">                                  |
+| **Version & Issue**      | <img src="https://img.shields.io/badge/git-F05032?style=flat-square&logo=git&logoColor=white"> <img src="https://img.shields.io/badge/github-181717?style=flat-square&logo=github&logoColor=white"> <img src="https://img.shields.io/badge/notion-000000?style=flat-square&logo=notion&logoColor=white">                       |
+| **Infra**     | <img src="https://img.shields.io/badge/docker-2496ED?style=flat-square&logo=docker&logoColor=white">                              |
 
-<img src="https://img.shields.io/badge/java-007396?style=flat-square&logo=java&logoColor=white"/> <img src="https://img.shields.io/badge/SpringBoot-6DB33F?style=flat-square&logo=SpringBoot&logoColor=white"/> <img src="https://img.shields.io/badge/SpringSecurity-6DB33F?style=flat-square&logo=springsecurity&logoColor=white"/> <img src="https://img.shields.io/badge/RabbitMQ-FF6600?style=flat-square&logo=rabbitmq&logoColor=white"/>
-
-#### Database
-
-<img src="https://img.shields.io/badge/postgresql-4169E1?style=flat-square&logo=postgresql&logoColor=white"/> <img src="https://img.shields.io/badge/redis-FF4438?style=flat-square&logo=redis&logoColor=white">
-
-#### 버전 및 이슈관리
-
-<img src="https://img.shields.io/badge/git-F05032?style=flat-square&logo=git&logoColor=white"> <img src="https://img.shields.io/badge/github-181717?style=flat-square&logo=github&logoColor=white"> <img src="https://img.shields.io/badge/notion-000000?style=flat-square&logo=notion&logoColor=white">
-
-#### Infra
-
-<img src="https://img.shields.io/badge/docker-2496ED?style=flat-square&logo=docker&logoColor=white">
 
 
 ## :building_construction: 아키텍처
@@ -115,7 +108,7 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
 
 ![Image](https://github.com/user-attachments/assets/faeb0ffd-998b-4249-947a-7607930f91f2)
 
-### 프로젝트 주요 기능
+### :desktop_computer: 프로젝트 주요 기능
 
 <details>
 <summary>업체 (delivery-service)</summary>
@@ -300,15 +293,22 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
 
 4. [동시성 제어와 이벤트 리스너 트랜잭션 관리](https://github.com/5ingMaryho/OingLogistics/wiki/%EB%8F%99%EC%8B%9C%EC%84%B1-%EC%A0%9C%EC%96%B4%EC%99%80-%EB%B6%84%EC%82%B0%EB%9D%BD,-%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98-%EB%B6%84%EB%A6%AC)
 
-## :package: 프로젝트 구조
+## :package: 프로젝트 구동 방법
 
-### Backend
-  
-```
+### 1. Clone Project
 
 ```
+git clone https://github.com/5ingMaryho/OingLogistics.git
+```
 
-## 프로젝트 회고
+### 2. Change path to /OingLogistics & execute docker-compose.yml file
+
+```
+docker compose up -d
+```
+
+
+## :memo: 프로젝트 회고
 
 ### 프로젝트 개선점 및 고도화 계획
 - 주문 - 상품 동시성 제어
