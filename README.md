@@ -31,11 +31,11 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
   - 인증(Authentication)은 API Gateway에서 처리하고, 인가(Authorization)는 각 마이크로서비스 내부에서 처리하도록 분리 설계하였습니다.
   - 사용자 요청 시 Http Header와 Redis에 저장된 로그인 정보를 비교하여 권한 유효성을 검증합니다.
   - Spring MVC의 Interceptor의 preHandle() 단계를 활용해 Controller 진입 전 권한 확인을 수행합니다.
-  - API별로 사용자 역할이 상이할 경우, **Service 레이어에서 추가적인 역할 검증** 수행하여 보안성을 강화하였습니다.
+  - API별로 사용자 역할이 상이할 경우, Service 레이어에서 **추가적인 역할 검증**을 수행하여 보안성을 강화하였습니다.
 
 - **캐싱 및 성능 최적화**
 	- 사용자 로그인 정보 및 인증 관련 데이터는 Redis에 캐싱하여 분산 환경에서도 안정적인 세션 관리와 빠른 인증 처리를 가능하게 하였습니다.
-	- **조회 빈도가 높은 정적 데이터(예: 업체 정보, 허브 목록 등)**는 Caffeine Cache를 이용한 로컬 캐싱으로 처리하여 응답 속도와 처리 성능을 크게 향상시켰습니다.
+	- **조회 빈도가 높은 정적 데이터(예: 업체 정보, 허브 목록 등)** 는 Caffeine Cache를 이용한 로컬 캐싱으로 처리하여 응답 속도와 처리 성능을 크게 향상시켰습니다.
 	- 두 캐시 전략을 역할 및 데이터 특성에 따라 분리 적용함으로써, 서비스의 응답성, 확장성, 효율성을 모두 고려한 최적의 캐싱 구조를 구성하였습니다.
 
 - **DB 성능 최적화**
@@ -43,9 +43,9 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
 	- 동일 Aggregate에 속한 엔티티 간 조인 시, N+1 문제를 방지하기 위해 IN 절 및 LEFT JOIN 전략을 활용하였습니다.
 
 - **코드 재사용성과 유지보수성 향상**  
-  - 여러 명의 백엔드 개발자가 협업할 때, **공통 유틸리티 및 서비스 계층을 적극 활용하여 중복 코드 최소화** 에 초점을 두고자 합니다.
+  - 여러 명의 백엔드 개발자가 협업할 때, **공통 유틸리티 및 서비스 계층을 적극 활용**하여 중복 코드 최소화에 초점을 두었습니니다.
   - SOLID 원칙과 DRY(Don’t Repeat Yourself) 원칙을 기반으로 객체지향적인 설계를 지향하였습니다.
-  - 각 기능은 **단일 책임 원칙(Single Responsibility Principle)**에 따라 모듈화하여 유지보수성을 높였습니다.
+  - 각 기능은 **단일 책임 원칙(Single Responsibility Principle)** 에 따라 모듈화하여 유지보수성을 높였습니다.
   - **코드 컨벤션 및 패턴을 통일**하여 일관성 있는 코드베이스를 유지하였습니다.
 
 
@@ -58,7 +58,7 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
 | 김기훈 | 이예본 | 이지언 | 이하은 | 전은배 |
 |--------|--------|--------|--------|--------|
 | ![김기훈](https://github.com/user-attachments/assets/84fb1bd5-32f5-4cce-bc65-3f6daf89c144) | ![이예본](https://github.com/user-attachments/assets/24347135-3c55-409f-af30-81bf898b2c6e) | ![이지언(팀장)](https://github.com/user-attachments/assets/bf8f40c5-89ea-4945-a3eb-c690fb62c145) | ![이하은](https://github.com/user-attachments/assets/220ea7de-5ba8-4d4c-841b-cac92aa5a648) | ![전은배](https://github.com/user-attachments/assets/e418f56b-5e91-4046-9f79-a6482f0237e7)
-| (사용자, 슬랙, Gateway) | (멀티 모듈, 업체, 상품) | (허브, infra 관리, Docker) | (배송, 담당자 관리, Config) | (주문, DB관리, 캐싱) |
+| (사용자, 슬랙, Gateway) | (멀티 모듈, 업체, 상품) | (허브, infra 관리, Docker) | (배송 및및 담당자 관리, Config) | (주문, DB관리, 캐싱) |
 | [GitHub](https://github.com/oneul0) | [GitHub](https://github.com/ybon1107) | [GitHub](https://github.com/Leejieon) | [GitHub](https://github.com/haisley77) | [GitHub](https://github.com/Juneunbae) |
 
 
@@ -114,7 +114,7 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
 ### :desktop_computer: 프로젝트 주요 기능
 
 <details>
-<summary>업체 (delivery-service)</summary>
+<summary>업체 (company-service)</summary>
 
  ### Company (업체 관리)
 
@@ -167,7 +167,7 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
       
 </details>
 <details>
-<summary>허브 (delivery-service)</summary>
+<summary>허브 (hub-service)</summary>
 
  ### Hub (허브 관리)
 
@@ -193,7 +193,7 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
       
 </details>
 <details>
-<summary>주문 (delivery-service)</summary>
+<summary>주문 (order-service)</summary>
 
  ### Order (주문 관리)
 
@@ -216,7 +216,7 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
       
 </details>
 <details>
-<summary>상품 (delivery-service)</summary>
+<summary>상품 (product-service)</summary>
 
  ### Product (상품 관리)
 
@@ -237,7 +237,7 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
       
 </details>
 <details>
-<summary>알림 (delivery-service)</summary>
+<summary>알림 (slack-service)</summary>
 
  ### Slack (슬랙 메시지 관리)
 
@@ -252,7 +252,7 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
       
 </details>
 <details>
-<summary>사용자 (delivery-service)</summary>
+<summary>사용자 (user-service)</summary>
 
  ### User (사용자 관리)
 
@@ -298,13 +298,94 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
 
 ## :package: 프로젝트 구동 방법
 
-### 1. Clone Project
+### 1. Project 소스 코드를 Clone 합니다.
 
 ```
 git clone https://github.com/5ingMaryho/OingLogistics.git
 ```
 
-### 2. Change path to /OingLogistics & execute docker-compose.yml file
+### 2. /OingLogistics/eureka-service/src/main/resources 경로로 이동 후, application.yml 파일을 생성합니다.
+
+```
+spring:
+  config:
+    import:
+      - classpath:./application-prod.yml
+  profiles:
+    group:
+      prod: prod
+    active: prod
+  application:
+    name: eureka-service
+
+---
+spring:
+  config.activate.on-profile: prod
+
+```
+
+### 3. /OingLogistics/eureka-service/src/main/resources 경로로 이동 후, application-prod.yml 파일을 생성합니다.
+
+```
+server:
+  port: 8761
+
+spring:
+  application:
+    name: eureka-service
+
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    hostname: eureka-service
+```
+
+
+### 4. /OingLogistics/config-service/src/main/resources 경로로 이동 후, application.yml 파일을 생성합니다.
+
++ key는 현재 비공개입니다. 필요 시 제공하겠습니다.
+
+```
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-service
+
+  profiles:
+    active: git
+
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/5ingMaryho/Config.git
+          clone-on-start: true
+          username: {owner_username}
+          password: {owner_password}
+```
+
+### 5. /OingLogistics/gateway-service/src/main/resources 경로로 이동 후, application.yml 파일을 생성합니다.
+
+```
+spring:
+  config:
+    import: "optional:configserver:http://localhost:8888/"
+  profiles:
+    active: prod
+  application:
+    name: gateway-service
+```
+
+### 6. /OingLogistics 경로에서 docker-compose.yml 파일을 실행합니다.
+
++ 초기 빌드 시 시간이 소요될 수 있습니다.
 
 ```
 docker compose up -d
