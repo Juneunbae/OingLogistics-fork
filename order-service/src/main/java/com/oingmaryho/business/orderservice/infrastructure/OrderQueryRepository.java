@@ -84,6 +84,8 @@ public class OrderQueryRepository implements CustomOrderRepository {
 
         if (criteria.getIsDeleted() != null) {
             conditions.and(order.isDeleted.eq(criteria.getIsDeleted()));
+        } else {
+            conditions.and(order.isDeleted.eq(false));
         }
 
         if (criteria.getProductName() != null && !criteria.getProductName().isEmpty()) {

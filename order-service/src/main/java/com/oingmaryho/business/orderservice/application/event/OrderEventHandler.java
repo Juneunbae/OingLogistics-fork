@@ -43,6 +43,7 @@ public class OrderEventHandler {
                 order, orderDetail
             );
 
+            log.info("DeliveryCreationRequestDto: {}", deliveryCreationRequestDto);
             rabbitTemplate.convertAndSend(queueDelivery, deliveryCreationRequestDto);
         }
 

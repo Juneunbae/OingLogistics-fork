@@ -5,6 +5,11 @@ import java.util.UUID;
 public record DeliveryCreationResponseDto(
     UUID orderId,
     UUID orderDetailId,
-    UUID deliveryId
+    UUID deliveryId,
+    String deliveryDepartureName,
+    String deliveryStopoverNames,
+    String deliveryDestinationName,
+    String deliveryManagerName,
+    String deliveryManagerSlackId
 ) {
 }

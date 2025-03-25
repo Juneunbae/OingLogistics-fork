@@ -39,8 +39,17 @@ public class OrderApplicationQueueConfig {
     @Value("${message.queue.delivery}")
     private String queueDelivery;
 
+    @Value("${message.slack.exchange}")
+    private String slackExchange;
+
+    @Value("${message.queue.slack}")
+    private String queueSlack;
+
     @Value("${message.queue.order}")
     private String queueOrder;
+
+    @Value("${message.queue.user-order-queue}")
+    private String queueUserOrderQueue;
 
     @Bean
     public TopicExchange exchange() {
@@ -88,7 +97,27 @@ public class OrderApplicationQueueConfig {
     }
 
     @Bean
+    public TopicExchange slackExchange() {
+        return new TopicExchange(slackExchange);
+    }
+
+    @Bean
+    public Queue queueSlack() {
+        return new Queue(queueSlack);
+    }
+
+    @Bean
+    public Binding bindingSlack() {
+        return BindingBuilder.bind(queueSlack()).to(slackExchange()).with(slackExchange);
+    }
+
+    @Bean
     public Queue queueOrder() {
         return new Queue(queueOrder);
+    }
+
+    @Bean
+    public Queue queueUserOrderQueue() {
+        return new Queue(queueUserOrderQueue);
     }
 }
