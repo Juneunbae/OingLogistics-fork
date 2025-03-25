@@ -1,5 +1,8 @@
 # OingLogistics
 
+![{F0676DB8-BDC7-4B11-8FA6-BD27D6A7F8AB}](https://github.com/user-attachments/assets/a9d24437-bf04-4b2e-83d2-50d9712e5608)
+
+
 OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플랫폼으로,
 다양한 기업 간의 물류 흐름을 효율적으로 처리하고 모듈화된 아키텍처를 통해 유연한 확장성과 유지보수성을 지향합니다.
 도메인 주도 설계(DDD)를 적용하여 각 비즈니스 도메인을 명확히 분리하고,
