@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.oingmaryho.business.common.domain.type.UserRoleType;
 import com.oingmaryho.business.companyservice.application.dto.mapper.CompanyApplicationMapper;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyCreateRequestServiceDto;
+import com.oingmaryho.business.companyservice.application.dto.request.CompanyDeleteRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDetailsSearchRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanySearchRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyUpdateRequestServiceDto;
@@ -30,6 +31,7 @@ import com.oingmaryho.business.companyservice.application.dto.response.CompanyCr
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyDetailsSearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanySearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyUpdateResponseServiceDto;
+import com.oingmaryho.business.companyservice.application.event.CompanyProductDeletePublisher;
 import com.oingmaryho.business.companyservice.application.service.feignClient.HubClient;
 import com.oingmaryho.business.companyservice.domain.Company;
 import com.oingmaryho.business.companyservice.domain.CompanyType;
@@ -55,6 +57,9 @@ class CompanyServiceTest {
 
 	@Mock
 	private HubClient hubClient;
+
+	@Mock
+	private CompanyProductDeletePublisher companyProductDeletePublisher;
 
 	@InjectMocks
 	private CompanyService companyService;
@@ -85,6 +90,15 @@ class CompanyServiceTest {
 	private static final double OTHER_HUB_LAT = 37.1896213;
 	private static final double OTHER_HUB_LNG = 127.3750501;
 	private static final Long OTHER_HUB_MANAGER_ID = 8L;
+
+	private static final Long REQUESTER_ID = 123L;
+
+	private static final UUID DELETE_COMPANY_ID = UUID.fromString("37323633-cd91-40aa-bb13-5cfd3c03ccbc");
+	private static final String DELETE_COMPANY_NAME = "리팩토링업체";
+	private static final String DELETE_COMPANY_ADDRESS = "경기도 고양시 덕양구 355-11";
+	private static final UUID HUB_ID_MATCH = UUID.fromString("39b481dc-8fac-4349-857b-76f016ac92d1");
+	private static final UUID HUB_ID_MISMATCH = UUID.fromString("b9999999-8888-7777-6666-555555555555");
+
 
 	@BeforeEach
 	void setUp() {
@@ -359,6 +373,78 @@ class CompanyServiceTest {
 		});
 
 		assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NO_PERMISSION);
+	}
+
+	@Description("업체 삭제 테스트 - 성공")
+	@Test
+	void deleteCompany() {
+		CompanyDeleteRequestServiceDto requestDto = new CompanyDeleteRequestServiceDto(DELETE_COMPANY_ID);
+
+		Company companyToDelete = Company.builder()
+			.id(DELETE_COMPANY_ID)
+			.name(DELETE_COMPANY_NAME)
+			.type(CompanyType.SUPPLIER)
+			.managerId(REQUESTER_ID)
+			.manageHubId(HUB_ID_MATCH)
+			.address(DELETE_COMPANY_ADDRESS)
+			.isDeleted(false)
+			.build();
+
+		when(companyRepository.findByIdAndIsDeletedFalse(DELETE_COMPANY_ID)).thenReturn(Optional.of(companyToDelete));
+		when(hubClient.isManagerOfHub(REQUESTER_ID)).thenReturn(Optional.of(new HubSearchResponseDto(HUB_ID_MATCH, HUB_NAME, HUB_ADDRESS, HUB_LATITUDE, HUB_LONGITUDE, REQUESTER_ID)));
+
+		doNothing().when(companyProductDeletePublisher).publish(any());
+
+		// when
+		companyService.deleteCompany(REQUESTER_ID, requestDto);
+
+		// then
+		assertThat(companyToDelete.getIsDeleted()).isTrue();
+		verify(companyRepository).findByIdAndIsDeletedFalse(DELETE_COMPANY_ID);
+		verify(companyProductDeletePublisher).publish(any());
+	}
+	@Description("업체 삭제 테스트 - 실패: 담당 허브가 다른 경우")
+	@Test
+	void deleteCompany_403() {
+		CompanyDeleteRequestServiceDto requestDto = new CompanyDeleteRequestServiceDto(DELETE_COMPANY_ID);
+
+		Company companyToDelete = Company.builder()
+			.id(DELETE_COMPANY_ID)
+			.name(DELETE_COMPANY_NAME)
+			.type(CompanyType.SUPPLIER)
+			.managerId(REQUESTER_ID)
+			.manageHubId(HUB_ID_MISMATCH)
+			.address(DELETE_COMPANY_ADDRESS)
+			.isDeleted(false)
+			.build();
+
+		when(companyRepository.findByIdAndIsDeletedFalse(DELETE_COMPANY_ID)).thenReturn(Optional.of(companyToDelete));
+		when(hubClient.isManagerOfHub(REQUESTER_ID)).thenReturn(
+			Optional.of(new HubSearchResponseDto(HUB_ID_MATCH, HUB_NAME, HUB_ADDRESS, HUB_LATITUDE, HUB_LONGITUDE, REQUESTER_ID))
+		);
+
+		CompanyException exception = assertThrows(CompanyException.class, () -> {
+			companyService.deleteCompany(REQUESTER_ID, requestDto);
+		});
+
+		assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NO_PERMISSION);
+		verify(companyRepository).findByIdAndIsDeletedFalse(DELETE_COMPANY_ID);
+		verify(companyProductDeletePublisher, never()).publish(any());
+	}
+
+	@Description("업체 삭제 테스트 - 실패: 존재하지 않는 업체 ID")
+	@Test
+	void deleteCompany_404() {
+		CompanyDeleteRequestServiceDto requestDto = new CompanyDeleteRequestServiceDto(DELETE_COMPANY_ID);
+
+		when(companyRepository.findByIdAndIsDeletedFalse(DELETE_COMPANY_ID)).thenReturn(Optional.empty());
+
+		CompanyException exception = assertThrows(CompanyException.class, () -> {
+			companyService.deleteCompany(REQUESTER_ID, requestDto);
+		});
+
+		assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+		verify(companyProductDeletePublisher, never()).publish(any());
 	}
 
 }

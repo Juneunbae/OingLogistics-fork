@@ -105,9 +105,11 @@ public class CompanyService {
 		Company company = companyRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
 			.orElseThrow(() -> new CompanyException(ErrorCode.NOT_FOUND));
 
-		validateManageHubPermission(requesterId);
+		HubSearchResponseDto hubSearchResponseDto = validateManageHubPermission(requesterId);
 
-
+		if (!hubSearchResponseDto.id().equals(company.getManageHubId())) {
+			throw new CompanyException(ErrorCode.NO_PERMISSION);
+		}
 
 		company.softDelete(requesterId);
 
