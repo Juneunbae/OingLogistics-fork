@@ -4,9 +4,11 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 
+import com.oingmaryho.business.companyservice.domain.CompanyType;
+
 public record CompanySearchRequestServiceDto(
 	UUID id,
-	String type,
+	CompanyType type,
 	String name,
 	Long managerId,
 	UUID manageHubId,

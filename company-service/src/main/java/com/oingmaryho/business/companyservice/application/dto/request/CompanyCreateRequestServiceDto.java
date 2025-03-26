@@ -8,7 +8,6 @@ public record CompanyCreateRequestServiceDto(
 	String name,
 	CompanyType type,
 	Long managerId,
-	UUID manageHubId,
 	String address
 ) {
 }

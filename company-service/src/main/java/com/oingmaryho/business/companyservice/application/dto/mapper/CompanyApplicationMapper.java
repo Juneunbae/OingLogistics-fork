@@ -37,6 +37,5 @@ public interface CompanyApplicationMapper {
 	@Mapping(target = "updatedBy", ignore = true)
 	@Mapping(target = "isDeleted", ignore = true)
 	@Mapping(target = "id", ignore = true)
-	@Mapping(target = "manageHubId", source = "manageHubId")
 	Company toCreateEntity(CompanyCreateRequestServiceDto companyCreateRequestServiceDto, UUID manageHubId);
 }

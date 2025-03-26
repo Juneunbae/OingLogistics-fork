@@ -13,7 +13,7 @@ import lombok.Getter;
 public class CompanySearchCriteria {
 	private final UUID id;
 	private final String name;
-	private final String type;
+	private final CompanyType type;
 	private final Long managerId;
 	private final UUID manageHubId;
 	private final String address;
