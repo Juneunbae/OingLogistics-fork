@@ -69,13 +69,22 @@ class CompanyServiceTest {
 	private static final Long INVALID_MANAGER_ID = 6L;
 
 	private static final String COMPANY_NAME = "리팩토링업체";
+	private static final String UPDATE_COMPANY_NAME = "변경된 리팩토링업체";
 	private static final CompanyType COMPANY_TYPE = CompanyType.SUPPLIER;
 	private static final String COMPANY_ADDRESS = "경기도 고양시 덕양구 355-11";
+	private static final String UPDATE_COMPANY_ADDRESS = "경기도 고양시 마두동";
 
 	private static final String HUB_NAME = "경기 북부 센터";
 	private static final String HUB_ADDRESS = "경기도 고양시 덕양구 권율대로 570";
 	private static final double HUB_LATITUDE = 37.6403771;
 	private static final double HUB_LONGITUDE = 126.8737955;
+
+	private static final UUID OTHER_HUB_ID = UUID.fromString("39b481dc-8fac-4349-857b-76f016ac92d1");
+	private static final String OTHER_HUB_NAME = "경기 남부 센터";
+	private static final String OTHER_HUB_ADDRESS = "경기도 이천시 덕평로 257-21";
+	private static final double OTHER_HUB_LAT = 37.1896213;
+	private static final double OTHER_HUB_LNG = 127.3750501;
+	private static final Long OTHER_HUB_MANAGER_ID = 8L;
 
 	@BeforeEach
 	void setUp() {
@@ -261,25 +270,95 @@ class CompanyServiceTest {
 		assertThat(result.getTotalElements()).isEqualTo(0);
 		assertThat(result.getContent()).isEmpty();
 	}
-	// @Test
-	// @Transactional
-	// @Description("업체 수정 테스트")
-	// void updateCompany_DirtyChecking() {
-	// 	CompanyUpdateRequestServiceDto requestDto = new CompanyUpdateRequestServiceDto(
-	// 		companyId, "Updated Company Name", CompanyType.SUPPLIER, 2L, FIXED_MANAGE_HUB_ID, "456 New Address"
-	// 	);
-	//
-	// 	when(companyRepository.findByIdAndIsDeletedFalse(companyId)).thenReturn(Optional.of(company));
-	// 	when(companyApplicationMapper.toUpdateResponseDto(any(UUID.class)))
-	// 		.thenReturn(new CompanyUpdateResponseServiceDto(FIXED_COMPANY_ID));
-	//
-	// 	CompanyUpdateResponseServiceDto response = companyService.updateCompany(2L, UserRoleType.HUB_MANAGER,requestDto);
-	//
-	// 	assertThat(company.getName()).isEqualTo("Updated Company Name");
-	// 	assertThat(company.getAddress()).isEqualTo("456 New Address");
-	// 	assertThat(response).isNotNull();
-	// 	assertThat(response.id()).isEqualTo(companyId);
-	// }
 
+	@Description("업체 수정 테스트 - 성공")
+	@Test
+	void updateCompany() {
+		// given
+		CompanyUpdateRequestServiceDto requestDto = new CompanyUpdateRequestServiceDto(
+			FIXED_COMPANY_ID,
+			UPDATE_COMPANY_NAME,
+			COMPANY_TYPE,
+			VALID_MANAGER_ID,
+			FIXED_MANAGE_HUB_ID,
+			UPDATE_COMPANY_ADDRESS
+		);
+
+		when(companyRepository.findByIdAndIsDeletedFalse(FIXED_COMPANY_ID))
+			.thenReturn(Optional.of(company));
+
+		// 권한 체크가 void라 따로 when 필요 없음
+		when(companyApplicationMapper.toUpdateResponseDto(FIXED_COMPANY_ID))
+			.thenReturn(new CompanyUpdateResponseServiceDto(FIXED_COMPANY_ID));
+
+		// when
+		CompanyUpdateResponseServiceDto response = companyService.updateCompany(
+			VALID_MANAGER_ID,
+			UserRoleType.COMPANY_MANAGER,
+			requestDto
+		);
+
+		// then
+		assertThat(response).isNotNull();
+		assertThat(response.id()).isEqualTo(FIXED_COMPANY_ID);
+		assertThat(company.getName()).isEqualTo(UPDATE_COMPANY_NAME);
+		assertThat(company.getAddress()).isEqualTo(UPDATE_COMPANY_ADDRESS);
+	}
+
+	@Description("업체 수정 테스트 - 실패: 본인 담당 허브가 아닌 수정")
+	@Test
+	void updateCompany_403_hubManager_wrongHub() {
+		// given
+		CompanyUpdateRequestServiceDto requestDto = new CompanyUpdateRequestServiceDto(
+			FIXED_COMPANY_ID,
+			UPDATE_COMPANY_NAME,
+			COMPANY_TYPE,
+			VALID_MANAGER_ID,
+			FIXED_MANAGE_HUB_ID,
+			UPDATE_COMPANY_ADDRESS
+		);
+
+		when(companyRepository.findByIdAndIsDeletedFalse(FIXED_COMPANY_ID)).thenReturn(Optional.of(company));
+
+		when(hubClient.isManagerOfHub(VALID_MANAGER_ID))
+			.thenReturn(Optional.of(new HubSearchResponseDto(
+				OTHER_HUB_ID,
+				OTHER_HUB_NAME,
+				OTHER_HUB_ADDRESS,
+				OTHER_HUB_LAT,
+				OTHER_HUB_LNG,
+				OTHER_HUB_MANAGER_ID
+			)));
+
+		// when & then
+		CompanyException exception = assertThrows(CompanyException.class, () -> {
+			companyService.updateCompany(VALID_MANAGER_ID, UserRoleType.HUB_MANAGER, requestDto);
+		});
+
+		assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NO_PERMISSION);
+	}
+
+	@Description("업체 수정 테스트 - 실패: 본인 업체가 아닌 수정")
+	@Test
+	void updateCompany_403_companyManager_wrongManager() {
+		// given
+		CompanyUpdateRequestServiceDto requestDto = new CompanyUpdateRequestServiceDto(
+			FIXED_COMPANY_ID,
+			UPDATE_COMPANY_NAME,
+			COMPANY_TYPE,
+			OTHER_HUB_MANAGER_ID,
+			FIXED_MANAGE_HUB_ID,
+			UPDATE_COMPANY_ADDRESS
+		);
+
+		when(companyRepository.findByIdAndIsDeletedFalse(FIXED_COMPANY_ID)).thenReturn(Optional.of(company));
+
+		// when & then
+		CompanyException exception = assertThrows(CompanyException.class, () -> {
+			companyService.updateCompany(OTHER_HUB_MANAGER_ID, UserRoleType.COMPANY_MANAGER, requestDto);
+		});
+
+		assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NO_PERMISSION);
+	}
 
 }
