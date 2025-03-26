@@ -58,7 +58,7 @@ OingLogistics는 MSA(Microservices Architecture) 기반의 B2B 물류 관리 플
 | 김기훈 | 이예본 | 이지언 | 이하은 | 전은배 |
 |--------|--------|--------|--------|--------|
 | ![김기훈](https://github.com/user-attachments/assets/84fb1bd5-32f5-4cce-bc65-3f6daf89c144) | ![이예본](https://github.com/user-attachments/assets/24347135-3c55-409f-af30-81bf898b2c6e) | ![이지언(팀장)](https://github.com/user-attachments/assets/bf8f40c5-89ea-4945-a3eb-c690fb62c145) | ![이하은](https://github.com/user-attachments/assets/220ea7de-5ba8-4d4c-841b-cac92aa5a648) | ![전은배](https://github.com/user-attachments/assets/e418f56b-5e91-4046-9f79-a6482f0237e7)
-| (사용자, 슬랙, Gateway) | (멀티 모듈, 업체, 상품) | (허브, infra 관리, Docker) | (배송 및및 담당자 관리, Config) | (주문, DB관리, 캐싱) |
+| (사용자, 슬랙, Gateway) | (멀티 모듈, 업체, 상품) | (허브, infra 관리, Docker) | (배송 및 담당자 관리, Config) | (주문, DB관리, 캐싱) |
 | [GitHub](https://github.com/oneul0) | [GitHub](https://github.com/ybon1107) | [GitHub](https://github.com/Leejieon) | [GitHub](https://github.com/haisley77) | [GitHub](https://github.com/Juneunbae) |
 
 
