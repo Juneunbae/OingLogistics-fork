@@ -2,6 +2,7 @@ package com.oingmaryho.business.companyservice.infrastructure;
 
 import com.oingmaryho.business.companyservice.domain.Company;
 import com.oingmaryho.business.companyservice.domain.CompanySearchCriteria;
+import com.oingmaryho.business.companyservice.domain.CompanyType;
 import com.oingmaryho.business.companyservice.domain.QCompany;
 import com.oingmaryho.business.companyservice.domain.repository.CustomCompanyRepository;
 import com.oingmaryho.business.companyservice.utils.QueryDslUtils;
@@ -73,7 +74,7 @@ public class CompanyQueryDslRepository implements CustomCompanyRepository {
 		}
 	}
 
-	private void addTypeCondition(BooleanBuilder builder, String type, QCompany company) {
+	private void addTypeCondition(BooleanBuilder builder, CompanyType type, QCompany company) {
 		if (type != null) {
 			builder.and(company.type.eq(type));
 		}

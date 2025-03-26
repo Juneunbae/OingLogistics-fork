@@ -50,6 +50,7 @@ public class CompanyService {
 	private final CustomCompanyRepository companyCustomRepository;
 	private final CompanyApplicationMapper companyApplicationMapper;
 	private final CompanyProductDeletePublisher companyProductDeletePublisher;
+
 	@Transactional
 	public CompanyCreateResponseServiceDto createCompany(
 		CompanyCreateRequestServiceDto companyCreateRequestServiceDto,
@@ -60,7 +61,7 @@ public class CompanyService {
 		// 업체가 중복되는지 확인하기 위한 코드로, company entity 에서 jpa 조회(기준은 type, address 로 변경)
 		String address = companyCreateRequestServiceDto.address();
 		CompanyType type = companyCreateRequestServiceDto.type();
-		if (companyRepository.existsByTypeAndAddressAndIsDeletedFalse(address, type)) {
+		if (companyRepository.existsByTypeAndAddressAndIsDeletedFalse(type, address)) {
 			throw new CompanyException(ErrorCode.ALREADY_REGISTERED_COMPANY);
 		}
 

@@ -55,7 +55,7 @@ public class CompanyAdminService {
 
 		String address = companyCreateRequestServiceDto.address();
 		CompanyType type = companyCreateRequestServiceDto.type();
-		if (companyRepository.existsByTypeAndAddressAndIsDeletedFalse(address,type)) {
+		if (companyRepository.existsByTypeAndAddressAndIsDeletedFalse(type,address)) {
 			throw new CompanyException(ErrorCode.ALREADY_REGISTERED_COMPANY);
 		}
 
