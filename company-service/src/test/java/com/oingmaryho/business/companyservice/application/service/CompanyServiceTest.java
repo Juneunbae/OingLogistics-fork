@@ -59,20 +59,33 @@ class CompanyServiceTest {
 	private CompanyService companyService;
 
 	private Company company;
+	private UUID companyId;
+
 	private static final UUID FIXED_COMPANY_ID = UUID.fromString("1ebee6c4-5bd8-40c5-a6b4-0b0e8764a269");
 	private static final UUID FIXED_MANAGE_HUB_ID = UUID.fromString("b2341dfa-2e1e-4cb2-a386-6e2d67f02d83");
-	private UUID companyId;
+
+	private static final Long VALID_MANAGER_ID = 7L;
+	private static final Long INVALID_MANAGER_ID = 6L;
+
+	private static final String COMPANY_NAME = "리팩토링업체";
+	private static final CompanyType COMPANY_TYPE = CompanyType.SUPPLIER;
+	private static final String COMPANY_ADDRESS = "경기도 고양시 덕양구 355-11";
+
+	private static final String HUB_NAME = "경기 북부 센터";
+	private static final String HUB_ADDRESS = "경기도 고양시 덕양구 권율대로 570";
+	private static final double HUB_LATITUDE = 37.6403771;
+	private static final double HUB_LONGITUDE = 126.8737955;
 
 	@BeforeEach
 	void setUp() {
 		companyId = FIXED_COMPANY_ID;
 		company = Company.builder()
 			.id(FIXED_COMPANY_ID)
-			.name("리팩토링업체")
-			.type(CompanyType.SUPPLIER)
-			.managerId(7L)
+			.name(COMPANY_NAME)
+			.type(COMPANY_TYPE)
+			.managerId(VALID_MANAGER_ID)
 			.manageHubId(FIXED_MANAGE_HUB_ID)
-			.address("경기도 고양시 덕양구 355-11")
+			.address(COMPANY_ADDRESS)
 			.isDeleted(false)
 			.build();
 	}
@@ -82,20 +95,20 @@ class CompanyServiceTest {
 	void createCompany() {
 		// given
 		CompanyCreateRequestServiceDto request = new CompanyCreateRequestServiceDto(
-			"리팩토링업체", CompanyType.SUPPLIER, 7L, "경기도 고양시 덕양구 355-11"
+			COMPANY_NAME, COMPANY_TYPE, VALID_MANAGER_ID, COMPANY_ADDRESS
 		);
 
-		when(hubClient.isManagerOfHub(7L))
-			.thenReturn(Optional.of(new HubSearchResponseDto(FIXED_MANAGE_HUB_ID, "경기 북부 센터","경기도 고양시 덕양구 권율대로 570",37.6403771,126.8737955,7L)));
+		when(hubClient.isManagerOfHub(VALID_MANAGER_ID))
+			.thenReturn(Optional.of(new HubSearchResponseDto(FIXED_MANAGE_HUB_ID, HUB_NAME, HUB_ADDRESS, HUB_LATITUDE, HUB_LONGITUDE, VALID_MANAGER_ID)));
 
-		when(companyRepository.existsByTypeAndAddressAndIsDeletedFalse(request.type(), request.address()))
+		when(companyRepository.existsByTypeAndAddressAndIsDeletedFalse(COMPANY_TYPE, COMPANY_ADDRESS))
 			.thenReturn(false);
 		when(companyApplicationMapper.toCreateEntity(request, FIXED_MANAGE_HUB_ID))
 			.thenReturn(company);
 		when(companyRepository.save(company)).thenReturn(company);
 
 		// when
-		CompanyCreateResponseServiceDto response = companyService.createCompany(request, 7L);
+		CompanyCreateResponseServiceDto response = companyService.createCompany(request, VALID_MANAGER_ID);
 
 		// then
 		assertThat(response).isNotNull();
@@ -107,18 +120,18 @@ class CompanyServiceTest {
 	void createDuplicateCompany_409() {
 		// given
 		CompanyCreateRequestServiceDto request = new CompanyCreateRequestServiceDto(
-			"리팩토링업체", CompanyType.SUPPLIER, 7L, "경기도 고양시 덕양구 355-11"
+			COMPANY_NAME, COMPANY_TYPE, VALID_MANAGER_ID, COMPANY_ADDRESS
 		);
 
-		when(hubClient.isManagerOfHub(7L))
-			.thenReturn(Optional.of(new HubSearchResponseDto(FIXED_MANAGE_HUB_ID, "경기 북부 센터", "경기도 고양시 덕양구 권율대로 570", 37.6403771, 126.8737955, 7L)));
+		when(hubClient.isManagerOfHub(VALID_MANAGER_ID))
+			.thenReturn(Optional.of(new HubSearchResponseDto(FIXED_MANAGE_HUB_ID, HUB_NAME, HUB_ADDRESS, HUB_LATITUDE, HUB_LONGITUDE, VALID_MANAGER_ID)));
 
-		when(companyRepository.existsByTypeAndAddressAndIsDeletedFalse(request.type(), request.address()))
+		when(companyRepository.existsByTypeAndAddressAndIsDeletedFalse(COMPANY_TYPE, COMPANY_ADDRESS))
 			.thenReturn(true);
 
 		// when & then
 		CompanyException exception = assertThrows(CompanyException.class, () -> {
-			companyService.createCompany(request, 7L);
+			companyService.createCompany(request, VALID_MANAGER_ID);
 		});
 
 		assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ALREADY_REGISTERED_COMPANY);
@@ -132,15 +145,15 @@ class CompanyServiceTest {
 	void createCompany_404() {
 		// given
 		CompanyCreateRequestServiceDto request = new CompanyCreateRequestServiceDto(
-			"리팩토링업체", CompanyType.SUPPLIER, 6L, "경기도 고양시 덕양구 355-11"
+			COMPANY_NAME, COMPANY_TYPE, INVALID_MANAGER_ID, COMPANY_ADDRESS
 		);
 
-		when(hubClient.isManagerOfHub(6L))
+		when(hubClient.isManagerOfHub(INVALID_MANAGER_ID))
 			.thenReturn(Optional.empty());
 
 		// when & then
 		CompanyException exception = assertThrows(CompanyException.class, () -> {
-			companyService.createCompany(request, 6L);
+			companyService.createCompany(request, INVALID_MANAGER_ID);
 		});
 
 		assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.HUB_NOT_FOUND);
