@@ -29,6 +29,7 @@ import com.oingmaryho.business.companyservice.application.dto.response.CompanyDe
 import com.oingmaryho.business.companyservice.application.dto.response.CompanySearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyUpdateResponseServiceDto;
 import com.oingmaryho.business.companyservice.domain.Company;
+import com.oingmaryho.business.companyservice.domain.CompanyType;
 import com.oingmaryho.business.companyservice.domain.repository.CompanyRepository;
 import com.oingmaryho.business.companyservice.domain.repository.CustomCompanyRepository;
 
@@ -60,7 +61,7 @@ class CompanyServiceTest {
 		company = Company.builder()
 			.id(FIXED_COMPANY_ID)
 			.name("Test Company")
-			.type("Retail")
+			.type(CompanyType.SUPPLIER)
 			.managerId(1L)
 			.manageHubId(FIXED_MANAGE_HUB_ID)
 			.address("123 Test Street")
@@ -112,7 +113,7 @@ class CompanyServiceTest {
 	@Description("업체 수정 테스트")
 	void updateCompany_DirtyChecking() {
 		CompanyUpdateRequestServiceDto requestDto = new CompanyUpdateRequestServiceDto(
-			companyId, "Updated Company Name", "Retail", 2L, FIXED_MANAGE_HUB_ID, "456 New Address"
+			companyId, "Updated Company Name", CompanyType.SUPPLIER, 2L, FIXED_MANAGE_HUB_ID, "456 New Address"
 		);
 
 		when(companyRepository.findByIdAndIsDeletedFalse(companyId)).thenReturn(Optional.of(company));

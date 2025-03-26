@@ -36,7 +36,7 @@ public class Company extends BaseEntity {
 	private String name;
 
 	@Column(nullable = false)
-	private String type;
+	private CompanyType type;
 
 	@Column(nullable = false)
 	private Long managerId;
@@ -47,9 +47,9 @@ public class Company extends BaseEntity {
 	@Column(nullable = false)
 	private String address;
 
-	public void update(String name, String type, UUID manageHubId, String address) {
+	public void update(String name, CompanyType type, UUID manageHubId, String address) {
 		Optional.ofNullable(name).filter(n -> !n.isBlank()).ifPresent(value -> this.name = value);
-		Optional.ofNullable(type).filter(t -> !t.isBlank()).ifPresent(value -> this.type = value);
+		Optional.ofNullable(type).ifPresent(value -> this.type = value);
 		Optional.ofNullable(manageHubId).ifPresent(value -> this.manageHubId = value);
 		Optional.ofNullable(address).filter(a -> !a.isBlank()).ifPresent(value -> this.address = value);
 	}
