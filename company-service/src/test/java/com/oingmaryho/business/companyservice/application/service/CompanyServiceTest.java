@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -161,45 +162,105 @@ class CompanyServiceTest {
 		verify(companyRepository, never()).save(any());
 	}
 
-	// @Description("업체 조회 테스트 - ID로 검색")
-	// @Test
-	// void getCompanyById() {
-	// 	// Given
-	// 	CompanyDetailsSearchRequestServiceDto requestDto = new CompanyDetailsSearchRequestServiceDto(companyId);
-	//
-	// 	// ✅ 올바른 개수의 인자로 객체 생성
-	// 	CompanyDetailsSearchResponseServiceDto expectedResponse = new CompanyDetailsSearchResponseServiceDto(
-	// 		companyId, "Test Company", "Retail",1L, FIXED_MANAGE_HUB_ID, "123 Test Street"
-	// 	);
-	//
-	// 	when(companyRepository.findByIdAndIsDeletedFalse(companyId)).thenReturn(Optional.of(company));
-	// 	when(companyApplicationMapper.toResponseDto(company)).thenReturn(expectedResponse);
-	//
-	// 	// When
-	// 	CompanyDetailsSearchResponseServiceDto response = companyService.getCompanyById(requestDto);
-	//
-	// 	// Then
-	// 	System.out.println("업체 정보: " + response.name());
-	// 	assertThat(response).isNotNull();
-	// 	assertThat(response.name()).isEqualTo("Test Company");
-	// }
-	//
-	// @Description("업체 검색 테스트 - 페이지네이션 포함")
-	// @Test
-	// void searchCompanies() {
-	// 	Pageable pageable = mock(Pageable.class);
-	// 	CompanySearchRequestServiceDto requestDto = mock(CompanySearchRequestServiceDto.class);
-	// 	Page<Company> companyPage = new PageImpl<>(List.of(company));
-	// 	when(customCompanyRepository.findDynamicQuery(any(), eq(pageable))).thenReturn(companyPage);
-	// 	when(companyApplicationMapper.toCompanySearchResponseServiceDto(any())).thenReturn(mock(
-	// 		CompanySearchResponseServiceDto.class));
-	//
-	// 	Page<CompanySearchResponseServiceDto> response = companyService.searchCompanies(requestDto, pageable);
-	//
-	// 	assertThat(response).isNotNull();
-	// 	assertThat(response.getTotalElements()).isEqualTo(1);
-	// }
-	//
+	@Description("업체 상세 조회 - 성공")
+	@Test
+	void getCompanyById() {
+		// given
+		CompanyDetailsSearchRequestServiceDto request = new CompanyDetailsSearchRequestServiceDto(FIXED_COMPANY_ID);
+		CompanyDetailsSearchResponseServiceDto expectedResponse = new CompanyDetailsSearchResponseServiceDto(
+			FIXED_COMPANY_ID,
+			COMPANY_NAME,
+			COMPANY_TYPE.name(),
+			VALID_MANAGER_ID,
+			FIXED_MANAGE_HUB_ID,
+			COMPANY_ADDRESS
+		);
+
+		when(companyRepository.findByIdAndIsDeletedFalse(FIXED_COMPANY_ID))
+			.thenReturn(Optional.of(company));
+		when(companyApplicationMapper.toResponseDto(company))
+			.thenReturn(expectedResponse);
+
+		// when
+		CompanyDetailsSearchResponseServiceDto result = companyService.getCompanyById(request);
+
+		// then
+		assertThat(result).isNotNull();
+		assertThat(result.id()).isEqualTo(FIXED_COMPANY_ID);
+		assertThat(result.name()).isEqualTo(COMPANY_NAME);
+		assertThat(result.managerId()).isEqualTo(VALID_MANAGER_ID);
+	}
+
+	@Description("업체 상세 조회 - 실패 (존재하지 않는 ID)")
+	@Test
+	void getCompanyById_404() {
+		// given
+		UUID invalidId = UUID.randomUUID();
+		CompanyDetailsSearchRequestServiceDto request = new CompanyDetailsSearchRequestServiceDto(invalidId);
+
+		when(companyRepository.findByIdAndIsDeletedFalse(invalidId))
+			.thenReturn(Optional.empty());
+
+		// when & then
+		CompanyException exception = assertThrows(CompanyException.class, () -> {
+			companyService.getCompanyById(request);
+		});
+
+		assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+	}
+
+	@Description("업체 검색 테스트 - 성공")
+	@Test
+	void searchCompanies() {
+		// given
+		CompanySearchRequestServiceDto requestDto = new CompanySearchRequestServiceDto(
+			null, COMPANY_TYPE, COMPANY_NAME, VALID_MANAGER_ID, FIXED_MANAGE_HUB_ID, COMPANY_ADDRESS, false
+		);
+		Pageable pageable = PageRequest.of(0, 10);
+		Page<Company> companyPage = new PageImpl<>(List.of(company));
+
+		when(customCompanyRepository.findDynamicQuery(any(), eq(pageable))).thenReturn(companyPage);
+		when(companyApplicationMapper.toCompanySearchResponseServiceDto(any())).thenReturn(
+			new CompanySearchResponseServiceDto(
+				FIXED_COMPANY_ID,
+				COMPANY_NAME,
+				COMPANY_TYPE,
+				VALID_MANAGER_ID,
+				FIXED_MANAGE_HUB_ID,
+				COMPANY_ADDRESS,
+				false
+			)
+		);
+
+		// when
+		Page<CompanySearchResponseServiceDto> result = companyService.searchCompanies(requestDto, pageable);
+
+		// then
+		assertThat(result).isNotNull();
+		assertThat(result.getTotalElements()).isEqualTo(1);
+		assertThat(result.getContent().get(0).name()).isEqualTo(COMPANY_NAME);
+	}
+
+	@Description("업체 검색 테스트 - 성공(검색 결과 없음)")
+	@Test
+	void searchCompanies_emptyResult() {
+		// given
+		CompanySearchRequestServiceDto requestDto = new CompanySearchRequestServiceDto(
+			null, CompanyType.RECEIVER, "없는 이름", null, null, null, false
+		);
+		Pageable pageable = PageRequest.of(0, 10);
+		Page<Company> emptyPage = new PageImpl<>(List.of());
+
+		when(customCompanyRepository.findDynamicQuery(any(), eq(pageable))).thenReturn(emptyPage);
+
+		// when
+		Page<CompanySearchResponseServiceDto> result = companyService.searchCompanies(requestDto, pageable);
+
+		// then
+		assertThat(result).isNotNull();
+		assertThat(result.getTotalElements()).isEqualTo(0);
+		assertThat(result.getContent()).isEmpty();
+	}
 	// @Test
 	// @Transactional
 	// @Description("업체 수정 테스트")
