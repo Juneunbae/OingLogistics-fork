@@ -33,6 +33,7 @@ import com.oingmaryho.business.companyservice.application.dto.response.CompanySe
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyUpdateResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.event.CompanyProductDeletePublisher;
 import com.oingmaryho.business.companyservice.application.service.feignClient.HubClient;
+import com.oingmaryho.business.companyservice.application.service.feignClient.UserClient;
 import com.oingmaryho.business.companyservice.domain.Company;
 import com.oingmaryho.business.companyservice.domain.CompanyType;
 import com.oingmaryho.business.companyservice.domain.repository.CompanyRepository;
@@ -59,6 +60,9 @@ class CompanyServiceTest {
 	private HubClient hubClient;
 
 	@Mock
+	private UserClient userClient;
+
+	@Mock
 	private CompanyProductDeletePublisher companyProductDeletePublisher;
 
 	@InjectMocks
@@ -70,6 +74,8 @@ class CompanyServiceTest {
 	private static final UUID FIXED_COMPANY_ID = UUID.fromString("1ebee6c4-5bd8-40c5-a6b4-0b0e8764a269");
 	private static final UUID FIXED_MANAGE_HUB_ID = UUID.fromString("b2341dfa-2e1e-4cb2-a386-6e2d67f02d83");
 
+	private static final Long VALID_REQUESTER_ID= 7L;
+	private static final Long VALID_COMPANY_MANAGER_ID = 5L;
 	private static final Long VALID_MANAGER_ID = 7L;
 	private static final Long INVALID_MANAGER_ID = 6L;
 
@@ -119,11 +125,14 @@ class CompanyServiceTest {
 	void createCompany() {
 		// given
 		CompanyCreateRequestServiceDto request = new CompanyCreateRequestServiceDto(
-			COMPANY_NAME, COMPANY_TYPE, VALID_MANAGER_ID, COMPANY_ADDRESS
+			COMPANY_NAME, COMPANY_TYPE, VALID_COMPANY_MANAGER_ID, COMPANY_ADDRESS
 		);
 
-		when(hubClient.isManagerOfHub(VALID_MANAGER_ID))
+		when(hubClient.isManagerOfHub(VALID_REQUESTER_ID))
 			.thenReturn(Optional.of(new HubSearchResponseDto(FIXED_MANAGE_HUB_ID, HUB_NAME, HUB_ADDRESS, HUB_LATITUDE, HUB_LONGITUDE, VALID_MANAGER_ID)));
+
+		when(userClient.userFeignServiceGetRoleById(VALID_COMPANY_MANAGER_ID))
+			.thenReturn(Optional.of(UserRoleType.COMPANY_MANAGER));
 
 		when(companyRepository.existsByTypeAndAddressAndIsDeletedFalse(COMPANY_TYPE, COMPANY_ADDRESS))
 			.thenReturn(false);
@@ -132,7 +141,7 @@ class CompanyServiceTest {
 		when(companyRepository.save(company)).thenReturn(company);
 
 		// when
-		CompanyCreateResponseServiceDto response = companyService.createCompany(request, VALID_MANAGER_ID);
+		CompanyCreateResponseServiceDto response = companyService.createCompany(request, VALID_REQUESTER_ID);
 
 		// then
 		assertThat(response).isNotNull();
