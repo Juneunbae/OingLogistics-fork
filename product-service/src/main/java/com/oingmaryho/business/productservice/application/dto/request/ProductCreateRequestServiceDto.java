@@ -6,7 +6,6 @@ public record ProductCreateRequestServiceDto(
 	UUID companyId,
 	String productCode,
 	String name,
-	UUID manageHubId,
 	Integer stock,
 	Integer price
 ) {
