@@ -27,6 +27,7 @@ import com.oingmaryho.business.companyservice.application.service.feignClient.Hu
 import com.oingmaryho.business.companyservice.config.cache.CacheType;
 import com.oingmaryho.business.companyservice.domain.Company;
 import com.oingmaryho.business.companyservice.domain.CompanySearchCriteria;
+import com.oingmaryho.business.companyservice.domain.CompanyType;
 import com.oingmaryho.business.companyservice.domain.repository.CompanyRepository;
 import com.oingmaryho.business.companyservice.domain.repository.CustomCompanyRepository;
 import com.oingmaryho.business.companyservice.exception.CompanyException;
@@ -49,12 +50,16 @@ public class CompanyAdminService {
 		CompanyCreateRequestServiceDto companyCreateRequestServiceDto
 	) {
 
+		HubSearchResponseDto hubSearchResponseDto = hubClient.isManagerOfHub(companyCreateRequestServiceDto.managerId())
+			.orElseThrow(() -> new CompanyException(ErrorCode.HUB_NOT_FOUND));
+
 		String address = companyCreateRequestServiceDto.address();
-		if (companyRepository.existsByAddressAndIsDeletedFalse(address)) {
+		CompanyType type = companyCreateRequestServiceDto.type();
+		if (companyRepository.existsByTypeAndAddressAndIsDeletedFalse(type,address)) {
 			throw new CompanyException(ErrorCode.ALREADY_REGISTERED_COMPANY);
 		}
-		HubSearchResponseDto hub = hubClient(companyCreateRequestServiceDto.manageHubId());
-		Company company = companyApplicationMapper.toCreateEntity(companyCreateRequestServiceDto, hub.id());
+
+		Company company = companyApplicationMapper.toCreateEntity(companyCreateRequestServiceDto, hubSearchResponseDto.id());
 		Company savedCompany = companyRepository.save(company);
 		return new CompanyCreateResponseServiceDto(savedCompany.getId());
 	}
@@ -115,11 +120,6 @@ public class CompanyAdminService {
 			.isDeleted(requestDto.isDeleted())
 			.build();
 
-	}
-
-	private HubSearchResponseDto hubClient(UUID manageHubId) {
-		return hubClient.getHubById(manageHubId)
-			.orElseThrow(() -> new CompanyException(ErrorCode.HUB_NOT_FOUND));
 	}
 
 }

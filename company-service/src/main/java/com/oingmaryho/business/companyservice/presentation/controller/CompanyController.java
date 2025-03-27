@@ -29,6 +29,7 @@ import com.oingmaryho.business.companyservice.application.dto.response.CompanySe
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyUpdateResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.service.CompanyService;
 import com.oingmaryho.business.companyservice.config.pageable.PageableConfig;
+import com.oingmaryho.business.companyservice.domain.CompanyType;
 import com.oingmaryho.business.companyservice.presentation.dto.mapper.CompanyPresentationMapper;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanyCreateRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanySearchRequestDto;
@@ -73,8 +74,8 @@ public class CompanyController {
 		@RequestParam(name = "sortDirection", defaultValue = "ASC") String sortDirection,
 		@RequestParam(name = "by", defaultValue = "name") String by,
 		@RequestParam(value = "id", required = false) UUID id,
+		@RequestParam(name = "type", required = false) CompanyType type,
 		@RequestParam(name = "name", required = false) String name,
-		@RequestParam(name = "type", required = false) String type,
 		@RequestParam(name = "managerId", required = false) Long managerId,
 		@RequestParam(name = "manageHubId", required = false) UUID manageHubId,
 		@RequestParam(name = "address", required = false) String address
@@ -82,7 +83,7 @@ public class CompanyController {
 
 		Pageable pageable = PageableUtils.customPageable(page, size, sortDirection, by);
 		Boolean isDeleted = false;
-		CompanySearchRequestDto requestDto = new CompanySearchRequestDto(id, name, type, managerId,manageHubId, address,isDeleted);
+		CompanySearchRequestDto requestDto = new CompanySearchRequestDto(id, type, name, managerId,manageHubId, address,isDeleted);
 
 		Page<CompanySearchResponseServiceDto> responseDto = companyService.searchCompanies(companyPresentationMapper.toCompanySearchResponseServiceDto(requestDto),pageable);
 		return ResponseEntity.ok(responseDto.map(companyPresentationMapper::toCompanySearchResponseDto));

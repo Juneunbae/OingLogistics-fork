@@ -6,10 +6,11 @@ import java.util.UUID;
 import org.springframework.stereotype.Repository;
 
 import com.oingmaryho.business.companyservice.domain.Company;
+import com.oingmaryho.business.companyservice.domain.CompanyType;
 
 @Repository
 public interface CompanyRepository {
 	Optional<Company> findByIdAndIsDeletedFalse(UUID id);
-	boolean existsByAddressAndIsDeletedFalse(String productCode);
+	boolean existsByTypeAndAddressAndIsDeletedFalse(CompanyType companyType, String address);
 	Company save(Company company);
 }

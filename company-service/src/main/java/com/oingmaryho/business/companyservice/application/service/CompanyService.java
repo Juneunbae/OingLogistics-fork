@@ -29,6 +29,7 @@ import com.oingmaryho.business.companyservice.application.service.feignClient.Hu
 import com.oingmaryho.business.companyservice.config.cache.CacheType;
 import com.oingmaryho.business.companyservice.domain.Company;
 import com.oingmaryho.business.companyservice.domain.CompanySearchCriteria;
+import com.oingmaryho.business.companyservice.domain.CompanyType;
 import com.oingmaryho.business.companyservice.domain.repository.CompanyRepository;
 import com.oingmaryho.business.companyservice.domain.repository.CustomCompanyRepository;
 import com.oingmaryho.business.companyservice.exception.CompanyException;
@@ -49,20 +50,22 @@ public class CompanyService {
 	private final CustomCompanyRepository companyCustomRepository;
 	private final CompanyApplicationMapper companyApplicationMapper;
 	private final CompanyProductDeletePublisher companyProductDeletePublisher;
+
 	@Transactional
 	public CompanyCreateResponseServiceDto createCompany(
 		CompanyCreateRequestServiceDto companyCreateRequestServiceDto,
 		Long requesterId) {
 
-		validateManageHubPermission(requesterId, companyCreateRequestServiceDto.manageHubId());
+		HubSearchResponseDto hubSearchResponseDto = validateManageHubPermission(requesterId);
 
+		// 업체가 중복되는지 확인하기 위한 코드로, company entity 에서 jpa 조회(기준은 type, address 로 변경)
 		String address = companyCreateRequestServiceDto.address();
-		if (companyRepository.existsByAddressAndIsDeletedFalse(address)) {
+		CompanyType type = companyCreateRequestServiceDto.type();
+		if (companyRepository.existsByTypeAndAddressAndIsDeletedFalse(type, address)) {
 			throw new CompanyException(ErrorCode.ALREADY_REGISTERED_COMPANY);
 		}
 
-		HubSearchResponseDto hub = hubClient(companyCreateRequestServiceDto.manageHubId());
-		Company company = companyApplicationMapper.toCreateEntity(companyCreateRequestServiceDto, hub.id());
+		Company company = companyApplicationMapper.toCreateEntity(companyCreateRequestServiceDto, hubSearchResponseDto.id());
 		Company savedCompany = companyRepository.save(company);
 		return new CompanyCreateResponseServiceDto(savedCompany.getId());
 	}
@@ -102,7 +105,11 @@ public class CompanyService {
 		Company company = companyRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
 			.orElseThrow(() -> new CompanyException(ErrorCode.NOT_FOUND));
 
-		validateManageHubPermission(requesterId, company.getManageHubId());
+		HubSearchResponseDto hubSearchResponseDto = validateManageHubPermission(requesterId);
+
+		if (!hubSearchResponseDto.id().equals(company.getManageHubId())) {
+			throw new CompanyException(ErrorCode.NO_PERMISSION);
+		}
 
 		company.softDelete(requesterId);
 
@@ -123,14 +130,11 @@ public class CompanyService {
 
 	}
 
-	private void validateManageHubPermission(Long requesterId, UUID targetHubId) {
+	private HubSearchResponseDto validateManageHubPermission(Long requesterId) {
 
-		HubSearchResponseDto managedHub = hubClient.isManagerOfHub(requesterId)
+		return hubClient.isManagerOfHub(requesterId)
 			.orElseThrow(() -> new CompanyException(ErrorCode.HUB_NOT_FOUND));
 
-		if (!managedHub.id().equals(targetHubId)) {
-			throw new CompanyException(ErrorCode.NO_PERMISSION);
-		}
 	}
 	private void validateUpdatePermission(Long requesterId, UserRoleType role, Company company) {
 		switch (role) {
@@ -151,9 +155,5 @@ public class CompanyService {
 		}
 	}
 
-	private HubSearchResponseDto hubClient(UUID manageHubId) {
-		return hubClient.getHubById(manageHubId)
-			.orElseThrow(() -> new CompanyException(ErrorCode.HUB_NOT_FOUND));
-	}
 
 }

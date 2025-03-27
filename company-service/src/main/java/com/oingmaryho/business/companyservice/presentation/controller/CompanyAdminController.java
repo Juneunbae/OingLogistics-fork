@@ -27,6 +27,8 @@ import com.oingmaryho.business.companyservice.application.dto.response.CompanyDe
 import com.oingmaryho.business.companyservice.application.dto.response.CompanySearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyUpdateResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.service.CompanyAdminService;
+import com.oingmaryho.business.companyservice.application.service.CompanyService;
+import com.oingmaryho.business.companyservice.domain.CompanyType;
 import com.oingmaryho.business.companyservice.presentation.dto.mapper.CompanyPresentationMapper;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanyCreateRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanySearchRequestDto;
@@ -68,8 +70,8 @@ public class CompanyAdminController {
 		@RequestParam(name = "sortDirection", defaultValue = "ASC") String sortDirection,
 		@RequestParam(name = "by", defaultValue = "name") String by,
 		@RequestParam(value = "id", required = false) UUID id,
+		@RequestParam(name = "type", required = false) CompanyType type,
 		@RequestParam(name = "name", required = false) String name,
-		@RequestParam(name = "type", required = false) String type,
 		@RequestParam(name = "managerId", required = false) Long managerId,
 		@RequestParam(name = "manageHubId", required = false) UUID manageHubId,
 		@RequestParam(name = "address", required = false) String address,
@@ -77,7 +79,7 @@ public class CompanyAdminController {
 	) {
 
 		Pageable pageable = PageableUtils.customPageable(page, size, sortDirection, by);
-		CompanySearchRequestDto requestDto = new CompanySearchRequestDto(id, name, type, managerId,manageHubId, address,isDeleted);
+		CompanySearchRequestDto requestDto = new CompanySearchRequestDto(id, type, name, managerId,manageHubId, address,isDeleted);
 
 		Page<CompanySearchResponseServiceDto> responseDto = companyService.searchCompanies(companyPresentationMapper.toCompanySearchResponseServiceDto(requestDto),pageable);
 		return ResponseEntity.ok(responseDto.map(companyPresentationMapper::toCompanySearchResponseDto));
