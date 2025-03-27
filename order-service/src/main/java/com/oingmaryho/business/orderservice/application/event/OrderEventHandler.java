@@ -22,7 +22,6 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class OrderEventHandler {
     private final RabbitTemplate rabbitTemplate;
     private final OrderRepository orderRepository;
-    private final OrderApplicationMapper orderApplicationMapper;
 
     @Value("${message.queue.delivery}")
     private String queueDelivery;
@@ -39,8 +38,16 @@ public class OrderEventHandler {
         log.info("주문: {},  상태 변경 완료", order.getId());
 
         for (OrderDetail orderDetail : order.getOrderDetails()) {
-            DeliveryCreationRequestDto deliveryCreationRequestDto = orderApplicationMapper.toDeliveryCreationRequestDto(
-                order, orderDetail
+            DeliveryCreationRequestDto deliveryCreationRequestDto = new DeliveryCreationRequestDto(
+                order.getId(),
+                order.getRequesterId(),
+                order.getRequesterName(),
+                order.getRequesterAddress(),
+                order.getRequesterSlackId(),
+                orderDetail.getId(),
+                orderDetail.getRecipientId(),
+                orderDetail.getRecipientName(),
+                orderDetail.getRecipientHubId()
             );
 
             log.info("DeliveryCreationRequestDto: {}", deliveryCreationRequestDto);
