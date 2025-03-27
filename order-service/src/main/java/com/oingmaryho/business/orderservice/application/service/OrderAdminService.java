@@ -6,8 +6,6 @@ import com.oingmaryho.business.orderservice.application.dto.request.*;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.event.OrderEvent;
-import com.oingmaryho.business.orderservice.application.service.feignclient.CompanyClient;
-import com.oingmaryho.business.orderservice.application.service.feignclient.ProductClient;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
 import com.oingmaryho.business.orderservice.domain.OrderSearchCriteria;
@@ -15,7 +13,6 @@ import com.oingmaryho.business.orderservice.domain.Status;
 import com.oingmaryho.business.orderservice.domain.repository.OrderRepository;
 import com.oingmaryho.business.orderservice.exception.ErrorCode;
 import com.oingmaryho.business.orderservice.exception.OrderException;
-import com.oingmaryho.business.orderservice.infrastructure.OrderJPARepository;
 import com.oingmaryho.business.orderservice.infrastructure.OrderQueryRepository;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderAdminRequestServiceDto;
 import com.oingmaryho.business.orderservice.presentation.dto.response.CompanyDetailsSearchResponseDto;
@@ -44,13 +41,11 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class OrderAdminService {
+    private final OrderHelper orderHelper;
     private final CacheManager cacheManager;
-    private final CompanyClient companyClient;
-    private final ProductClient productClient;
     private final RabbitTemplate rabbitTemplate;
     private final OrderRepository orderRepository;
     private final ApplicationEventPublisher publisher;
-    private final OrderJPARepository orderJPARepository;
     private final OrderQueryRepository orderQueryRepository;
     private final OrderApplicationMapper orderApplicationMapper;
 
@@ -64,7 +59,7 @@ public class OrderAdminService {
     public Page<OrderAdminResponseServiceDto> getOrders(OrderAdminRequestServiceDto orderAdminRequestServiceDto) {
         String cacheKey = makeOrdersCacheKey(orderAdminRequestServiceDto);
 
-        Page<OrderAdminResponseServiceDto> cachedOrders = getOrdersCache(cacheKey);
+        Page<OrderAdminResponseServiceDto> cachedOrders = orderHelper.getOrdersCache(cacheKey);
         if (cachedOrders != null) {
             log.info("캐시된 주문 전체 조회 반환 성공");
             return cachedOrders;
@@ -89,7 +84,6 @@ public class OrderAdminService {
         ).toList();
 
         Page<OrderAdminResponseServiceDto> results = new PageImpl<>(ordersDto, customPageable, orders.getTotalElements());
-
         putOrdersCache(cacheKey, results);
 
         return results;
@@ -98,7 +92,7 @@ public class OrderAdminService {
     @Transactional
     public OrderResponseServiceDto getOrder(OrderRequestServiceDto orderRequestServiceDto) {
         UUID orderId = orderRequestServiceDto.orderId();
-        Order order = getByOrderId(orderId);
+        Order order = orderHelper.getByOrderId(orderId);
 
         return orderApplicationMapper.toOrderResponseServiceDto(
             order,
@@ -114,7 +108,7 @@ public class OrderAdminService {
         ArrayList<OrderDetail> details = new ArrayList<>();
 
         log.info("-");
-        CompanyDetailsSearchResponseDto requestCompanyInfo = getCompanyInfo(create.requesterId());
+        CompanyDetailsSearchResponseDto requestCompanyInfo = orderHelper.getCompanyInfo(create.requesterId());
         log.info("requestCompanyInfo: {}", requestCompanyInfo);
 
         Order order = Order.builder()
@@ -134,7 +128,7 @@ public class OrderAdminService {
 
         // orderId, requesterId, requesterName, productId, quantity
         for (OrderDetailCreateRequestServiceDto orderDetail : create.orderDetails()) {
-            ProductDetailsSearchResponseDto productInfo = getProductInfo(orderDetail.productId());
+            ProductDetailsSearchResponseDto productInfo = orderHelper.getProductInfo(orderDetail.productId());
 
             log.info(productInfo.toString());
             log.info(orderDetail.toString());
@@ -197,11 +191,11 @@ public class OrderAdminService {
         int totalPrice = 0;
         UUID orderId = update.id();
 
-        Order order = getByOrderId(orderId);
+        Order order = orderHelper.getByOrderId(orderId);
 
         if (update.orderDetails() != null) {
             for (OrderDetailUpdateResponseServiceDto orderDetailDto : update.orderDetails()) {
-                OrderDetail orderDetail = getByOrderDetailId(order, orderDetailDto.orderDetailId());
+                OrderDetail orderDetail = orderHelper.getByOrderDetailId(order, orderDetailDto.orderDetailId());
                 OrderDetailUpdateRequestServiceDto orderDetailUpdateRequestServiceDto = orderApplicationMapper.toOrderDetailUpdateDto(
                     orderDetailDto.price(), orderDetailDto.quantity()
                 );
@@ -220,14 +214,14 @@ public class OrderAdminService {
         order.update(orderUpdateRequestServiceDto);
         log.info("주문 수정 완료");
 
-        refreshCache(order);
+        orderHelper.refreshCache(order);
     }
 
     @Transactional
     public void deleteOrder(Long userId, OrderDeleteServiceDto delete) {
         UUID orderId = delete.orderId();
 
-        Order order = getByOrderId(orderId);
+        Order order = orderHelper.getByOrderId(orderId);
 
         for (OrderDetail orderDetail : order.getOrderDetails()) {
             orderDetail.softDeleted(userId);
@@ -237,15 +231,15 @@ public class OrderAdminService {
         order.softDeleted(userId);
         log.info("주문 삭제 완료");
 
-        evictCache(order);
+        orderHelper.evictCache(order);
     }
 
     @Transactional
     public void deleteOrderDetail(Long userId, OrderDetailDeleteRequestServiceDto request) {
         UUID orderId = request.orderId();
 
-        Order order = getByOrderId(orderId);
-        OrderDetail orderDetail = getByOrderDetailId(order, request.orderDetailId());
+        Order order = orderHelper.getByOrderId(orderId);
+        OrderDetail orderDetail = orderHelper.getByOrderDetailId(order, request.orderDetailId());
 
         orderDetail.softDeleted(userId);
         log.info("주문: {}, 상세 주문: {}, 삭제 완료", order.getId(), orderDetail.getId());
@@ -254,31 +248,7 @@ public class OrderAdminService {
 
         order.updateTotalPrice(orderDetailPrice);
 
-        evictCache(order);
-    }
-
-    public Order getByOrderId(UUID orderId) {
-        Cache cache = cacheManager.getCache("order");
-        Order cachedOrder = cache.get(orderId, Order.class);
-
-        if (cachedOrder != null) {
-            log.info("캐시된 주문 조회 반환 성공");
-            return cachedOrder;
-        }
-
-        Order order = orderJPARepository.findById(orderId)
-            .orElseThrow(() -> new OrderException(ErrorCode.NOT_FOUND));
-
-        cache.put(orderId, order);
-        log.info("주문 캐시 저장 완료");
-
-        return order;
-    }
-
-    public OrderDetail getByOrderDetailId(Order order, UUID orderDetailId) {
-        return order.getOrderDetails().stream().filter(
-            orderDetail -> orderDetail.getId().equals(orderDetailId) && !orderDetail.getIsDeleted()
-        ).findFirst().orElseThrow(() -> new OrderException(ErrorCode.ORDER_DETAIL_NOT_FOUND));
+        orderHelper.evictCache(order);
     }
 
     private String makeOrdersCacheKey(OrderAdminRequestServiceDto orderAdminRequestServiceDto) {
@@ -305,41 +275,10 @@ public class OrderAdminService {
             customPageableHashCode;
     }
 
-    private Page<OrderAdminResponseServiceDto> getOrdersCache(String cacheKey) {
-        Cache cache = cacheManager.getCache("orders");
-        return cache.get(cacheKey, Page.class);
-    }
-
     private void putOrdersCache(String cacheKey, Page<OrderAdminResponseServiceDto> results) {
         Cache cache = cacheManager.getCache("orders");
         cache.put(cacheKey, results);
         log.info("캐시 저장 성공: {}", cacheKey);
-    }
-
-    private void refreshCache(Order order) {
-        Cache cache = cacheManager.getCache("order");
-
-        if (cache != null) {
-            cache.evict(order.getId());
-            log.info("Refresh - 캐시 삭제");
-
-            cache.put(order.getId(), order);
-            log.info("Refresh - 캐시 할당");
-        }
-
-        log.info("캐시 재할당 완료: {}", order.getId());
-    }
-
-    private void evictCache(Order order) {
-        Cache OrdersCache = cacheManager.getCache("orders");
-        Cache OrderCache = cacheManager.getCache("order");
-
-        if (OrderCache != null) {
-            OrderCache.evict(order.getId());
-            log.info("Order - 캐시 삭제");
-        }
-
-        OrdersCache.clear();
     }
 
     private OrderSearchCriteria createOrderSearchCriteria(OrderAdminRequestServiceDto requestDto) {
@@ -349,15 +288,5 @@ public class OrderAdminService {
             .requesterName(requestDto.requesterName())
             .isDeleted(requestDto.isDeleted())
             .build();
-    }
-
-    private CompanyDetailsSearchResponseDto getCompanyInfo(UUID companyId) {
-        return companyClient.getCompanyId(companyId)
-            .orElseThrow(() -> new OrderException(ErrorCode.COMPANY_NOT_FOUND));
-    }
-
-    private ProductDetailsSearchResponseDto getProductInfo(UUID productId) {
-        return productClient.getProductById(productId)
-            .orElseThrow(() -> new OrderException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 }

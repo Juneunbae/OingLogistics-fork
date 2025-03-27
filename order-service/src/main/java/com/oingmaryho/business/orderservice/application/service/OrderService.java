@@ -8,9 +8,7 @@ import com.oingmaryho.business.orderservice.application.dto.response.HubSearchRe
 import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.event.OrderEvent;
-import com.oingmaryho.business.orderservice.application.service.feignclient.CompanyClient;
 import com.oingmaryho.business.orderservice.application.service.feignclient.HubClient;
-import com.oingmaryho.business.orderservice.application.service.feignclient.ProductClient;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
 import com.oingmaryho.business.orderservice.domain.OrderSearchCriteria;
@@ -44,9 +42,8 @@ import java.util.*;
 @RequiredArgsConstructor
 public class OrderService {
     private final HubClient hubClient;
+    private final OrderHelper orderHelper;
     private final CacheManager cacheManager;
-    private final CompanyClient companyClient;
-    private final ProductClient productClient;
     private final RabbitTemplate rabbitTemplate;
     private final OrderRepository orderRepository;
     private final ApplicationEventPublisher publisher;
@@ -88,7 +85,7 @@ public class OrderService {
 
             UUID hubId = hubInfo.id();
             if (!order.getRequesterId().equals(hubId)) {
-                evictCache(order);
+                orderHelper.evictCache(order);
                 throw new OrderException(ErrorCode.HUB_NOT_MATCH);
             }
         }
@@ -99,7 +96,7 @@ public class OrderService {
                 || Objects.equals(role, UserRoleType.COMPANY_DELIVERY_MANAGER.name())
         ) {
             if (!order.getRequesterUserId().equals(userId)) {
-                evictCache(order);
+                orderHelper.evictCache(order);
                 throw new OrderException(ErrorCode.FORBIDDEN);
             }
         }
@@ -117,7 +114,7 @@ public class OrderService {
         int totalPrice = 0;
         ArrayList<OrderDetail> details = new ArrayList<>();
 
-        CompanyDetailsSearchResponseDto requestCompanyInfo = getCompanyInfo(create.requesterId());
+        CompanyDetailsSearchResponseDto requestCompanyInfo = orderHelper.getCompanyInfo(create.requesterId());
 
         Order order = Order.builder()
             .requesterId(requestCompanyInfo.id())
@@ -137,7 +134,7 @@ public class OrderService {
 
         // orderId, requesterId, requesterName, productId, quantity
         for (OrderDetailCreateRequestServiceDto orderDetail : create.orderDetails()) {
-            ProductDetailsSearchResponseDto productInfo = getProductInfo(orderDetail.productId());
+            ProductDetailsSearchResponseDto productInfo = orderHelper.getProductInfo(orderDetail.productId());
 
             log.info(productInfo.toString());
             log.info(orderDetail.toString());
@@ -212,7 +209,7 @@ public class OrderService {
 
         if (update.orderDetails() != null) {
             for (OrderDetailUpdateResponseServiceDto orderDetailDto : update.orderDetails()) {
-                OrderDetail orderDetail = getByOrderDetailId(order, orderDetailDto.orderDetailId());
+                OrderDetail orderDetail = orderHelper.getByOrderDetailId(order, orderDetailDto.orderDetailId());
                 OrderDetailUpdateRequestServiceDto orderDetailUpdateRequestServiceDto = orderApplicationMapper.toOrderDetailUpdateDto(
                     orderDetailDto.price(), orderDetailDto.quantity()
                 );
@@ -231,7 +228,7 @@ public class OrderService {
         order.update(orderUpdateRequestServiceDto);
         log.info("주문 수정 완료");
 
-        refreshCache(order);
+        orderHelper.refreshCache(order);
     }
 
     @Transactional
@@ -257,7 +254,7 @@ public class OrderService {
         order.softDeleted(userId);
         log.info("주문 삭제 완료");
 
-        evictCache(order);
+        orderHelper.evictCache(order);
     }
 
     @Transactional
@@ -275,7 +272,7 @@ public class OrderService {
             }
         }
 
-        OrderDetail orderDetail = getByOrderDetailId(order, request.orderDetailId());
+        OrderDetail orderDetail = orderHelper.getByOrderDetailId(order, request.orderDetailId());
 
         orderDetail.softDeleted(userId);
         log.info("주문: {}, 상세 주문: {}, 삭제 완료", order.getId(), orderDetail.getId());
@@ -284,7 +281,7 @@ public class OrderService {
 
         order.updateTotalPrice(orderDetailPrice);
 
-        evictCache(order);
+        orderHelper.evictCache(order);
     }
 
     private Order getByOrderId(UUID orderId) {
@@ -305,61 +302,10 @@ public class OrderService {
         return order;
     }
 
-    private OrderDetail getByOrderDetailId(Order order, UUID orderDetailId) {
-        return order.getOrderDetails().stream().filter(
-            orderDetail -> orderDetail.getId().equals(orderDetailId)
-        ).findFirst().orElseThrow(() -> new OrderException(ErrorCode.ORDER_DETAIL_NOT_FOUND));
-    }
-
-    private Page<OrderResponseServiceDto> getOrdersCache(String cacheKey) {
-        Cache cache = cacheManager.getCache("orders");
-        return cache.get(cacheKey, Page.class);
-    }
-
     private void putOrdersCache(String cacheKey, Page<OrderResponseServiceDto> results) {
         Cache cache = cacheManager.getCache("orders");
         cache.put(cacheKey, results);
         log.info("캐시 저장 성공: {}", cacheKey);
-    }
-
-    private void refreshCache(Order order) {
-        Cache cache = cacheManager.getCache("order");
-
-        if (cache != null) {
-            cache.evict(order.getId());
-            log.info("Refresh - 캐시 삭제");
-
-            cache.put(order.getId(), order);
-            log.info("Refresh - 캐시 할당");
-        }
-
-        log.info("캐시 재할당 완료: {}", order.getId());
-    }
-
-    private void evictCache(Order order) {
-        Cache OrdersCache = cacheManager.getCache("orders");
-        Cache OrderCache = cacheManager.getCache("order");
-
-        if (OrderCache != null) {
-            OrderCache.evict(order.getId());
-            log.info("Order - 캐시 삭제");
-        }
-
-        OrdersCache.clear();
-    }
-
-    private CompanyDetailsSearchResponseDto getCompanyInfo(UUID companyId) {
-        return companyClient.getCompanyId(companyId)
-            .orElseThrow(() -> new OrderException(ErrorCode.COMPANY_NOT_FOUND));
-    }
-
-    private ProductDetailsSearchResponseDto getProductInfo(UUID productId) {
-        return productClient.getProductById(productId)
-            .orElseThrow(() -> new OrderException(ErrorCode.PRODUCT_NOT_FOUND));
-    }
-
-    private HubSearchResponseDto getHubInfo(Long managerId) {
-        return hubClient.getHubById(managerId);
     }
 
     private OrderSearchCriteria createOrderSearchCriteria(OrdersRequestServiceDto requestDto) {
@@ -375,7 +321,7 @@ public class OrderService {
         if (Objects.equals(role, UserRoleType.HUB_MANAGER.name())) {
             log.info("Role check success - {}", role);
 
-            HubSearchResponseDto hubInfo = getHubInfo(userId);
+            HubSearchResponseDto hubInfo = orderHelper.getHubInfo(userId);
             UUID hubId = hubInfo.id();
 
             return orderQueryRepository.findDynamicQueryForHubManager(
