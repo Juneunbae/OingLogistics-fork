@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.oingmaryho.business.common.domain.type.UserRoleType;
 import com.oingmaryho.business.companyservice.application.dto.mapper.CompanyApplicationMapper;
-import com.oingmaryho.business.companyservice.application.dto.request.CompanyCreateRequestServiceDto;
+import com.oingmaryho.business.companyservice.application.dto.request.CompanyAdminCreateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDeleteRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDetailsSearchRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyProductDeleteRequestDto;
@@ -24,6 +24,7 @@ import com.oingmaryho.business.companyservice.application.dto.response.CompanyDe
 import com.oingmaryho.business.companyservice.application.dto.response.CompanySearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyUpdateResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.service.feignClient.HubClient;
+import com.oingmaryho.business.companyservice.application.service.feignClient.UserClient;
 import com.oingmaryho.business.companyservice.config.cache.CacheType;
 import com.oingmaryho.business.companyservice.domain.Company;
 import com.oingmaryho.business.companyservice.domain.CompanySearchCriteria;
@@ -40,6 +41,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CompanyAdminService {
 	private final HubClient hubClient;
+	private final UserClient userClient;
 	private final RabbitTemplate rabbitTemplate;
 	private final CompanyRepository companyRepository;
 	private final CustomCompanyRepository companyCustomRepository;
@@ -47,19 +49,17 @@ public class CompanyAdminService {
 
 	@Transactional
 	public CompanyCreateResponseServiceDto createCompany(
-		CompanyCreateRequestServiceDto companyCreateRequestServiceDto
+		CompanyAdminCreateRequestServiceDto requestDto
 	) {
 
-		HubSearchResponseDto hubSearchResponseDto = hubClient.isManagerOfHub(companyCreateRequestServiceDto.managerId())
+		hubClient.getHubById(requestDto.manageHubId())
 			.orElseThrow(() -> new CompanyException(ErrorCode.HUB_NOT_FOUND));
 
-		String address = companyCreateRequestServiceDto.address();
-		CompanyType type = companyCreateRequestServiceDto.type();
-		if (companyRepository.existsByTypeAndAddressAndIsDeletedFalse(type,address)) {
-			throw new CompanyException(ErrorCode.ALREADY_REGISTERED_COMPANY);
-		}
+		validateCompanyManager(requestDto.managerId());
 
-		Company company = companyApplicationMapper.toCreateEntity(companyCreateRequestServiceDto, hubSearchResponseDto.id());
+		validateDuplicateCompany(requestDto.type(), requestDto.address());
+
+		Company company = companyApplicationMapper.toAdminCreateEntity(requestDto);
 		Company savedCompany = companyRepository.save(company);
 		return new CompanyCreateResponseServiceDto(savedCompany.getId());
 	}
@@ -120,6 +120,21 @@ public class CompanyAdminService {
 			.isDeleted(requestDto.isDeleted())
 			.build();
 
+	}
+
+	private void validateDuplicateCompany(CompanyType type, String address) {
+		if (companyRepository.existsByTypeAndAddressAndIsDeletedFalse(type, address)) {
+			throw new CompanyException(ErrorCode.ALREADY_REGISTERED_COMPANY);
+		}
+	}
+
+	private void validateCompanyManager(Long managerId) {
+		UserRoleType role = userClient.userFeignServiceGetRoleById(managerId)
+			.orElseThrow(() -> new CompanyException(ErrorCode.COMPANY_MANAGER_NOT_FOUND));
+
+		if (!UserRoleType.COMPANY_MANAGER.equals(role)) {
+			throw new CompanyException(ErrorCode.NO_PERMISSION);
+		}
 	}
 
 }

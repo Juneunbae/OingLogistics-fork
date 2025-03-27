@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.oingmaryho.business.common.domain.type.UserRoleType;
 import com.oingmaryho.business.common.infrastructure.annotation.RequiredRoles;
+import com.oingmaryho.business.companyservice.application.dto.request.CompanyAdminCreateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyCreateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDeleteRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDetailsSearchRequestServiceDto;
@@ -30,6 +31,7 @@ import com.oingmaryho.business.companyservice.application.service.CompanyAdminSe
 import com.oingmaryho.business.companyservice.application.service.CompanyService;
 import com.oingmaryho.business.companyservice.domain.CompanyType;
 import com.oingmaryho.business.companyservice.presentation.dto.mapper.CompanyPresentationMapper;
+import com.oingmaryho.business.companyservice.presentation.dto.request.CompanyAdminCreateRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanyCreateRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanySearchRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanyUpdateRequestDto;
@@ -53,9 +55,9 @@ public class CompanyAdminController {
 	@RequiredRoles(UserRoleType.MASTER)
 	@PostMapping
 	public ResponseEntity<CompanyCreateResponseDto> createCompany(
-		@RequestBody CompanyCreateRequestDto companyCreateRequestDto
+		@RequestBody CompanyAdminCreateRequestDto requestDto
 	) {
-		CompanyCreateRequestServiceDto requestServiceDto = companyPresentationMapper.toCreateServiceDto(companyCreateRequestDto);
+		CompanyAdminCreateRequestServiceDto requestServiceDto = companyPresentationMapper.toAdminCreateServiceDto(requestDto);
 		CompanyCreateResponseServiceDto responseServiceDto = companyService.createCompany(requestServiceDto);
 		CompanyCreateResponseDto responseDto = companyPresentationMapper.toCreateDto(responseServiceDto);
 		return ResponseEntity.ok(responseDto);

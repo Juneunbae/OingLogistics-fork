@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
+import com.oingmaryho.business.companyservice.application.dto.request.CompanyAdminCreateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyCreateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDeleteRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDetailsSearchRequestServiceDto;
@@ -14,6 +15,7 @@ import com.oingmaryho.business.companyservice.application.dto.response.CompanyCr
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyDetailsSearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanySearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyUpdateResponseServiceDto;
+import com.oingmaryho.business.companyservice.presentation.dto.request.CompanyAdminCreateRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanyCreateRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanySearchRequestDto;
 import com.oingmaryho.business.companyservice.presentation.dto.request.CompanyUpdateRequestDto;
@@ -26,6 +28,8 @@ import com.oingmaryho.business.companyservice.presentation.dto.response.CompanyU
 public interface CompanyPresentationMapper {
 
 	CompanyCreateRequestServiceDto toCreateServiceDto(CompanyCreateRequestDto companyCreateRequestDto);
+
+	CompanyAdminCreateRequestServiceDto toAdminCreateServiceDto(CompanyAdminCreateRequestDto companyAdminCreateRequestDto);
 
 	CompanyDetailsSearchRequestServiceDto toDetailsSearchServiceDto(UUID id);
 

@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.oingmaryho.business.common.domain.type.UserRoleType;
 import com.oingmaryho.business.companyservice.application.dto.mapper.CompanyApplicationMapper;
+import com.oingmaryho.business.companyservice.application.dto.request.CompanyAdminCreateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyCreateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDeleteRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDetailsSearchRequestServiceDto;
@@ -67,6 +68,9 @@ class CompanyServiceTest {
 
 	@InjectMocks
 	private CompanyService companyService;
+
+	@InjectMocks
+	private CompanyAdminService companyAdminService;
 
 	private Company company;
 	private UUID companyId;
@@ -129,7 +133,7 @@ class CompanyServiceTest {
 		);
 
 		when(hubClient.isManagerOfHub(VALID_REQUESTER_ID))
-			.thenReturn(Optional.of(new HubSearchResponseDto(FIXED_MANAGE_HUB_ID, HUB_NAME, HUB_ADDRESS, HUB_LATITUDE, HUB_LONGITUDE, VALID_MANAGER_ID)));
+			.thenReturn(Optional.of(new HubSearchResponseDto(FIXED_MANAGE_HUB_ID, HUB_NAME, HUB_ADDRESS, HUB_LATITUDE, HUB_LONGITUDE, VALID_REQUESTER_ID)));
 
 		when(userClient.userFeignServiceGetRoleById(VALID_COMPANY_MANAGER_ID))
 			.thenReturn(Optional.of(UserRoleType.COMPANY_MANAGER));
@@ -153,18 +157,21 @@ class CompanyServiceTest {
 	void createDuplicateCompany_409() {
 		// given
 		CompanyCreateRequestServiceDto request = new CompanyCreateRequestServiceDto(
-			COMPANY_NAME, COMPANY_TYPE, VALID_MANAGER_ID, COMPANY_ADDRESS
+			COMPANY_NAME, COMPANY_TYPE, VALID_COMPANY_MANAGER_ID, COMPANY_ADDRESS
 		);
 
-		when(hubClient.isManagerOfHub(VALID_MANAGER_ID))
-			.thenReturn(Optional.of(new HubSearchResponseDto(FIXED_MANAGE_HUB_ID, HUB_NAME, HUB_ADDRESS, HUB_LATITUDE, HUB_LONGITUDE, VALID_MANAGER_ID)));
+		when(hubClient.isManagerOfHub(VALID_REQUESTER_ID))
+			.thenReturn(Optional.of(new HubSearchResponseDto(FIXED_MANAGE_HUB_ID, HUB_NAME, HUB_ADDRESS, HUB_LATITUDE, HUB_LONGITUDE, VALID_REQUESTER_ID)));
+
+		when(userClient.userFeignServiceGetRoleById(VALID_COMPANY_MANAGER_ID))
+			.thenReturn(Optional.of(UserRoleType.COMPANY_MANAGER));
 
 		when(companyRepository.existsByTypeAndAddressAndIsDeletedFalse(COMPANY_TYPE, COMPANY_ADDRESS))
 			.thenReturn(true);
 
 		// when & then
 		CompanyException exception = assertThrows(CompanyException.class, () -> {
-			companyService.createCompany(request, VALID_MANAGER_ID);
+			companyService.createCompany(request, VALID_REQUESTER_ID);
 		});
 
 		assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ALREADY_REGISTERED_COMPANY);
@@ -173,22 +180,20 @@ class CompanyServiceTest {
 	}
 
 
-	@Description("업체 생성 테스트 - 마스터 존재하지 않는 허브(매니저)")
+	@Description("업체 생성 테스트 - 마스터 존재하지 않는 허브")
 	@Test
 	void createCompany_404() {
 		// given
-		CompanyCreateRequestServiceDto request = new CompanyCreateRequestServiceDto(
-			COMPANY_NAME, COMPANY_TYPE, INVALID_MANAGER_ID, COMPANY_ADDRESS
+		CompanyAdminCreateRequestServiceDto request = new CompanyAdminCreateRequestServiceDto(
+			COMPANY_NAME, COMPANY_TYPE, VALID_COMPANY_MANAGER_ID, HUB_ID_MISMATCH, COMPANY_ADDRESS
 		);
 
-		when(hubClient.isManagerOfHub(INVALID_MANAGER_ID))
+		when(hubClient.getHubById(HUB_ID_MISMATCH))
 			.thenReturn(Optional.empty());
 
-		// when & then
 		CompanyException exception = assertThrows(CompanyException.class, () -> {
-			companyService.createCompany(request, INVALID_MANAGER_ID);
+			companyAdminService.createCompany(request);
 		});
-
 		assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.HUB_NOT_FOUND);
 
 		verify(companyRepository, never()).save(any());
