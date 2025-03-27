@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import com.oingmaryho.business.companyservice.application.dto.mapper.CompanyApplicationMapper;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDetailsSearchRequestServiceDto;
+import com.oingmaryho.business.companyservice.application.dto.request.CompanySearchRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyDetailsSearchResponseServiceDto;
 import com.oingmaryho.business.companyservice.domain.Company;
 import com.oingmaryho.business.companyservice.domain.repository.CompanyRepository;
@@ -21,6 +22,12 @@ public class CompanyFeignService {
 
 	public CompanyDetailsSearchResponseServiceDto getCompany(CompanyDetailsSearchRequestServiceDto requestDto) {
 		Company company = companyRepository.findByIdAndIsDeletedFalse(requestDto.id())
+			.orElseThrow(() -> new CompanyException(ErrorCode.NOT_FOUND));
+		return companyApplicationMapper.toResponseDto(company);
+	}
+
+	public CompanyDetailsSearchResponseServiceDto getCompanyByManagerId(CompanySearchRequestServiceDto requestDto) {
+		Company company = companyRepository.findByManagerIdAndIsDeletedFalse(requestDto.managerId())
 			.orElseThrow(() -> new CompanyException(ErrorCode.NOT_FOUND));
 		return companyApplicationMapper.toResponseDto(company);
 	}

@@ -7,6 +7,7 @@ import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import com.oingmaryho.business.companyservice.application.dto.request.CompanyAdminCreateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyCreateRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.request.CompanyDetailsSearchRequestServiceDto;
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyCreateResponseServiceDto;
@@ -38,4 +39,14 @@ public interface CompanyApplicationMapper {
 	@Mapping(target = "isDeleted", ignore = true)
 	@Mapping(target = "id", ignore = true)
 	Company toCreateEntity(CompanyCreateRequestServiceDto companyCreateRequestServiceDto, UUID manageHubId);
+
+	@Mapping(target = "deletedBy", ignore = true)
+	@Mapping(target = "deletedAt", ignore = true)
+	@Mapping(target = "createdAt", ignore = true)
+	@Mapping(target = "createdBy", ignore = true)
+	@Mapping(target = "updatedAt", ignore = true)
+	@Mapping(target = "updatedBy", ignore = true)
+	@Mapping(target = "isDeleted", ignore = true)
+	@Mapping(target = "id", ignore = true)
+	Company toAdminCreateEntity(CompanyAdminCreateRequestServiceDto companyAdminCreateRequestServiceDto);
 }

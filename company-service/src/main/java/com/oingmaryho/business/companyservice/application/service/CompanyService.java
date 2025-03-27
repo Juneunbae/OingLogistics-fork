@@ -26,6 +26,7 @@ import com.oingmaryho.business.companyservice.application.dto.response.CompanySe
 import com.oingmaryho.business.companyservice.application.dto.response.CompanyUpdateResponseServiceDto;
 import com.oingmaryho.business.companyservice.application.event.CompanyProductDeletePublisher;
 import com.oingmaryho.business.companyservice.application.service.feignClient.HubClient;
+import com.oingmaryho.business.companyservice.application.service.feignClient.UserClient;
 import com.oingmaryho.business.companyservice.config.cache.CacheType;
 import com.oingmaryho.business.companyservice.domain.Company;
 import com.oingmaryho.business.companyservice.domain.CompanySearchCriteria;
@@ -46,6 +47,7 @@ public class CompanyService {
 
 	private final HubClient hubClient;
 	private final RabbitTemplate rabbitTemplate;
+	private final UserClient userClient;
 	private final CompanyRepository companyRepository;
 	private final CustomCompanyRepository companyCustomRepository;
 	private final CompanyApplicationMapper companyApplicationMapper;
@@ -53,21 +55,17 @@ public class CompanyService {
 
 	@Transactional
 	public CompanyCreateResponseServiceDto createCompany(
-		CompanyCreateRequestServiceDto companyCreateRequestServiceDto,
-		Long requesterId) {
+		CompanyCreateRequestServiceDto requestDto,
+		Long requesterId
+	) {
+		UUID hubId = validateManageHubPermission(requesterId).id();
+		validateCompanyManager(requestDto.managerId());
+		validateDuplicateCompany(requestDto.type(), requestDto.address());
 
-		HubSearchResponseDto hubSearchResponseDto = validateManageHubPermission(requesterId);
+		Company company = companyApplicationMapper.toCreateEntity(requestDto, hubId);
+		Company saved = companyRepository.save(company);
 
-		// 업체가 중복되는지 확인하기 위한 코드로, company entity 에서 jpa 조회(기준은 type, address 로 변경)
-		String address = companyCreateRequestServiceDto.address();
-		CompanyType type = companyCreateRequestServiceDto.type();
-		if (companyRepository.existsByTypeAndAddressAndIsDeletedFalse(type, address)) {
-			throw new CompanyException(ErrorCode.ALREADY_REGISTERED_COMPANY);
-		}
-
-		Company company = companyApplicationMapper.toCreateEntity(companyCreateRequestServiceDto, hubSearchResponseDto.id());
-		Company savedCompany = companyRepository.save(company);
-		return new CompanyCreateResponseServiceDto(savedCompany.getId());
+		return new CompanyCreateResponseServiceDto(saved.getId());
 	}
 
 	@Cacheable(value = CacheType.COMPANY_CACHE, key = "#requestDto.id")
@@ -155,5 +153,19 @@ public class CompanyService {
 		}
 	}
 
+	private void validateDuplicateCompany(CompanyType type, String address) {
+		if (companyRepository.existsByTypeAndAddressAndIsDeletedFalse(type, address)) {
+			throw new CompanyException(ErrorCode.ALREADY_REGISTERED_COMPANY);
+		}
+	}
+
+	private void validateCompanyManager(Long managerId) {
+		UserRoleType role = userClient.userFeignServiceGetRoleById(managerId)
+			.orElseThrow(() -> new CompanyException(ErrorCode.COMPANY_MANAGER_NOT_FOUND));
+
+		if (!UserRoleType.COMPANY_MANAGER.equals(role)) {
+			throw new CompanyException(ErrorCode.NO_PERMISSION);
+		}
+	}
 
 }

@@ -49,7 +49,7 @@ public class ProductAdminService {
 	){
 		// company, hub 존재 확인
 		CompanyDetailsSearchResponseDto company = companyClient(productCreateRequestServiceDto.companyId());
-		HubSearchResponseDto hub = hubClient(productCreateRequestServiceDto.manageHubId());
+		HubSearchResponseDto hub = hubClient(company.manageHubId());
 		validateSupplierCompany(company);
 
 		String productCode = productCreateRequestServiceDto.productCode();
@@ -94,11 +94,16 @@ public class ProductAdminService {
 	) {
 		Product product = productRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
 			.orElseThrow(() -> new ProductException(ErrorCode.NOT_FOUND));
-
-		HubSearchResponseDto hubSearchResponseDto = hubClient(requestServiceDto.manageHubId());
+		UUID manageHubId;
+		if(requestServiceDto.manageHubId() != null){
+			HubSearchResponseDto hubSearchResponseDto = hubClient(requestServiceDto.manageHubId());
+			manageHubId = hubSearchResponseDto.id();
+		} else{
+			manageHubId = product.getManageHubId();
+		}
 
 		product.update(
-			hubSearchResponseDto.id(),
+			manageHubId,
 			requestServiceDto.name(),
 			requestServiceDto.price(),
 			requestServiceDto.stock()

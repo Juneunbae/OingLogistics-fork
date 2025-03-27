@@ -1,9 +1,7 @@
 package com.oingmaryho.business.productservice.application.service;
 
-
 import java.util.UUID;
 
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -12,10 +10,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.oingmaryho.business.common.domain.type.UserRoleType;
+import com.oingmaryho.business.productservice.application.dto.request.ProductCreateRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.request.ProductDeleteRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.request.ProductDetailsSearchRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.request.ProductSearchRequestServiceDto;
 import com.oingmaryho.business.productservice.application.dto.request.ProductUpdateRequestServiceDto;
+import com.oingmaryho.business.productservice.application.dto.response.ProductCreateResponseServiceDto;
 import com.oingmaryho.business.productservice.application.dto.response.ProductDetailsSearchResponseServiceDto;
 import com.oingmaryho.business.productservice.application.dto.response.ProductSearchResponseServiceDto;
 import com.oingmaryho.business.productservice.application.dto.response.ProductUpdateResponseServiceDto;
@@ -27,12 +27,11 @@ import com.oingmaryho.business.productservice.domain.Product;
 import com.oingmaryho.business.productservice.domain.ProductSearchCriteria;
 import com.oingmaryho.business.productservice.domain.repository.CustomProductRepository;
 import com.oingmaryho.business.productservice.domain.repository.ProductRepository;
-import com.oingmaryho.business.productservice.application.dto.request.ProductCreateRequestServiceDto;
-import com.oingmaryho.business.productservice.application.dto.response.ProductCreateResponseServiceDto;
 import com.oingmaryho.business.productservice.exception.ErrorCode;
 import com.oingmaryho.business.productservice.exception.ProductException;
 import com.oingmaryho.business.productservice.presentation.dto.response.CompanyDetailsSearchResponseDto;
 import com.oingmaryho.business.productservice.presentation.dto.response.HubSearchResponseDto;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -43,25 +42,21 @@ public class ProductService {
 	private final ProductRepository productRepository;
 	private final CustomProductRepository customProductRepository;
 	private final ProductApplicationMapper productApplicationMapper;
-
+	public static final String SUPPLIER = "SUPPLIER";
 	@Transactional
 	public ProductCreateResponseServiceDto createProduct(
 		ProductCreateRequestServiceDto productCreateRequestServiceDto,
 		Long userId,
 		UserRoleType role
 	){
-		UUID checkTargetId = (role == UserRoleType.HUB_MANAGER) ? productCreateRequestServiceDto.manageHubId() : productCreateRequestServiceDto.companyId();
-		CompanyDetailsSearchResponseDto company = companyClient(productCreateRequestServiceDto.companyId());
-		HubSearchResponseDto hub = hubClient(productCreateRequestServiceDto.manageHubId());
-		validateManagerPermission(checkTargetId, userId, role);
+
+		UUID requesterCompanyId = productCreateRequestServiceDto.companyId(); //요청 업체 Id
+		CompanyDetailsSearchResponseDto company = companyClient(productCreateRequestServiceDto.companyId()); // 요청 업체 Id 업체 테이블에 존재하는지 확인
+		HubSearchResponseDto hub = hubClient(company.manageHubId()); // 생성하고자 하는 상품의 업체를 관리하는 허브가 존재하는지 확인
+		validateManagerPermission(requesterCompanyId, hub.managerId(), userId, role); // 허브 담당자인 경우 등록하고자하는 허브의 managerId와 userId 와 일치하는지 확인, 업체 담당자인 경우 
 		validateSupplierCompany(company);
 
-
-
-		String productCode = productCreateRequestServiceDto.productCode();
-		if (productRepository.existsByProductCodeAndIsDeletedFalse(productCode)) {
-			throw new ProductException(ErrorCode.ALREADY_REGISTERED_PRODUCT);
-		}
+		validateDuplicateProduct(productCreateRequestServiceDto);
 
 		Product product = productApplicationMapper.toCreateEntity(productCreateRequestServiceDto,company.name(),hub.id());
 		Product saveProduct = productRepository.save(product);
@@ -133,10 +128,18 @@ public class ProductService {
 		Product product = productRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
 			.orElseThrow(() -> new ProductException(ErrorCode.NOT_FOUND));
 
-		UUID checkTargetId = (role == UserRoleType.HUB_MANAGER) ?  product.getManageHubId() :product.getCompanyId();
-		validateManagerPermission(checkTargetId, userId, role);
-
-		HubSearchResponseDto hubSearchResponseDto = hubClient(requestServiceDto.manageHubId());
+		HubSearchResponseDto hubSearchResponseDto = hubClient.isManagerOfHub(userId).orElseThrow(() -> new ProductException(ErrorCode.HUB_NOT_FOUND));
+		if(role == UserRoleType.COMPANY_MANAGER) {
+			CompanyDetailsSearchResponseDto companyDetailsSearchResponseDto = companyClient.getCompanyByManagerId(userId)
+				.orElseThrow(() -> new ProductException(ErrorCode.COMPANY_NOT_FOUND));
+			if (!product.getCompanyId().equals(companyDetailsSearchResponseDto.id())) {
+				throw new ProductException(ErrorCode.NO_PERMISSION);
+			}
+		} else {
+			if (!product.getManageHubId().equals(hubSearchResponseDto.id())) {
+				throw new ProductException(ErrorCode.NO_PERMISSION);
+			}
+		}
 
 		product.update(
 			hubSearchResponseDto.id(),
@@ -155,15 +158,17 @@ public class ProductService {
 	public void deleteProduct(
 		ProductDeleteRequestServiceDto requestServiceDto,
 		Long userId,
-		UserRoleType role) {
+		UserRoleType role
+	) {
 		Product product = productRepository.findByIdAndIsDeletedFalse(requestServiceDto.id())
 			.orElseThrow(() -> new ProductException(ErrorCode.NOT_FOUND));
 
-		validateManagerPermission(product.getManageHubId(), userId, role);
+		HubSearchResponseDto hubSearchResponseDto = hubClient.isManagerOfHub(userId).orElseThrow(() -> new ProductException(ErrorCode.HUB_NOT_FOUND));
+		if (!product.getManageHubId().equals(hubSearchResponseDto.id())) {
+			throw new ProductException(ErrorCode.NO_PERMISSION);
+		}
 
 		product.softDelete(userId);
-
-		UUID companyId = product.getCompanyId(); // 상품이 소속된 업체 ID
 
 	}
 
@@ -196,16 +201,20 @@ public class ProductService {
 		}
 	}
 
-	private void validateManagerPermission(UUID manageId, Long userId, UserRoleType role) {
-		if (role == UserRoleType.HUB_MANAGER) {
-			HubSearchResponseDto managedHub = hubClient.isManagerOfHub(userId)
-				.orElseThrow(() -> new ProductException(ErrorCode.HUB_NOT_FOUND));
+	private void validateDuplicateProduct(ProductCreateRequestServiceDto productCreateRequestServiceDto) {
+		String productCode = productCreateRequestServiceDto.productCode();
+		if (productRepository.existsByProductCodeAndIsDeletedFalse(productCode)) {
+			throw new ProductException(ErrorCode.ALREADY_REGISTERED_PRODUCT);
+		}
+	}
 
-			if (!manageId.equals(managedHub.id())) {
+	private void validateManagerPermission(UUID requesterCompanyId, Long hubManagerId, Long userId, UserRoleType role) {
+		if (role == UserRoleType.HUB_MANAGER) {
+			if (!userId.equals(hubManagerId)) {
 				throw new ProductException(ErrorCode.NO_PERMISSION);
 			}
 		} else if (role == UserRoleType.COMPANY_MANAGER) {
-			CompanyDetailsSearchResponseDto company = companyClient.getCompanyById(manageId)
+			CompanyDetailsSearchResponseDto company = companyClient.getCompanyById(requesterCompanyId)
 				.orElseThrow(() -> new ProductException(ErrorCode.COMPANY_NOT_FOUND));
 
 			if (!company.managerId().equals(userId)) {
@@ -227,7 +236,7 @@ public class ProductService {
 
 	private void validateSupplierCompany(CompanyDetailsSearchResponseDto company) {
 
-		if (!company.type().equals("SUPPLIER")) {
+		if (!company.type().equals(SUPPLIER)) {
 			throw new ProductException(ErrorCode.INVALID_COMPANY_TYPE);
 		}
 	}
