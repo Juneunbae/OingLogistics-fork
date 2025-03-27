@@ -1,13 +1,11 @@
 package com.oingmaryho.business.orderservice.application.service.queue;
 
+import com.oingmaryho.business.orderservice.application.OrderHelper;
 import com.oingmaryho.business.orderservice.application.dto.request.SlackMessageDto;
 import com.oingmaryho.business.orderservice.application.dto.response.DeliveryCreationResponseDto;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
 import com.oingmaryho.business.orderservice.domain.repository.OrderRepository;
-import com.oingmaryho.business.orderservice.exception.ErrorCode;
-import com.oingmaryho.business.orderservice.exception.OrderException;
-import com.oingmaryho.business.orderservice.infrastructure.OrderJPARepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -16,15 +14,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class OrderQueue {
+    private final OrderHelper orderHelper;
     private final RabbitTemplate rabbitTemplate;
     private final OrderRepository orderRepository;
-    private final OrderJPARepository orderJPARepository;
 
     @Value("${message.queue.slack}")
     private String queueSlack;
@@ -34,8 +30,8 @@ public class OrderQueue {
     public void processQueueOrder(DeliveryCreationResponseDto deliveryCreationResponseDto) {
         log.info("receive orderQueue: {}", deliveryCreationResponseDto);
 
-        Order order = getOrderById(deliveryCreationResponseDto.orderId());
-        OrderDetail orderDetail = getByOrderDetailId(order, deliveryCreationResponseDto.orderDetailId());
+        Order order = orderHelper.getByOrderId(deliveryCreationResponseDto.orderId());
+        OrderDetail orderDetail = orderHelper.getByOrderDetailId(order, deliveryCreationResponseDto.orderDetailId());
         orderDetail.updateDelivery(deliveryCreationResponseDto.deliveryId());
         orderRepository.save(order);
 
@@ -46,17 +42,6 @@ public class OrderQueue {
 
         rabbitTemplate.convertAndSend(queueSlack, new SlackMessageDto(order.getRequesterUserId(), message));
         log.info("queueSlack 전송 성공");
-    }
-
-    private Order getOrderById(UUID orderId) {
-        return orderJPARepository.findById(orderId)
-            .orElseThrow(() -> new OrderException(ErrorCode.NOT_FOUND));
-    }
-
-    private OrderDetail getByOrderDetailId(Order order, UUID orderDetailId) {
-        return order.getOrderDetails().stream().filter(
-            orderDetail -> orderDetail.getId().equals(orderDetailId) && !orderDetail.getIsDeleted()
-        ).findFirst().orElseThrow(() -> new OrderException(ErrorCode.ORDER_DETAIL_NOT_FOUND));
     }
 
     private String makeMessage(Order order, OrderDetail orderDetail, DeliveryCreationResponseDto deliveryCreationResponseDto, String[] stopoverNames) {

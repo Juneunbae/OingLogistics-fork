@@ -1,4 +1,4 @@
-package com.oingmaryho.business.orderservice.application.service;
+package com.oingmaryho.business.orderservice.application;
 
 import com.oingmaryho.business.orderservice.application.dto.response.HubSearchResponseDto;
 import com.oingmaryho.business.orderservice.application.service.feignclient.CompanyClient;
