@@ -1,10 +1,12 @@
 package com.oingmaryho.business.orderservice.presentation.dto.mapper;
 
 import com.oingmaryho.business.orderservice.application.dto.request.*;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderCreateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.*;
 import com.oingmaryho.business.orderservice.presentation.dto.response.OrderAdminResponseServiceDto;
+import com.oingmaryho.business.orderservice.presentation.dto.response.OrderCreateResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.data.domain.Pageable;
@@ -57,4 +59,6 @@ public interface OrderPresentationMapper {
     );
 
     OrderAdminResponseServiceDto toOrderAdminResponseServiceDto(OrderAdminResponseServiceDto source);
+
+    OrderCreateResponseDto toOrderCreateResponseDto(OrderCreateResponseServiceDto source);
 }

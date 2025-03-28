@@ -3,11 +3,13 @@ package com.oingmaryho.business.orderservice.presentation.controller;
 import com.oingmaryho.business.common.domain.type.UserRoleType;
 import com.oingmaryho.business.common.infrastructure.annotation.RequiredRoles;
 import com.oingmaryho.business.orderservice.application.dto.request.*;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderCreateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.service.OrderService;
 import com.oingmaryho.business.orderservice.presentation.dto.mapper.OrderPresentationMapper;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderCreateRequestDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderUpdateRequestDto;
+import com.oingmaryho.business.orderservice.presentation.dto.response.OrderCreateResponseDto;
 import com.oingmaryho.business.orderservice.utils.PageableUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -79,7 +81,7 @@ public class OrderController {
     )
     @PostMapping
     @RequiredRoles({UserRoleType.HUB_MANAGER, UserRoleType.HUB_DELIVERY_MANAGER, UserRoleType.COMPANY_DELIVERY_MANAGER, UserRoleType.COMPANY_MANAGER})
-    public ResponseEntity<?> createOrder(HttpServletRequest request, @Valid @RequestBody OrderCreateRequestDto orderCreateRequestDto) {
+    public ResponseEntity<OrderCreateResponseDto> createOrder(HttpServletRequest request, @Valid @RequestBody OrderCreateRequestDto orderCreateRequestDto) {
         Long userId = (Long) request.getAttribute("userId");
         String username = (String) request.getAttribute("username");
         String slackId = (String) request.getAttribute("slackId");
@@ -92,8 +94,9 @@ public class OrderController {
             userId, username, slackId, orderCreateRequestDto, orderCreateRequestServiceDto
         );
 
-        orderService.createOrder(create);
-        return ResponseEntity.ok().build();
+        OrderCreateResponseServiceDto orderCreateResponseServiceDto = orderService.createOrder(create);
+
+        return ResponseEntity.ok(orderPresentationMapper.toOrderCreateResponseDto(orderCreateResponseServiceDto));
     }
 
     @Description(
