@@ -1,6 +1,8 @@
 package com.oingmaryho.business.orderservice.application.dto.mapper;
 
 import com.oingmaryho.business.orderservice.application.dto.request.*;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderCreateResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailCreateResponseDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
@@ -40,4 +42,10 @@ public interface OrderApplicationMapper {
     // @Mapping(target = "recipientName", source = "orderDetail.recipientName")
     // @Mapping(target = "recipientHubId", source = "orderDetail.recipientHubId")
     DeliveryCreationRequestDto toDeliveryCreationRequestDto(Order order, OrderDetail orderDetail);
+
+
+    OrderCreateResponseServiceDto toOrderCreateResponseDto(Order order, List<OrderDetailCreateResponseDto> orderDetails);
+
+    @Mapping(target = "orderId", source = "orderDetail.order.id")
+    OrderDetailCreateResponseDto toOrderDetailCreateResponseDto(OrderDetail orderDetail);
 }

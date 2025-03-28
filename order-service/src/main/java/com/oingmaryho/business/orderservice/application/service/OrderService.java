@@ -5,6 +5,7 @@ import com.oingmaryho.business.orderservice.application.OrderHelper;
 import com.oingmaryho.business.orderservice.application.dto.mapper.OrderApplicationMapper;
 import com.oingmaryho.business.orderservice.application.dto.request.*;
 import com.oingmaryho.business.orderservice.application.dto.response.HubSearchResponseDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderCreateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.event.OrderEvent;
@@ -29,7 +30,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -96,7 +100,7 @@ public class OrderService {
     }
 
     @Transactional
-    public void createOrder(OrderCreateRequestServiceDto create) {
+    public OrderCreateResponseServiceDto createOrder(OrderCreateRequestServiceDto create) {
         int totalPrice = 0;
 
         CompanyDetailsSearchResponseDto requestCompanyInfo = orderHelper.getCompanyInfo(create.requesterId());
@@ -117,13 +121,17 @@ public class OrderService {
             .createdBy(create.userId())
             .build();
 
-        ArrayList<OrderDetail> details = orderHelper.createOrderDetails(create, order, totalPrice);
+        Order processOrder = orderHelper.createOrderDetails(create, order, totalPrice);
 
-        order.inputTotalPrice(totalPrice);
-        order.addOrderDetail(details);
-
-        orderRepository.save(order);
+        orderRepository.save(processOrder);
         publisher.publishEvent(new OrderEvent(order));
+
+        return orderApplicationMapper.toOrderCreateResponseDto(
+            order,
+            order.getOrderDetails().stream().map(
+                orderApplicationMapper::toOrderDetailCreateResponseDto
+            ).toList()
+        );
     }
 
     @Transactional

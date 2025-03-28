@@ -112,7 +112,7 @@ public class OrderHelper {
         OrdersCache.clear();
     }
 
-    public ArrayList<OrderDetail> createOrderDetails(OrderCreateRequestServiceDto create, Order order, int totalPrice) {
+    public Order createOrderDetails(OrderCreateRequestServiceDto create, Order order, int totalPrice) {
         ArrayList<OrderDetail> details = new ArrayList<>();
 
         for (OrderDetailCreateRequestServiceDto orderDetail : create.orderDetails()) {
@@ -162,7 +162,9 @@ public class OrderHelper {
 
             details.add(detail);
         }
+        order.inputTotalPrice(totalPrice);
+        order.addOrderDetail(details);
 
-        return details;
+        return order;
     }
 }
