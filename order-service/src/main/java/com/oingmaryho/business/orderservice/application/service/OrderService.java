@@ -18,6 +18,8 @@ import com.oingmaryho.business.orderservice.infrastructure.OrderQueryRepository;
 import com.oingmaryho.business.orderservice.presentation.dto.response.CompanyDetailsSearchResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -38,10 +40,14 @@ import java.util.UUID;
 public class OrderService {
     private final HubClient hubClient;
     private final OrderHelper orderHelper;
+    private final RabbitTemplate rabbitTemplate;
     private final OrderRepository orderRepository;
     private final ApplicationEventPublisher publisher;
     private final OrderQueryRepository orderQueryRepository;
     private final OrderApplicationMapper orderApplicationMapper;
+
+    @Value("${message.queue.slack}")
+    private String queueSlack;
 
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = "orders")
@@ -231,6 +237,20 @@ public class OrderService {
         orderHelper.evictCache(order);
     }
 
+    public void processOrderQueue(DeliveryCreationResponseDto deliveryCreationResponseDto) {
+        Order order = orderHelper.getByOrderId(deliveryCreationResponseDto.orderId());
+
+        OrderDetail orderDetail = orderHelper.getByOrderDetailId(order, deliveryCreationResponseDto.orderDetailId());
+        orderDetail.updateDelivery(deliveryCreationResponseDto.deliveryId());
+        orderRepository.save(order);
+
+        String[] stopoverNames = deliveryCreationResponseDto.deliveryStopoverNames().split(",");
+
+        String message = makeMessage(order, orderDetail, deliveryCreationResponseDto, stopoverNames);
+
+        rabbitTemplate.convertAndSend(queueSlack, new SlackMessageDto(order.getRequesterUserId(), message));
+    }
+
     private OrderSearchCriteria createOrderSearchCriteria(OrdersRequestServiceDto requestDto) {
         return OrderSearchCriteria.builder()
             .productName(requestDto.productName())
@@ -265,5 +285,31 @@ public class OrderService {
         }
 
         return new PageImpl<>(Collections.emptyList(), customPageable, 0);
+    }
+
+    private String makeMessage(Order order, OrderDetail orderDetail, DeliveryCreationResponseDto deliveryCreationResponseDto, String[] stopoverNames) {
+        StringBuilder messageBuilder = new StringBuilder();
+
+        messageBuilder.append(String.format("주문 번호: %s, \n", order.getId()));
+        messageBuilder.append(String.format("주문자 정보: %s / %s \n", order.getRequesterUsername(), order.getRequesterSlackId()));
+        messageBuilder.append(String.format("상품 정보: %s \n", orderDetail.getProductName()));
+        messageBuilder.append(String.format("요청 사항: %s \n", order.getRequests()));
+        messageBuilder.append(String.format("발송지: %s \n", deliveryCreationResponseDto.deliveryDepartureName()));
+
+        if (stopoverNames != null && stopoverNames.length > 0) {
+            messageBuilder.append("경유지: ");
+            for (String stopoverName : stopoverNames) {
+                messageBuilder.append(stopoverName).append(", ");
+            }
+            messageBuilder.delete(messageBuilder.length() - 2, messageBuilder.length());
+            messageBuilder.append("\n");
+        } else {
+            messageBuilder.append("경유지: 없음\n");
+        }
+
+        messageBuilder.append(String.format("도착지: %s \n", deliveryCreationResponseDto.deliveryDestinationName()));
+        messageBuilder.append(String.format("배송담당자: %s / %s", deliveryCreationResponseDto.deliveryManagerName(), deliveryCreationResponseDto.deliveryManagerSlackId()));
+
+        return messageBuilder.toString();
     }
 }
