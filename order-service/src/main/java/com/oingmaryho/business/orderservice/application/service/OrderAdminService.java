@@ -4,8 +4,9 @@ import com.oingmaryho.business.orderservice.application.OrderHelper;
 import com.oingmaryho.business.orderservice.application.dto.mapper.OrderApplicationMapper;
 import com.oingmaryho.business.orderservice.application.dto.request.*;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderCreateResponseServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.event.OrderEvent;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
@@ -123,14 +124,14 @@ public class OrderAdminService {
     }
 
     @Transactional
-    public void updateOrder(OrderUpdateServiceDto update) {
+    public OrderUpdateResponseServiceDto updateOrder(OrderUpdateServiceDto update) {
         int totalPrice = 0;
         UUID orderId = update.id();
 
         Order order = orderHelper.getByOrderId(orderId);
 
         if (update.orderDetails() != null) {
-            for (OrderDetailUpdateResponseServiceDto orderDetailDto : update.orderDetails()) {
+            for (OrderDetailUpdateServiceDto orderDetailDto : update.orderDetails()) {
                 OrderDetail orderDetail = orderHelper.getByOrderDetailId(order, orderDetailDto.orderDetailId());
                 OrderDetailUpdateRequestServiceDto orderDetailUpdateRequestServiceDto = orderApplicationMapper.toOrderDetailUpdateDto(
                     orderDetailDto.price(), orderDetailDto.quantity()
@@ -151,6 +152,13 @@ public class OrderAdminService {
         log.info("주문:{}, 수정 완료", order.getId());
 
         orderHelper.refreshCache(order);
+
+        return orderApplicationMapper.toOrderUpdateResponseServiceDto(
+            order,
+            order.getOrderDetails().stream().map(
+                orderApplicationMapper::toOrderDetailUpdateResponseServiceDto
+            ).toList()
+        );
     }
 
     @Transactional

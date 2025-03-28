@@ -5,6 +5,7 @@ import com.oingmaryho.business.common.infrastructure.annotation.RequiredRoles;
 import com.oingmaryho.business.orderservice.application.dto.request.*;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderCreateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.service.OrderAdminService;
 import com.oingmaryho.business.orderservice.presentation.dto.mapper.OrderPresentationMapper;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderAdminRequestServiceDto;
@@ -12,6 +13,7 @@ import com.oingmaryho.business.orderservice.presentation.dto.request.OrderCreate
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderUpdateRequestDto;
 import com.oingmaryho.business.orderservice.presentation.dto.response.OrderAdminResponseServiceDto;
 import com.oingmaryho.business.orderservice.presentation.dto.response.OrderCreateResponseDto;
+import com.oingmaryho.business.orderservice.presentation.dto.response.OrderUpdateResponseDto;
 import com.oingmaryho.business.orderservice.utils.PageableUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Min;
@@ -102,15 +104,15 @@ public class OrderAdminController {
     )
     @PutMapping("/{id}")
     @RequiredRoles({UserRoleType.MASTER})
-    public ResponseEntity<Void> updateOrder(@PathVariable UUID id, @RequestBody OrderUpdateRequestDto update) {
+    public ResponseEntity<OrderUpdateResponseDto> updateOrder(@PathVariable UUID id, @RequestBody OrderUpdateRequestDto update) {
         OrderUpdateServiceDto orderUpdateServiceDto = orderPresentationMapper.toOrderUpdateServiceDto(
             id, update, update.requestOrderDetails().stream().map(
                 orderPresentationMapper::toOrderDetailUpdateServiceDto
             ).toList()
         );
-        orderAdminService.updateOrder(orderUpdateServiceDto);
+        OrderUpdateResponseServiceDto orderUpdateResponseServiceDto = orderAdminService.updateOrder(orderUpdateServiceDto);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(orderPresentationMapper.toOrderUpdateResponseDto(orderUpdateResponseServiceDto));
     }
 
     @Description(
