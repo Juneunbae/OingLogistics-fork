@@ -5,11 +5,13 @@ import com.oingmaryho.business.common.infrastructure.annotation.RequiredRoles;
 import com.oingmaryho.business.orderservice.application.dto.request.*;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderCreateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.service.OrderService;
 import com.oingmaryho.business.orderservice.presentation.dto.mapper.OrderPresentationMapper;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderCreateRequestDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderUpdateRequestDto;
 import com.oingmaryho.business.orderservice.presentation.dto.response.OrderCreateResponseDto;
+import com.oingmaryho.business.orderservice.presentation.dto.response.OrderUpdateResponseDto;
 import com.oingmaryho.business.orderservice.utils.PageableUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -104,7 +106,7 @@ public class OrderController {
     )
     @PutMapping("/{id}")
     @RequiredRoles({UserRoleType.HUB_MANAGER})
-    public ResponseEntity<Void> updateOrder(HttpServletRequest request, @PathVariable UUID id, @RequestBody OrderUpdateRequestDto update) {
+    public ResponseEntity<OrderUpdateResponseDto> updateOrder(HttpServletRequest request, @PathVariable UUID id, @RequestBody OrderUpdateRequestDto update) {
         Long userId = (Long) request.getAttribute("userId");
         String role = (String) request.getAttribute("role");
 
@@ -113,9 +115,9 @@ public class OrderController {
                 orderPresentationMapper::toOrderDetailUpdateServiceDto
             ).toList()
         );
-        orderService.updateOrder(userId, role, orderUpdateServiceDto);
+        OrderUpdateResponseServiceDto orderUpdateResponseServiceDto = orderService.updateOrder(userId, role, orderUpdateServiceDto);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(orderPresentationMapper.toOrderUpdateResponseDto(orderUpdateResponseServiceDto));
     }
 
     @Description(

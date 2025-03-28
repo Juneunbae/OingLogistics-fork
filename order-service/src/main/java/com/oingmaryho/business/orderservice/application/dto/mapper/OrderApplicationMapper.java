@@ -1,9 +1,7 @@
 package com.oingmaryho.business.orderservice.application.dto.mapper;
 
 import com.oingmaryho.business.orderservice.application.dto.request.*;
-import com.oingmaryho.business.orderservice.application.dto.response.OrderCreateResponseServiceDto;
-import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailCreateResponseDto;
-import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.*;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
 import com.oingmaryho.business.orderservice.presentation.dto.response.OrderAdminResponseServiceDto;
@@ -44,8 +42,11 @@ public interface OrderApplicationMapper {
     DeliveryCreationRequestDto toDeliveryCreationRequestDto(Order order, OrderDetail orderDetail);
 
 
-    OrderCreateResponseServiceDto toOrderCreateResponseDto(Order order, List<OrderDetailCreateResponseDto> orderDetails);
+    OrderCreateResponseServiceDto toOrderCreateResponseDto(Order order, List<OrderDetailCreateResponseServiceDto> orderDetails);
 
-    @Mapping(target = "orderId", source = "orderDetail.order.id")
-    OrderDetailCreateResponseDto toOrderDetailCreateResponseDto(OrderDetail orderDetail);
+    OrderDetailCreateResponseServiceDto toOrderDetailCreateResponseDto(OrderDetail orderDetail);
+
+    OrderUpdateResponseServiceDto toOrderUpdateResponseServiceDto(Order order, List<OrderDetailUpdateResponseServiceDto> orderDetails);
+
+    OrderDetailUpdateResponseServiceDto toOrderDetailUpdateResponseServiceDto(OrderDetail orderDetail);
 }
