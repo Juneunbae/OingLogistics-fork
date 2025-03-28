@@ -1,6 +1,5 @@
 package com.oingmaryho.business.orderservice.application.event;
 
-import com.oingmaryho.business.orderservice.application.dto.mapper.OrderApplicationMapper;
 import com.oingmaryho.business.orderservice.application.dto.request.DeliveryCreationRequestDto;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
@@ -29,8 +28,6 @@ public class OrderEventHandler {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void OrderSuccessEvent(OrderEvent orderEvent) {
-        log.info("주문 성공 후 이벤트 실행");
-
         Order order = orderEvent.order();
 
         order.successOrder(Status.COMPLETE);
@@ -50,10 +47,7 @@ public class OrderEventHandler {
                 orderDetail.getRecipientHubId()
             );
 
-            log.info("DeliveryCreationRequestDto: {}", deliveryCreationRequestDto);
             rabbitTemplate.convertAndSend(queueDelivery, deliveryCreationRequestDto);
         }
-
-        log.info("queueDelivery, 메시지 큐 전달 완료");
     }
 }

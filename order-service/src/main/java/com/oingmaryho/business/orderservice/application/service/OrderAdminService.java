@@ -1,6 +1,5 @@
 package com.oingmaryho.business.orderservice.application.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oingmaryho.business.orderservice.application.OrderHelper;
 import com.oingmaryho.business.orderservice.application.dto.mapper.OrderApplicationMapper;
 import com.oingmaryho.business.orderservice.application.dto.request.*;
@@ -12,17 +11,12 @@ import com.oingmaryho.business.orderservice.domain.OrderDetail;
 import com.oingmaryho.business.orderservice.domain.OrderSearchCriteria;
 import com.oingmaryho.business.orderservice.domain.Status;
 import com.oingmaryho.business.orderservice.domain.repository.OrderRepository;
-import com.oingmaryho.business.orderservice.exception.ErrorCode;
-import com.oingmaryho.business.orderservice.exception.OrderException;
 import com.oingmaryho.business.orderservice.infrastructure.OrderQueryRepository;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderAdminRequestServiceDto;
 import com.oingmaryho.business.orderservice.presentation.dto.response.CompanyDetailsSearchResponseDto;
 import com.oingmaryho.business.orderservice.presentation.dto.response.OrderAdminResponseServiceDto;
-import com.oingmaryho.business.orderservice.presentation.dto.response.ProductDetailsSearchResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationEventPublisher;
@@ -32,7 +26,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,17 +37,10 @@ import java.util.UUID;
 public class OrderAdminService {
     private final OrderHelper orderHelper;
     private final CacheManager cacheManager;
-    private final RabbitTemplate rabbitTemplate;
     private final OrderRepository orderRepository;
     private final ApplicationEventPublisher publisher;
     private final OrderQueryRepository orderQueryRepository;
     private final OrderApplicationMapper orderApplicationMapper;
-
-    @Value("${message.queue.product}")
-    private String queueProduct;
-
-    @Value("${message.queue.err.product}")
-    private String queueErrProduct;
 
     @Transactional
     public Page<OrderAdminResponseServiceDto> getOrders(OrderAdminRequestServiceDto orderAdminRequestServiceDto) {
@@ -62,7 +48,6 @@ public class OrderAdminService {
 
         Page<OrderAdminResponseServiceDto> cachedOrders = orderHelper.getOrdersCache(cacheKey);
         if (cachedOrders != null) {
-            log.info("캐시된 주문 전체 조회 반환 성공");
             return cachedOrders;
         }
 
@@ -106,11 +91,8 @@ public class OrderAdminService {
     @Transactional
     public void createOrder(OrderCreateRequestServiceDto create) {
         int totalPrice = 0;
-        ArrayList<OrderDetail> details = new ArrayList<>();
 
-        log.info("-");
         CompanyDetailsSearchResponseDto requestCompanyInfo = orderHelper.getCompanyInfo(create.requesterId());
-        log.info("requestCompanyInfo: {}", requestCompanyInfo);
 
         Order order = Order.builder()
             .requesterId(requestCompanyInfo.id())
@@ -127,58 +109,7 @@ public class OrderAdminService {
             .createdBy(create.userId())
             .build();
 
-        // orderId, requesterId, requesterName, productId, quantity
-        for (OrderDetailCreateRequestServiceDto orderDetail : create.orderDetails()) {
-            ProductDetailsSearchResponseDto productInfo = orderHelper.getProductInfo(orderDetail.productId());
-
-            log.info(productInfo.toString());
-            log.info(orderDetail.toString());
-
-            if (!orderDetail.recipientId().equals(productInfo.companyId())) {
-                throw new OrderException(ErrorCode.COMPANY_NOT_MATCH);
-            }
-
-            ProductQueueRequestDto QueueRequest = orderApplicationMapper.toProductQueueRequestDto(
-                productInfo.id(),
-                orderDetail.quantity()
-            );
-
-            Object response = rabbitTemplate.convertSendAndReceive(queueProduct, QueueRequest);
-            log.info("성공");
-
-            if (response == null) {
-                rabbitTemplate.convertAndSend(queueErrProduct, QueueRequest);
-                throw new OrderException(ErrorCode.PRODUCT_SERVER_ERROR);
-            }
-
-            try {
-                String responseString = new String((byte[]) response, StandardCharsets.UTF_8);
-                ObjectMapper objectMapper = new ObjectMapper();
-                int statusCode = objectMapper.readValue(responseString, Integer.class);
-
-                log.info(String.valueOf(statusCode));
-            } catch (Exception e) {
-                log.error(e.getMessage());
-            }
-
-            totalPrice += (productInfo.price() * orderDetail.quantity());
-
-            OrderDetail detail = OrderDetail.builder()
-                .order(order)
-                .recipientId(productInfo.companyId())
-                .recipientName(productInfo.companyName())
-                .recipientHubId(productInfo.manageHubId())
-                .productId(productInfo.id())
-                .productName(productInfo.name())
-                .quantity(orderDetail.quantity())
-                .price(productInfo.price())
-                .isDeleted(false)
-                .createdAt(LocalDateTime.now())
-                .createdBy(create.userId())
-                .build();
-
-            details.add(detail);
-        }
+        ArrayList<OrderDetail> details = orderHelper.createOrderDetails(create, order, totalPrice);
 
         order.inputTotalPrice(totalPrice);
         order.addOrderDetail(details);
@@ -213,7 +144,7 @@ public class OrderAdminService {
         OrderUpdateRequestServiceDto orderUpdateRequestServiceDto = orderApplicationMapper.toOrderUpdateDto(update.requests(), totalPrice);
 
         order.update(orderUpdateRequestServiceDto);
-        log.info("주문 수정 완료");
+        log.info("주문:{}, 수정 완료", order.getId());
 
         orderHelper.refreshCache(order);
     }
@@ -226,11 +157,11 @@ public class OrderAdminService {
 
         for (OrderDetail orderDetail : order.getOrderDetails()) {
             orderDetail.softDeleted(userId);
-            log.info("상세 주문 삭제 완료");
+            log.info("상세 주문: {},  삭제 완료", orderDetail.getId());
         }
 
         order.softDeleted(userId);
-        log.info("주문 삭제 완료");
+        log.info("주문: {}, 삭제 완료", order.getId());
 
         orderHelper.evictCache(order);
     }
