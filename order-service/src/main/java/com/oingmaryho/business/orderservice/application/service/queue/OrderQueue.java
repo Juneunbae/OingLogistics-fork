@@ -28,8 +28,6 @@ public class OrderQueue {
     @RabbitListener(queues = "${message.queue.order}")
     @Transactional
     public void processQueueOrder(DeliveryCreationResponseDto deliveryCreationResponseDto) {
-        log.info("receive orderQueue: {}", deliveryCreationResponseDto);
-
         Order order = orderHelper.getByOrderId(deliveryCreationResponseDto.orderId());
         OrderDetail orderDetail = orderHelper.getByOrderDetailId(order, deliveryCreationResponseDto.orderDetailId());
         orderDetail.updateDelivery(deliveryCreationResponseDto.deliveryId());
@@ -38,10 +36,8 @@ public class OrderQueue {
         String[] stopoverNames = deliveryCreationResponseDto.deliveryStopoverNames().split(",");
 
         String message = makeMessage(order, orderDetail, deliveryCreationResponseDto, stopoverNames);
-        log.info("메시지 생성 성공");
 
         rabbitTemplate.convertAndSend(queueSlack, new SlackMessageDto(order.getRequesterUserId(), message));
-        log.info("queueSlack 전송 성공");
     }
 
     private String makeMessage(Order order, OrderDetail orderDetail, DeliveryCreationResponseDto deliveryCreationResponseDto, String[] stopoverNames) {

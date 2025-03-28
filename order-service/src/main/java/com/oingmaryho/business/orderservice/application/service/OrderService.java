@@ -1,6 +1,5 @@
 package com.oingmaryho.business.orderservice.application.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oingmaryho.business.common.domain.type.UserRoleType;
 import com.oingmaryho.business.orderservice.application.OrderHelper;
 import com.oingmaryho.business.orderservice.application.dto.mapper.OrderApplicationMapper;
@@ -19,13 +18,8 @@ import com.oingmaryho.business.orderservice.exception.ErrorCode;
 import com.oingmaryho.business.orderservice.exception.OrderException;
 import com.oingmaryho.business.orderservice.infrastructure.OrderQueryRepository;
 import com.oingmaryho.business.orderservice.presentation.dto.response.CompanyDetailsSearchResponseDto;
-import com.oingmaryho.business.orderservice.presentation.dto.response.ProductDetailsSearchResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -34,7 +28,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -44,18 +37,10 @@ import java.util.*;
 public class OrderService {
     private final HubClient hubClient;
     private final OrderHelper orderHelper;
-    private final CacheManager cacheManager;
-    private final RabbitTemplate rabbitTemplate;
     private final OrderRepository orderRepository;
     private final ApplicationEventPublisher publisher;
     private final OrderQueryRepository orderQueryRepository;
     private final OrderApplicationMapper orderApplicationMapper;
-
-    @Value("${message.queue.product}")
-    private String queueProduct;
-
-    @Value("${message.queue.err.product}")
-    private String queueErrProduct;
 
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = "orders")
@@ -79,7 +64,7 @@ public class OrderService {
     @Transactional(readOnly = true)
     public OrderResponseServiceDto getOrder(Long userId, String role, OrderRequestServiceDto orderRequestServiceDto) {
         UUID orderId = orderRequestServiceDto.orderId();
-        Order order = getByOrderId(orderId);
+        Order order = orderHelper.getByOrderId(orderId);
 
         if (Objects.equals(role, UserRoleType.HUB_MANAGER.name())) {
             HubSearchResponseDto hubInfo = hubClient.getHubById(userId);
@@ -113,7 +98,6 @@ public class OrderService {
     @Transactional
     public void createOrder(OrderCreateRequestServiceDto create) {
         int totalPrice = 0;
-        ArrayList<OrderDetail> details = new ArrayList<>();
 
         CompanyDetailsSearchResponseDto requestCompanyInfo = orderHelper.getCompanyInfo(create.requesterId());
 
@@ -133,57 +117,7 @@ public class OrderService {
             .createdBy(create.userId())
             .build();
 
-        // orderId, requesterId, requesterName, productId, quantity
-        for (OrderDetailCreateRequestServiceDto orderDetail : create.orderDetails()) {
-            ProductDetailsSearchResponseDto productInfo = orderHelper.getProductInfo(orderDetail.productId());
-
-            log.info(productInfo.toString());
-            log.info(orderDetail.toString());
-
-            if (!orderDetail.recipientId().equals(productInfo.companyId())) {
-                throw new OrderException(ErrorCode.COMPANY_NOT_MATCH);
-            }
-
-            ProductQueueRequestDto QueueRequest = orderApplicationMapper.toProductQueueRequestDto(
-                productInfo.id(),
-                orderDetail.quantity()
-            );
-
-            Object response = rabbitTemplate.convertSendAndReceive(queueProduct, QueueRequest);
-
-            if (response == null) {
-                rabbitTemplate.convertAndSend(queueErrProduct, QueueRequest);
-                throw new OrderException(ErrorCode.PRODUCT_SERVER_ERROR);
-            }
-
-            try {
-                String responseString = new String((byte[]) response, StandardCharsets.UTF_8);
-                ObjectMapper objectMapper = new ObjectMapper();
-                int statusCode = objectMapper.readValue(responseString, Integer.class);
-
-                log.info(String.valueOf(statusCode));
-            } catch (Exception e) {
-                log.error(e.getMessage());
-            }
-
-            totalPrice += (productInfo.price() * orderDetail.quantity());
-
-            OrderDetail detail = OrderDetail.builder()
-                .order(order)
-                .recipientId(productInfo.companyId())
-                .recipientName(productInfo.companyName())
-                .recipientHubId(productInfo.manageHubId())
-                .productId(productInfo.id())
-                .productName(productInfo.name())
-                .quantity(orderDetail.quantity())
-                .price(productInfo.price())
-                .isDeleted(false)
-                .createdAt(LocalDateTime.now())
-                .createdBy(create.userId())
-                .build();
-
-            details.add(detail);
-        }
+        ArrayList<OrderDetail> details = orderHelper.createOrderDetails(create, order, totalPrice);
 
         order.inputTotalPrice(totalPrice);
         order.addOrderDetail(details);
@@ -197,7 +131,7 @@ public class OrderService {
         int totalPrice = 0;
         UUID orderId = update.id();
 
-        Order order = getByOrderId(orderId);
+        Order order = orderHelper.getByOrderId(orderId);
 
         if (Objects.equals(role, UserRoleType.HUB_MANAGER.name())) {
             HubSearchResponseDto hubInfo = hubClient.getHubById(userId);
@@ -227,7 +161,7 @@ public class OrderService {
         OrderUpdateRequestServiceDto orderUpdateRequestServiceDto = orderApplicationMapper.toOrderUpdateDto(update.requests(), totalPrice);
 
         order.update(orderUpdateRequestServiceDto);
-        log.info("주문 수정 완료");
+        log.info("주문: {}, 수정 완료", order.getId());
 
         orderHelper.refreshCache(order);
     }
@@ -236,7 +170,7 @@ public class OrderService {
     public void deleteOrder(Long userId, String role, OrderDeleteServiceDto delete) {
         UUID orderId = delete.orderId();
 
-        Order order = getByOrderId(orderId);
+        Order order = orderHelper.getByOrderId(orderId);
 
         if (Objects.equals(role, UserRoleType.HUB_MANAGER.name())) {
             HubSearchResponseDto hubInfo = hubClient.getHubById(userId);
@@ -262,7 +196,7 @@ public class OrderService {
     public void deleteOrderDetail(Long userId, String role, OrderDetailDeleteRequestServiceDto request) {
         UUID orderId = request.orderId();
 
-        Order order = getByOrderId(orderId);
+        Order order = orderHelper.getByOrderId(orderId);
 
         if (Objects.equals(role, UserRoleType.HUB_MANAGER.name())) {
             HubSearchResponseDto hubInfo = hubClient.getHubById(userId);
@@ -283,30 +217,6 @@ public class OrderService {
         order.updateTotalPrice(orderDetailPrice);
 
         orderHelper.evictCache(order);
-    }
-
-    private Order getByOrderId(UUID orderId) {
-        Cache cache = cacheManager.getCache("order");
-        Order cachedOrder = cache.get(orderId, Order.class);
-
-        if (cachedOrder != null) {
-            log.info("캐시된 주문 조회 반환 성공");
-            return cachedOrder;
-        }
-
-        Order order = orderRepository.findByIdAndIsDeletedIsFalse(orderId)
-            .orElseThrow(() -> new OrderException(ErrorCode.NOT_FOUND));
-
-        cache.put(orderId, order);
-        log.info("주문 캐시 저장 완료");
-
-        return order;
-    }
-
-    private void putOrdersCache(String cacheKey, Page<OrderResponseServiceDto> results) {
-        Cache cache = cacheManager.getCache("orders");
-        cache.put(cacheKey, results);
-        log.info("캐시 저장 성공: {}", cacheKey);
     }
 
     private OrderSearchCriteria createOrderSearchCriteria(OrdersRequestServiceDto requestDto) {
@@ -335,7 +245,6 @@ public class OrderService {
                 || Objects.equals(role, UserRoleType.COMPANY_DELIVERY_MANAGER.name())
                 || Objects.equals(role, UserRoleType.HUB_DELIVERY_MANAGER.name())
         ) {
-            log.info("Role check success - {}", role);
             return orderQueryRepository.findDynamicQueryForOther(
                 createOrderSearchCriteria(ordersRequestServiceDto),
                 customPageable,
