@@ -1,4 +1,4 @@
-package com.oingmaryho.business.orderservice.application.dto.response;
+package com.oingmaryho.business.orderservice.presentation.dto.response;
 
 import java.util.UUID;
 

@@ -1,6 +1,5 @@
 package com.oingmaryho.business.orderservice.presentation.dto.response;
 
-import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailCreateResponseDto;
 import com.oingmaryho.business.orderservice.domain.Status;
 
 import java.util.List;
