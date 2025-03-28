@@ -3,13 +3,17 @@ package com.oingmaryho.business.orderservice.presentation.controller;
 import com.oingmaryho.business.common.domain.type.UserRoleType;
 import com.oingmaryho.business.common.infrastructure.annotation.RequiredRoles;
 import com.oingmaryho.business.orderservice.application.dto.request.*;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderCreateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.service.OrderAdminService;
 import com.oingmaryho.business.orderservice.presentation.dto.mapper.OrderPresentationMapper;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderAdminRequestServiceDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderCreateRequestDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.OrderUpdateRequestDto;
 import com.oingmaryho.business.orderservice.presentation.dto.response.OrderAdminResponseServiceDto;
+import com.oingmaryho.business.orderservice.presentation.dto.response.OrderCreateResponseDto;
+import com.oingmaryho.business.orderservice.presentation.dto.response.OrderUpdateResponseDto;
 import com.oingmaryho.business.orderservice.utils.PageableUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Min;
@@ -65,7 +69,7 @@ public class OrderAdminController {
     )
     @PostMapping
     @RequiredRoles({UserRoleType.MASTER})
-    public ResponseEntity<?> createOrder(HttpServletRequest request, @RequestBody OrderCreateRequestDto orderCreateRequestDto) {
+    public ResponseEntity<OrderCreateResponseDto> createOrder(HttpServletRequest request, @RequestBody OrderCreateRequestDto orderCreateRequestDto) {
         Long userId = (Long) request.getAttribute("userId");
         String username = (String) request.getAttribute("username");
         String slackId = (String) request.getAttribute("slackId");
@@ -78,8 +82,9 @@ public class OrderAdminController {
             userId, username, slackId, orderCreateRequestDto, orderCreateRequestServiceDto
         );
 
-        orderAdminService.createOrder(create);
-        return ResponseEntity.ok().build();
+        OrderCreateResponseServiceDto orderCreateResponseServiceDto = orderAdminService.createOrder(create);
+
+        return ResponseEntity.ok(orderPresentationMapper.toOrderCreateResponseDto(orderCreateResponseServiceDto));
     }
 
     @Description(
@@ -99,15 +104,15 @@ public class OrderAdminController {
     )
     @PutMapping("/{id}")
     @RequiredRoles({UserRoleType.MASTER})
-    public ResponseEntity<Void> updateOrder(@PathVariable UUID id, @RequestBody OrderUpdateRequestDto update) {
+    public ResponseEntity<OrderUpdateResponseDto> updateOrder(@PathVariable UUID id, @RequestBody OrderUpdateRequestDto update) {
         OrderUpdateServiceDto orderUpdateServiceDto = orderPresentationMapper.toOrderUpdateServiceDto(
             id, update, update.requestOrderDetails().stream().map(
                 orderPresentationMapper::toOrderDetailUpdateServiceDto
             ).toList()
         );
-        orderAdminService.updateOrder(orderUpdateServiceDto);
+        OrderUpdateResponseServiceDto orderUpdateResponseServiceDto = orderAdminService.updateOrder(orderUpdateServiceDto);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(orderPresentationMapper.toOrderUpdateResponseDto(orderUpdateResponseServiceDto));
     }
 
     @Description(

@@ -1,10 +1,14 @@
 package com.oingmaryho.business.orderservice.presentation.dto.mapper;
 
 import com.oingmaryho.business.orderservice.application.dto.request.*;
-import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderCreateResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.presentation.dto.request.*;
 import com.oingmaryho.business.orderservice.presentation.dto.response.OrderAdminResponseServiceDto;
+import com.oingmaryho.business.orderservice.presentation.dto.response.OrderCreateResponseDto;
+import com.oingmaryho.business.orderservice.presentation.dto.response.OrderUpdateResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +29,7 @@ public interface OrderPresentationMapper {
     @Mapping(target = "orderDetailId", source = "source.orderDetailId")
     @Mapping(target = "quantity", source = "source.quantity")
     @Mapping(target = "price", source = "source.price")
-    OrderDetailUpdateResponseServiceDto toOrderDetailUpdateServiceDto(OrderDetailUpdateRequestDto source);
+    OrderDetailUpdateServiceDto toOrderDetailUpdateServiceDto(OrderDetailUpdateRequestDto source);
 
     OrderResponseServiceDto toOrderResponseServiceDto(OrderResponseServiceDto source);
 
@@ -35,7 +39,7 @@ public interface OrderPresentationMapper {
     OrderUpdateServiceDto toOrderUpdateServiceDto(
         UUID id,
         OrderUpdateRequestDto source,
-        List<OrderDetailUpdateResponseServiceDto> orderDetails
+        List<OrderDetailUpdateServiceDto> orderDetails
     );
 
     OrderDeleteServiceDto toOrderDeleteDto(UUID orderId);
@@ -57,4 +61,8 @@ public interface OrderPresentationMapper {
     );
 
     OrderAdminResponseServiceDto toOrderAdminResponseServiceDto(OrderAdminResponseServiceDto source);
+
+    OrderCreateResponseDto toOrderCreateResponseDto(OrderCreateResponseServiceDto source);
+
+    OrderUpdateResponseDto toOrderUpdateResponseDto(OrderUpdateResponseServiceDto source);
 }

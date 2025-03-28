@@ -2,7 +2,7 @@ package com.oingmaryho.business.orderservice.application.dto.response;
 
 import java.util.UUID;
 
-public record OrderDetailUpdateResponseServiceDto(
+public record OrderDetailCreateResponseServiceDto(
     UUID id,
     UUID orderId,
     UUID recipientId,

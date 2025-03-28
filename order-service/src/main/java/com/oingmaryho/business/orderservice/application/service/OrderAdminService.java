@@ -3,8 +3,10 @@ package com.oingmaryho.business.orderservice.application.service;
 import com.oingmaryho.business.orderservice.application.OrderHelper;
 import com.oingmaryho.business.orderservice.application.dto.mapper.OrderApplicationMapper;
 import com.oingmaryho.business.orderservice.application.dto.request.*;
-import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderCreateResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderDetailUpdateServiceDto;
 import com.oingmaryho.business.orderservice.application.dto.response.OrderResponseServiceDto;
+import com.oingmaryho.business.orderservice.application.dto.response.OrderUpdateResponseServiceDto;
 import com.oingmaryho.business.orderservice.application.event.OrderEvent;
 import com.oingmaryho.business.orderservice.domain.Order;
 import com.oingmaryho.business.orderservice.domain.OrderDetail;
@@ -27,7 +29,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -89,7 +90,7 @@ public class OrderAdminService {
     }
 
     @Transactional
-    public void createOrder(OrderCreateRequestServiceDto create) {
+    public OrderCreateResponseServiceDto createOrder(OrderCreateRequestServiceDto create) {
         int totalPrice = 0;
 
         CompanyDetailsSearchResponseDto requestCompanyInfo = orderHelper.getCompanyInfo(create.requesterId());
@@ -109,24 +110,28 @@ public class OrderAdminService {
             .createdBy(create.userId())
             .build();
 
-        ArrayList<OrderDetail> details = orderHelper.createOrderDetails(create, order, totalPrice);
+        Order processOrder = orderHelper.createOrderDetails(create, order, totalPrice);
 
-        order.inputTotalPrice(totalPrice);
-        order.addOrderDetail(details);
-
-        orderRepository.save(order);
+        orderRepository.save(processOrder);
         publisher.publishEvent(new OrderEvent(order));
+
+        return orderApplicationMapper.toOrderCreateResponseDto(
+            order,
+            order.getOrderDetails().stream().map(
+                orderApplicationMapper::toOrderDetailCreateResponseDto
+            ).toList()
+        );
     }
 
     @Transactional
-    public void updateOrder(OrderUpdateServiceDto update) {
+    public OrderUpdateResponseServiceDto updateOrder(OrderUpdateServiceDto update) {
         int totalPrice = 0;
         UUID orderId = update.id();
 
         Order order = orderHelper.getByOrderId(orderId);
 
         if (update.orderDetails() != null) {
-            for (OrderDetailUpdateResponseServiceDto orderDetailDto : update.orderDetails()) {
+            for (OrderDetailUpdateServiceDto orderDetailDto : update.orderDetails()) {
                 OrderDetail orderDetail = orderHelper.getByOrderDetailId(order, orderDetailDto.orderDetailId());
                 OrderDetailUpdateRequestServiceDto orderDetailUpdateRequestServiceDto = orderApplicationMapper.toOrderDetailUpdateDto(
                     orderDetailDto.price(), orderDetailDto.quantity()
@@ -147,6 +152,13 @@ public class OrderAdminService {
         log.info("주문:{}, 수정 완료", order.getId());
 
         orderHelper.refreshCache(order);
+
+        return orderApplicationMapper.toOrderUpdateResponseServiceDto(
+            order,
+            order.getOrderDetails().stream().map(
+                orderApplicationMapper::toOrderDetailUpdateResponseServiceDto
+            ).toList()
+        );
     }
 
     @Transactional
