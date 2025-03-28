@@ -16,6 +16,6 @@ public record OrderCreateResponseServiceDto(
     Status status,
     String requests,
     Integer totalPrice,
-    List<OrderDetailCreateResponseDto> orderDetails
+    List<OrderDetailCreateResponseServiceDto> orderDetails
 ) {
 }
