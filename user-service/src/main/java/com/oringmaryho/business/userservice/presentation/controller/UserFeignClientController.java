@@ -65,7 +65,6 @@ public class UserFeignClientController {
 	public ResponseEntity<String> userFeignServiceGetSlackIdById(
 		@RequestParam(name = "id", required = true) Long id
 	){
-		log.info("userFeignServiceGetSlackIdById");
 		SlackGetSlackIdRequestServiceDto requestServiceDto = userPresentationMapper.toSlackGetSlackIdRequestServiceDto(id);
 
 		return ResponseEntity.ok(userFeignService.userFeignServiceGetSlackId(requestServiceDto));
@@ -76,7 +75,7 @@ public class UserFeignClientController {
 	public ResponseEntity<String> userFeignServiceGetUsernameIdById(
 			@RequestParam(name = "id", required = true) Long id
 	){
-		log.info("userFeignServiceGetUsernameIdById request : ${}", id);
+		log.debug("userFeignServiceGetUsernameIdById request : ${}", id);
 
 		return ResponseEntity.ok(userFeignService.userFeignServiceGetUsername(id));
 	}

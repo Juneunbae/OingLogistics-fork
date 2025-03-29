@@ -80,11 +80,11 @@ public class UserController {
 		@PathVariable Long id,
 		@RequestAttribute("userId") Long userId
 	) {
-		log.info("search user id:{} userId:{}", id, userId);
+		log.debug("search user id:{} userId:{}", id, userId);
 		UserSearchRequestServiceDto requestServiceDto = userPresentationMapper.toUserSearchRequestServiceDto(
 			id, userId);
 		UserSearchResponseDto responseDto = userService.searchUser(requestServiceDto);
-		log.info(responseDto.toString());
+		log.debug(responseDto.toString());
 		return ResponseEntity.ok(responseDto);
 	}
 

@@ -104,10 +104,10 @@ public class UserService {
 
     if (ttlMillis > 0) {
       redisTemplate.expire(blacklistKey, ttlMillis, TimeUnit.MILLISECONDS);
-      log.info("블랙리스트에 추가된 토큰 : {} TTL: {} ms", token, ttlMillis);
+      log.debug("블랙리스트에 추가된 토큰 : {} TTL: {} ms", token, ttlMillis);
     } else {
       redisTemplate.expire(blacklistKey, 1, TimeUnit.SECONDS);
-      log.warn("토큰 {} 은 이미 만료되어 최소 TTL로 설정", token);
+      log.debug("토큰 {} 은 이미 만료되어 최소 TTL로 설정", token);
     }
 
     if (userId != null) {
