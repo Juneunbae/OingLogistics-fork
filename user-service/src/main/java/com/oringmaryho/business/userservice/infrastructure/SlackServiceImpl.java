@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-//메시지 작성용 유틸
 public class SlackServiceImpl implements DirectMessageAuthService {
 
   public String makeDirectMessage(String code) {
