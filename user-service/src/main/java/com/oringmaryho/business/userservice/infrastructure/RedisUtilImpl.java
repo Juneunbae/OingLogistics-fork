@@ -38,14 +38,11 @@ public class RedisUtilImpl implements RedisUtil {
 
 	@Override
 	public Map<String, String> updateUserJwtToken(Long id) {
-		// JWT 토큰 생성
 		String accessToken = jwtTokenProvider.generateAccessToken(id);
 		String refreshToken = jwtTokenProvider.generateRefreshToken(id);
 
-		// 토큰 정보 키
 		String tokenKey = "user:token:" + id;
 
-		// 토큰 정보 저장
 		Map<String, String> tokenMap = new HashMap<>();
 		tokenMap.put("accessToken", accessToken);
 		tokenMap.put("refreshToken", refreshToken);
